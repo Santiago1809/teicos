@@ -8,10 +8,10 @@ import (
 	"path/filepath"
 	"strings"
 
-	piagent "github.com/gentleman-programming/gentle-ai/v4/internal/agents/pi"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/components/filemerge"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/model"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/state"
+	piagent "github.com/Santiago1809/teicos/internal/agents/pi"
+	"github.com/Santiago1809/teicos/internal/components/filemerge"
+	"github.com/Santiago1809/teicos/internal/model"
+	"github.com/Santiago1809/teicos/internal/state"
 )
 
 // PiBackgroundSubagentsEnv is the environment source for the managed Pi

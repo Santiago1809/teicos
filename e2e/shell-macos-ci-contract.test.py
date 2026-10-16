@@ -26,7 +26,7 @@ REQUIRED_PATHS = [
     'scripts/complete-generated-lock-sri.mjs',
     'scripts/normalize-private-optional-platform-closure.mjs',
     'internal/app/app.go',
-    'cmd/gentle-ai/main.go',
+    'cmd/teicos/main.go',
     'go.mod',
     'go.sum',
     'e2e/shell-macos-*',
@@ -130,7 +130,7 @@ class MacOSQualificationContract(unittest.TestCase):
         self.assertIn("cancel-in-progress: ${{ github.event_name == 'pull_request' }}", self.text)
         self.assertIn('github.event.pull_request.number || github.sha }}', self.text)
         self.assertNotIn('cancel-in-progress: true', self.text)
-        self.assertIn("github.repository == 'Gentleman-Programming/gentle-ai'", self.text)
+        self.assertIn("github.repository == 'Santiago1809/teicos'", self.text)
         self.assertNotIn('actions/checkout', self.text)
         self.assertNotIn('secrets.', self.text)
         source = self.steps[0]
@@ -146,7 +146,7 @@ class MacOSQualificationContract(unittest.TestCase):
         order = []
         for marker in ['go test ./internal/shellinstaller ./scripts -count=1',
                        'go test ./internal/cli -run Shell -count=1',
-                       'go build -mod=readonly -o "$RUNNER_TEMP/candidate/gentle-ai" ./cmd/gentle-ai',
+                       'go build -mod=readonly -o "$RUNNER_TEMP/candidate/teicos" ./cmd/teicos',
                        'e2e/shell-macos-qualification.py']:
             order.append(next(index for index, run in enumerate(runs) if marker in run))
         self.assertEqual(order, sorted(order))
@@ -157,7 +157,7 @@ class MacOSQualificationContract(unittest.TestCase):
         run = self.by_id['qualify']['run']
         self.assertIn('base="$(mktemp -d /private/tmp/gentle-macos-qualification.XXXXXX)"', run)
         self.assertIn('/usr/bin/env -i PATH=/usr/bin:/bin TMPDIR="$base" /usr/bin/python3 -I e2e/shell-macos-qualification.py', run)
-        self.assertIn('--gentle-ai "$RUNNER_TEMP/candidate/gentle-ai"', run)
+        self.assertIn('--teicos "$RUNNER_TEMP/candidate/teicos"', run)
         self.assertIn('--receipt "$RUNNER_TEMP/macos-qualification/receipt.json"', run)
         self.assertNotIn('|| true', run)
 

@@ -9,8 +9,8 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/components/filemerge"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/system"
+	"github.com/Santiago1809/teicos/internal/components/filemerge"
+	"github.com/Santiago1809/teicos/internal/system"
 )
 
 // TestMergeUserConfigForcesOAuthFileTo0600OnContentChange pins gentle-ai#5006(F5):

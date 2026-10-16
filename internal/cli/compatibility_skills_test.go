@@ -9,11 +9,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/backup"
-	componentskills "github.com/gentleman-programming/gentle-ai/v4/internal/components/skills"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/model"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/pipeline"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/planner"
+	"github.com/Santiago1809/teicos/internal/backup"
+	componentskills "github.com/Santiago1809/teicos/internal/components/skills"
+	"github.com/Santiago1809/teicos/internal/model"
+	"github.com/Santiago1809/teicos/internal/pipeline"
+	"github.com/Santiago1809/teicos/internal/planner"
 )
 
 func temporaryUserHome(t *testing.T) string {

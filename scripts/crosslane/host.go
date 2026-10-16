@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/cli"
+	"github.com/Santiago1809/teicos/internal/cli"
 )
 
 // hostCommandTimeout bounds every command a --with-host lane runs: real

@@ -12,12 +12,12 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/agents"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/catalog"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/components/filemerge"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/components/opencodedefault"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/model"
-	opencoderuntime "github.com/gentleman-programming/gentle-ai/v4/internal/opencode"
+	"github.com/Santiago1809/teicos/internal/agents"
+	"github.com/Santiago1809/teicos/internal/catalog"
+	"github.com/Santiago1809/teicos/internal/components/filemerge"
+	"github.com/Santiago1809/teicos/internal/components/opencodedefault"
+	"github.com/Santiago1809/teicos/internal/model"
+	opencoderuntime "github.com/Santiago1809/teicos/internal/opencode"
 )
 
 func TestCodexODDRoutingInjectionPreservesUserTextAndResync(t *testing.T) {

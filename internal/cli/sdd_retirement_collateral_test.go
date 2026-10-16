@@ -12,11 +12,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/agents"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/assets"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/components/opencodedefault"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/model"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/system"
+	"github.com/Santiago1809/teicos/internal/agents"
+	"github.com/Santiago1809/teicos/internal/assets"
+	"github.com/Santiago1809/teicos/internal/components/opencodedefault"
+	"github.com/Santiago1809/teicos/internal/model"
+	"github.com/Santiago1809/teicos/internal/system"
 )
 
 // sharedReferencePattern matches a `_shared/<file>.md` reference in installed

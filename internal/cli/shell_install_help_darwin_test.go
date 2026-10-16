@@ -10,7 +10,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/shellinstaller"
+	"github.com/Santiago1809/teicos/internal/shellinstaller"
 )
 
 // macOS help discloses its own platform, mode and containment contract, never

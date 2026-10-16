@@ -9,11 +9,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/components/filemerge"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/components/opencodeagents"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/model"
-	runtimeopencode "github.com/gentleman-programming/gentle-ai/v4/internal/opencode"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/system"
+	"github.com/Santiago1809/teicos/internal/components/filemerge"
+	"github.com/Santiago1809/teicos/internal/components/opencodeagents"
+	"github.com/Santiago1809/teicos/internal/model"
+	runtimeopencode "github.com/Santiago1809/teicos/internal/opencode"
+	"github.com/Santiago1809/teicos/internal/system"
 )
 
 // assertOpenCodeOrchestratorPermissions pins the permissions the managed

@@ -40,7 +40,7 @@ func ModulePathForVersion(base, repo, version string) string {
 // substring matches inside the owner (e.g. "guardian-angel" inside
 // "gentleman-guardian-angel"), and later occurrences are subpath components
 // that happen to share the repo name (e.g. the final "/gentle-ai" in
-// ".../cmd/gentle-ai").
+// ".../cmd/teicos").
 func repoSegmentInsertPoint(base, repo string) int {
 	if repo == "" {
 		return -1

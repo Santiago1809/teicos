@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"runtime"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/system"
+	"github.com/Santiago1809/teicos/internal/system"
 )
 
 // CallerBinary returns the caller-supplied Engram executable named by

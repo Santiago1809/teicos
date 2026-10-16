@@ -11,10 +11,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/opencode"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/system"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/testenv"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/update"
+	"github.com/Santiago1809/teicos/internal/opencode"
+	"github.com/Santiago1809/teicos/internal/system"
+	"github.com/Santiago1809/teicos/internal/testenv"
+	"github.com/Santiago1809/teicos/internal/update"
 )
 
 func TestMain(m *testing.M) {
@@ -151,12 +151,12 @@ func TestRunStrategy_GoInstallUpgradeCrossMajorDerivesSuffixFromVersion(t *testi
 		{
 			name:       "v3 binary targeting v4.0.0 composes /v4",
 			latestVer:  "4.0.0",
-			wantTarget: "github.com/gentleman-programming/gentle-ai/v4/cmd/gentle-ai@v4.0.0",
+			wantTarget: "github.com/Santiago1809/teicos/v4/cmd/teicos@v4.0.0",
 		},
 		{
 			name:       "v3 binary targeting v2.0.0 composes /v2",
 			latestVer:  "2.0.0",
-			wantTarget: "github.com/gentleman-programming/gentle-ai/v2/cmd/gentle-ai@v2.0.0",
+			wantTarget: "github.com/Santiago1809/teicos/v2/cmd/teicos@v2.0.0",
 		},
 	}
 
@@ -219,13 +219,13 @@ func TestRunStrategy_BetaGentleAISelfUpgradeUsesGoInstallMain(t *testing.T) {
 	r := update.UpdateResult{
 		Tool: update.ToolInfo{
 			Name:          "gentle-ai",
-			Owner:         "Gentleman-Programming",
-			Repo:          "gentle-ai",
+			Owner:         "Santiago1809",
+			Repo: "teicos",
 			InstallMethod: update.InstallBinary,
 		},
 		LatestVersion:  "main@972997650b51",
 		BetaCommit:     "972997650b51abcdef0123456789abcdef012345",
-		BetaModulePath: "github.com/gentleman-programming/gentle-ai/v4",
+		BetaModulePath: "github.com/Santiago1809/teicos",
 		Status:         update.UpdateAvailable,
 	}
 	profile := system.PlatformProfile{OS: "linux", PackageManager: "apt", Supported: true}
@@ -238,14 +238,14 @@ func TestRunStrategy_BetaGentleAISelfUpgradeUsesGoInstallMain(t *testing.T) {
 	if gotName != "go" {
 		t.Fatalf("exec name = %q, want %q", gotName, "go")
 	}
-	wantArgs := []string{"install", "github.com/gentleman-programming/gentle-ai/v4/cmd/gentle-ai@972997650b51abcdef0123456789abcdef012345"}
+	wantArgs := []string{"install", "github.com/Santiago1809/teicos/cmd/teicos@972997650b51abcdef0123456789abcdef012345"}
 	if len(gotArgs) != len(wantArgs) || gotArgs[0] != wantArgs[0] || gotArgs[1] != wantArgs[1] {
 		t.Fatalf("exec args = %v, want %v", gotArgs, wantArgs)
 	}
 	for _, want := range []string{
-		"GONOSUMDB=github.com/gentleman-programming/gentle-ai/v4",
-		"GOPRIVATE=github.com/gentleman-programming/gentle-ai/v4",
-		"GONOPROXY=github.com/gentleman-programming/gentle-ai/v4",
+		"GONOSUMDB=github.com/Santiago1809/teicos",
+		"GOPRIVATE=github.com/Santiago1809/teicos",
+		"GONOPROXY=github.com/Santiago1809/teicos",
 	} {
 		if !envContains(gotCmd.Env, want) {
 			t.Fatalf("go install env missing %q in %v", want, gotCmd.Env)
@@ -258,11 +258,11 @@ func TestBetaInstallRejectsUnverifiedTargetBeforeMutation(t *testing.T) {
 	t.Cleanup(func() { execCommand = origExec })
 	called := false
 	execCommand = func(name string, args ...string) *exec.Cmd { called = true; return mockCmd("true") }
-	tool := update.ToolInfo{Name: "gentle-ai", Owner: "Gentleman-Programming", Repo: "gentle-ai", InstallMethod: update.InstallBinary}
+	tool := update.ToolInfo{Name: "gentle-ai", Owner: "Gentleman-Programming", Repo: "teicos", InstallMethod: update.InstallBinary}
 	cases := []struct{ name, sha, module, version string }{
 		{name: "no metadata", version: "main@972997650b51"},
 		{name: "wrong module", sha: "972997650b51abcdef0123456789abcdef012345", module: "github.com/other/gentle-ai/v4", version: "main@972997650b51"},
-		{name: "mismatched short revision", sha: "972997650b51abcdef0123456789abcdef012345", module: "github.com/gentleman-programming/gentle-ai/v4", version: "main@6eff4a1ba110"},
+		{name: "mismatched short revision", sha: "972997650b51abcdef0123456789abcdef012345", module: "github.com/Santiago1809/teicos", version: "main@6eff4a1ba110"},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -285,19 +285,19 @@ func envContains(env []string, want string) bool {
 }
 
 func TestGoProxyBypassEnvPreservesExistingPatterns(t *testing.T) {
-	module := "github.com/gentleman-programming/gentle-ai/v3"
+	module := "github.com/Santiago1809/teicos/v3"
 	env := goProxyBypassEnv([]string{
 		"PATH=/usr/bin",
 		"GONOSUMDB=example.com/private",
 		"GOPRIVATE=github.com/acme/*",
-		"GONOPROXY=github.com/gentleman-programming/gentle-ai/v3",
+		"GONOPROXY=github.com/Santiago1809/teicos/v3",
 	}, module)
 
 	for _, want := range []string{
 		"PATH=/usr/bin",
-		"GONOSUMDB=github.com/gentleman-programming/gentle-ai/v3,example.com/private",
-		"GOPRIVATE=github.com/gentleman-programming/gentle-ai/v3,github.com/acme/*",
-		"GONOPROXY=github.com/gentleman-programming/gentle-ai/v3",
+		"GONOSUMDB=github.com/Santiago1809/teicos/v3,example.com/private",
+		"GOPRIVATE=github.com/Santiago1809/teicos/v3,github.com/acme/*",
+		"GONOPROXY=github.com/Santiago1809/teicos/v3",
 	} {
 		if !envContains(env, want) {
 			t.Fatalf("env missing %q in %v", want, env)
@@ -432,7 +432,7 @@ func TestEffectiveMethodGentleAIOnWindowsUsesFailClosedBinaryPolicy(t *testing.T
 	// against the Go checksum database, since goInstallUpgrade does not touch
 	// cmd.Env — is the only automatic upgrade path Windows has.
 	t.Run("Go availability upgrades through a pinned go install", func(t *testing.T) {
-		tool := update.ToolInfo{Name: "gentle-ai", InstallMethod: update.InstallBinary, GoImportPath: "github.com/Gentleman-Programming/gentle-ai/v3/cmd/gentle-ai"}
+		tool := update.ToolInfo{Name: "gentle-ai", InstallMethod: update.InstallBinary, GoImportPath: "github.com/Santiago1809/teicos/v3/cmd/teicos"}
 		profile := system.PlatformProfile{OS: "windows", PackageManager: "winget", GoAvailable: true}
 		method := effectiveMethod(tool, profile)
 		if method != update.InstallGoInstall {

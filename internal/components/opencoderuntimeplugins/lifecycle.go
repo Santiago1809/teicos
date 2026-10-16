@@ -9,11 +9,11 @@ import (
 	"path/filepath"
 	"slices"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/agents"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/assets"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/components/filemerge"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/model"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/opencode"
+	"github.com/Santiago1809/teicos/internal/agents"
+	"github.com/Santiago1809/teicos/internal/assets"
+	"github.com/Santiago1809/teicos/internal/components/filemerge"
+	"github.com/Santiago1809/teicos/internal/model"
+	"github.com/Santiago1809/teicos/internal/opencode"
 )
 
 //go:generate bash ../../../scripts/gen-opencode-plugin-digests.sh released_digests.go

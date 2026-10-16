@@ -19,18 +19,18 @@ import (
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/agents/codex"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/backup"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/model"
-	opencodeactivation "github.com/gentleman-programming/gentle-ai/v4/internal/opencode"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/pipeline"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/planner"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/state"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/system"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/tui"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/tui/screens"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/update"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/update/upgrade"
+	"github.com/Santiago1809/teicos/internal/agents/codex"
+	"github.com/Santiago1809/teicos/internal/backup"
+	"github.com/Santiago1809/teicos/internal/model"
+	opencodeactivation "github.com/Santiago1809/teicos/internal/opencode"
+	"github.com/Santiago1809/teicos/internal/pipeline"
+	"github.com/Santiago1809/teicos/internal/planner"
+	"github.com/Santiago1809/teicos/internal/state"
+	"github.com/Santiago1809/teicos/internal/system"
+	"github.com/Santiago1809/teicos/internal/tui"
+	"github.com/Santiago1809/teicos/internal/tui/screens"
+	"github.com/Santiago1809/teicos/internal/update"
+	"github.com/Santiago1809/teicos/internal/update/upgrade"
 )
 
 func TestClaudeNativeReviewAssignmentsPersistThroughAppStateConversion(t *testing.T) {
@@ -736,7 +736,7 @@ func buildAppCandidateBinary(t *testing.T) string {
 	defer cancel()
 	// This fixture tests runtime state, not VCS metadata. Avoid consulting
 	// ambient repository ancestry when building from a linked worktree.
-	command := exec.CommandContext(ctx, "go", "build", "-buildvcs=false", "-o", binary, "../../cmd/gentle-ai")
+	command := exec.CommandContext(ctx, "go", "build", "-buildvcs=false", "-o", binary, "../../cmd/teicos")
 	if output, err := command.CombinedOutput(); err != nil {
 		t.Fatalf("build candidate binary: %v\n%s", err, output)
 	}

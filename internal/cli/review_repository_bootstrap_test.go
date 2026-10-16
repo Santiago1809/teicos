@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/pathidentity"
+	"github.com/Santiago1809/teicos/internal/pathidentity"
 )
 
 func TestReviewLifecycleBootstrapsGenuinelyUnversionedWorkspace(t *testing.T) {

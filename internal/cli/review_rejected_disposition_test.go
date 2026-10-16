@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/reviewtransaction"
+	"github.com/Santiago1809/teicos/internal/reviewtransaction"
 )
 
 func TestRejectedValidatorDispositionCompiledCLI(t *testing.T) {
@@ -59,7 +59,7 @@ func TestRejectedValidatorDispositionCompiledCLI(t *testing.T) {
 	}
 	ctx, cancel := context.WithTimeout(t.Context(), 2*time.Minute)
 	defer cancel()
-	build := exec.CommandContext(ctx, "go", "build", "-modcacherw", "-buildvcs=false", "-o", binary, "./cmd/gentle-ai")
+	build := exec.CommandContext(ctx, "go", "build", "-modcacherw", "-buildvcs=false", "-o", binary, "./cmd/teicos")
 	build.Dir = root
 	if output, err := build.CombinedOutput(); err != nil {
 		t.Fatalf("build CLI: %v\n%s", err, output)

@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/agentbuilder"
+	"github.com/Santiago1809/teicos/internal/agentbuilder"
 )
 
 func TestRenderABPreview_NonEmpty(t *testing.T) {

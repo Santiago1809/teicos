@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/reviewerprovider"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/reviewtransaction"
+	"github.com/Santiago1809/teicos/internal/reviewerprovider"
+	"github.com/Santiago1809/teicos/internal/reviewtransaction"
 )
 
 const bindingMarker = reviewtransaction.ReviewerBindingMarker

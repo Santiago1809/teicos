@@ -2,7 +2,7 @@
 
 package cli
 
-import "github.com/gentleman-programming/gentle-ai/v4/internal/model"
+import "github.com/Santiago1809/teicos/internal/model"
 
 func usesAnchoredCompatibilityTransaction() bool {
 	return false

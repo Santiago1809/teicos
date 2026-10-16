@@ -4,8 +4,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/system"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/testenv"
+	"github.com/Santiago1809/teicos/internal/system"
+	"github.com/Santiago1809/teicos/internal/testenv"
 )
 
 func TestInstallCommandByProfile(t *testing.T) {

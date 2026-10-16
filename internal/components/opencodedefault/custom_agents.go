@@ -4,8 +4,8 @@ import (
 	"os"
 	"sort"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/components/filemerge"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/opencode"
+	"github.com/Santiago1809/teicos/internal/components/filemerge"
+	"github.com/Santiago1809/teicos/internal/opencode"
 )
 
 // DiscoverCustomAgents returns user-owned agent keys in OpenCode settings, sorted

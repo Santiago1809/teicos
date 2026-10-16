@@ -7,14 +7,14 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/agents"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/catalog"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/components/agentguidance"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/components/communitytool"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/components/engram"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/components/persona"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/components/reviewassets"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/model"
+	"github.com/Santiago1809/teicos/internal/agents"
+	"github.com/Santiago1809/teicos/internal/catalog"
+	"github.com/Santiago1809/teicos/internal/components/agentguidance"
+	"github.com/Santiago1809/teicos/internal/components/communitytool"
+	"github.com/Santiago1809/teicos/internal/components/engram"
+	"github.com/Santiago1809/teicos/internal/components/persona"
+	"github.com/Santiago1809/teicos/internal/components/reviewassets"
+	"github.com/Santiago1809/teicos/internal/model"
 )
 
 // retiredWorkflowReference matches SDD and OpenSpec, both retired in v4.0.0.

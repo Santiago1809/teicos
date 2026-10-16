@@ -13,10 +13,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/cli"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/components/engram"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/system"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/update"
+	"github.com/Santiago1809/teicos/internal/cli"
+	"github.com/Santiago1809/teicos/internal/components/engram"
+	"github.com/Santiago1809/teicos/internal/system"
+	"github.com/Santiago1809/teicos/internal/update"
 )
 
 // engramDownloadFn is the function used to download the engram binary on the stable channel.
@@ -98,8 +98,8 @@ func runStrategy(ctx context.Context, r update.UpdateResult, profile system.Plat
 		return false, scriptUpgrade(ctx, r, profile)
 	default:
 		return false, &ManualFallbackError{
-			Hint: fmt.Sprintf("upgrade %q: unsupported install method %q — please update manually. See: https://github.com/Gentleman-Programming/%s",
-				r.Tool.Name, method, r.Tool.Repo),
+			Hint: fmt.Sprintf("upgrade %q: unsupported install method %q — please update manually. See: https://github.com/%s/%s",
+				r.Tool.Name, method, r.Tool.Owner, r.Tool.Repo),
 		}
 	}
 }
@@ -349,8 +349,8 @@ func gentleAIWindowsGoInstallProvenanceHint(r update.UpdateResult, destination, 
 
 func isBetaGentleAIUpgrade(r update.UpdateResult) bool {
 	return r.Tool.Name == "gentle-ai" &&
-		strings.EqualFold(r.Tool.Owner, "Gentleman-Programming") &&
-		r.Tool.Repo == "gentle-ai" &&
+		strings.EqualFold(r.Tool.Owner, "Santiago1809") &&
+		r.Tool.Repo == "teicos" &&
 		strings.HasPrefix(strings.TrimSpace(r.LatestVersion), "main@")
 }
 

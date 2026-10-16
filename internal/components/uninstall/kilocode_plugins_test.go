@@ -7,9 +7,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/assets"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/components/opencoderuntimeplugins"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/model"
+	"github.com/Santiago1809/teicos/internal/assets"
+	"github.com/Santiago1809/teicos/internal/components/opencoderuntimeplugins"
+	"github.com/Santiago1809/teicos/internal/model"
 )
 
 // Kilocode receives its own managed plugin set under ~/.config/kilo/plugins; a

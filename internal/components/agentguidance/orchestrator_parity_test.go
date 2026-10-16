@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/model"
+	"github.com/Santiago1809/teicos/internal/model"
 )
 
 // gentleShellParityHeadings lists every orchestrator section each non-Pi

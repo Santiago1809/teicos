@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/skillregistry"
+	"github.com/Santiago1809/teicos/internal/skillregistry"
 )
 
 // TestSkillRegistryPluginSkipsNonProjectDirectories runs the real plugin

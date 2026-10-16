@@ -10,7 +10,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/shellinstaller"
+	"github.com/Santiago1809/teicos/internal/shellinstaller"
 )
 
 // Platform-neutral routing and flag contracts. Review-model tests live in

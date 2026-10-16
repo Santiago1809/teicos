@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/components/communitytool"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/model"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/tui/styles"
+	"github.com/Santiago1809/teicos/internal/components/communitytool"
+	"github.com/Santiago1809/teicos/internal/model"
+	"github.com/Santiago1809/teicos/internal/tui/styles"
 )
 
 func RenderCommunityTools(selected []model.CommunityToolID, cursor int, statuses []communitytool.Status, loading bool, statusErr error) string {

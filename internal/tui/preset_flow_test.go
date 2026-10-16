@@ -6,10 +6,10 @@ import (
 	"testing"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/model"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/reviewtransaction"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/system"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/tui/screens"
+	"github.com/Santiago1809/teicos/internal/model"
+	"github.com/Santiago1809/teicos/internal/reviewtransaction"
+	"github.com/Santiago1809/teicos/internal/system"
+	"github.com/Santiago1809/teicos/internal/tui/screens"
 )
 
 type flowAction struct {
@@ -322,6 +322,20 @@ Foundation Skills
   [x] Work Unit Commits
   [x] RDD Defect Workflow
   [x] Systemic Issue Triage
+  [x] Security Context
+  [x] API Security Tester
+  [x] Crypto Audit
+  [x] Bandit SAST
+  [x] Socket SCA
+  [x] Security Headers Audit
+  [x] Security Test Generator
+  [x] Mobile Security
+  [x] DevSecOps Pipeline
+  [x] Docker Scout Scanner
+  [x] PCI DSS Audit
+  [x] TDD
+  [x] Diagnosing Bugs
+  [x] Code Review
 
   Continue
   Back

@@ -10,8 +10,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/agents/opencode"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/testenv"
+	"github.com/Santiago1809/teicos/internal/agents/opencode"
+	"github.com/Santiago1809/teicos/internal/testenv"
 )
 
 // The child mocks the OS home before isolation, as affected package tests do.

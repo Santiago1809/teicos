@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/tui/styles"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/update"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/update/upgrade"
+	"github.com/Santiago1809/teicos/internal/tui/styles"
+	"github.com/Santiago1809/teicos/internal/update"
+	"github.com/Santiago1809/teicos/internal/update/upgrade"
 )
 
 // RenderUpgradeSync handles all states of the combined upgrade+sync screen.

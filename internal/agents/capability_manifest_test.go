@@ -4,8 +4,8 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/agents/capabilitymanifest"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/model"
+	"github.com/Santiago1809/teicos/internal/agents/capabilitymanifest"
+	"github.com/Santiago1809/teicos/internal/model"
 )
 
 func TestDefaultRegistryManifestsMatchEveryAdapterProjection(t *testing.T) {

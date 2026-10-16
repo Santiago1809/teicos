@@ -3,7 +3,7 @@ package screens
 import (
 	"strings"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/tui/styles"
+	"github.com/Santiago1809/teicos/internal/tui/styles"
 )
 
 // ModelConfigOptions returns the ordered list of options shown on the model config screen.

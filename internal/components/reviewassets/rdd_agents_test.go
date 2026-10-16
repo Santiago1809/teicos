@@ -8,8 +8,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/agents"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/model"
+	"github.com/Santiago1809/teicos/internal/agents"
+	"github.com/Santiago1809/teicos/internal/model"
 )
 
 // rddAgentNames are the native agents receipt-driven development owns.

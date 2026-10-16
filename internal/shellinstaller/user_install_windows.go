@@ -17,7 +17,7 @@ import (
 	"unicode/utf8"
 	"unsafe"
 
-	assets "github.com/gentleman-programming/gentle-ai/v4/scripts"
+	assets "github.com/Santiago1809/teicos/scripts"
 	"golang.org/x/sys/windows"
 )
 

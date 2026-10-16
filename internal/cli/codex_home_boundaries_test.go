@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/backup"
+	"github.com/Santiago1809/teicos/internal/backup"
 )
 
 // codexCLIHome isolates home-related state and restores the CLI home resolver.

@@ -7,11 +7,11 @@ import (
 	"strings"
 	"testing"
 
-	piagent "github.com/gentleman-programming/gentle-ai/v4/internal/agents/pi"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/model"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/planner"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/state"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/system"
+	piagent "github.com/Santiago1809/teicos/internal/agents/pi"
+	"github.com/Santiago1809/teicos/internal/model"
+	"github.com/Santiago1809/teicos/internal/planner"
+	"github.com/Santiago1809/teicos/internal/state"
+	"github.com/Santiago1809/teicos/internal/system"
 )
 
 func TestBackupRootsHonorGentleAIHome(t *testing.T) {

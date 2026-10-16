@@ -3,8 +3,8 @@ package tui
 import (
 	"fmt"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/pipeline"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/tui/screens"
+	"github.com/Santiago1809/teicos/internal/pipeline"
+	"github.com/Santiago1809/teicos/internal/tui/screens"
 )
 
 type ProgressItem struct {

@@ -8,13 +8,13 @@ import (
 	"testing"
 
 	tea "github.com/charmbracelet/bubbletea"
-	opencodeagent "github.com/gentleman-programming/gentle-ai/v4/internal/agents/opencode"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/model"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/opencode"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/state"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/system"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/tui"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/tui/screens"
+	opencodeagent "github.com/Santiago1809/teicos/internal/agents/opencode"
+	"github.com/Santiago1809/teicos/internal/model"
+	"github.com/Santiago1809/teicos/internal/opencode"
+	"github.com/Santiago1809/teicos/internal/state"
+	"github.com/Santiago1809/teicos/internal/system"
+	"github.com/Santiago1809/teicos/internal/tui"
+	"github.com/Santiago1809/teicos/internal/tui/screens"
 )
 
 // TestTuiSyncOpenCodeSequentialProfilesPersist drives Configure Models ->

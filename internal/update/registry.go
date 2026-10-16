@@ -19,8 +19,8 @@ import (
 var Tools = []ToolInfo{
 	{
 		Name:          "gentle-ai",
-		Owner:         "Gentleman-Programming",
-		Repo:          "gentle-ai",
+		Owner:         "Santiago1809",
+		Repo:          "teicos",
 		DetectCmd:     nil, // version comes from build-time ldflags (app.Version)
 		VersionPrefix: "v",
 		// gentle-ai: Homebrew when the package is brew-owned, authenticated binary
@@ -36,7 +36,7 @@ var Tools = []ToolInfo{
 		// /vN suffix is derived at composition time from the target version via
 		// ModulePathForVersion so a v2 binary composing "go install ...@v3.0.1"
 		// resolves to github.com/.../v3/... and not the unresolvable /v2 path.
-		GoImportPath: "github.com/gentleman-programming/gentle-ai/cmd/gentle-ai",
+		GoImportPath: "github.com/Santiago1809/teicos/cmd/teicos",
 	},
 	{
 		Name:              "engram",

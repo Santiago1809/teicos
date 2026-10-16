@@ -3,8 +3,8 @@ package screens
 import (
 	"strings"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/agentbuilder"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/tui/styles"
+	"github.com/Santiago1809/teicos/internal/agentbuilder"
+	"github.com/Santiago1809/teicos/internal/tui/styles"
 )
 
 // RenderABComplete renders the agent-builder completion screen.

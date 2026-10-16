@@ -9,13 +9,13 @@ import (
 	"strings"
 	"testing"
 
-	kilocodeagent "github.com/gentleman-programming/gentle-ai/v4/internal/agents/kilocode"
-	opencodeagent "github.com/gentleman-programming/gentle-ai/v4/internal/agents/opencode"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/backup"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/components/filemerge"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/model"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/pipeline"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/system"
+	kilocodeagent "github.com/Santiago1809/teicos/internal/agents/kilocode"
+	opencodeagent "github.com/Santiago1809/teicos/internal/agents/opencode"
+	"github.com/Santiago1809/teicos/internal/backup"
+	"github.com/Santiago1809/teicos/internal/components/filemerge"
+	"github.com/Santiago1809/teicos/internal/model"
+	"github.com/Santiago1809/teicos/internal/pipeline"
+	"github.com/Santiago1809/teicos/internal/system"
 )
 
 // releasedOpenCodeSDDAgents reads the agent map of a real v3.7.0 OpenCode

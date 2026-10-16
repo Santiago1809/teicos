@@ -9,7 +9,21 @@
       "skill-registry",
       "chained-pr",
       "cognitive-doc-design",
-      "work-unit-commits"
+      "work-unit-commits",
+      "security",
+      "api-security-tester",
+      "crypto-audit",
+      "bandit-sast",
+      "socket-sca",
+      "security-headers-audit",
+      "security-test-generator",
+      "mobile-security",
+      "devsecops-pipeline",
+      "docker-scout-scanner",
+      "pci-dss-audit",
+      "tdd",
+      "diagnosing-bugs",
+      "code-review"
     ]
   },
   {
@@ -22,7 +36,21 @@
       "skill-registry",
       "chained-pr",
       "cognitive-doc-design",
-      "work-unit-commits"
+      "work-unit-commits",
+      "security",
+      "api-security-tester",
+      "crypto-audit",
+      "bandit-sast",
+      "socket-sca",
+      "security-headers-audit",
+      "security-test-generator",
+      "mobile-security",
+      "devsecops-pipeline",
+      "docker-scout-scanner",
+      "pci-dss-audit",
+      "tdd",
+      "diagnosing-bugs",
+      "code-review"
     ]
   },
   {

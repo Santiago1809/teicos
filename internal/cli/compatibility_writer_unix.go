@@ -14,7 +14,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/components/filemerge"
+	"github.com/Santiago1809/teicos/internal/components/filemerge"
 	"golang.org/x/sys/unix"
 )
 

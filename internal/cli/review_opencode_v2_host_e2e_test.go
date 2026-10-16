@@ -13,8 +13,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/reviewerprovider"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/reviewtransaction"
+	"github.com/Santiago1809/teicos/internal/reviewerprovider"
+	"github.com/Santiago1809/teicos/internal/reviewtransaction"
 )
 
 // This file is the opt-in real-host E2E for OpenCode 2.x reviewer transport.

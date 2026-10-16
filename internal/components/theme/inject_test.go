@@ -9,12 +9,12 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/agents"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/agents/claude"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/agents/hermes"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/agents/kimi"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/agents/opencode"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/model"
+	"github.com/Santiago1809/teicos/internal/agents"
+	"github.com/Santiago1809/teicos/internal/agents/claude"
+	"github.com/Santiago1809/teicos/internal/agents/hermes"
+	"github.com/Santiago1809/teicos/internal/agents/kimi"
+	"github.com/Santiago1809/teicos/internal/agents/opencode"
+	"github.com/Santiago1809/teicos/internal/model"
 )
 
 func claudeAdapter() agents.Adapter   { return claude.NewAdapter() }

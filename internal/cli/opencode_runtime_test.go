@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/assets"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/opencode"
+	"github.com/Santiago1809/teicos/internal/assets"
+	"github.com/Santiago1809/teicos/internal/opencode"
 )
 
 func TestOpenCodeTelemetryStepUsesDetectedMajor(t *testing.T) {

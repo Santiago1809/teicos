@@ -6,9 +6,9 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/model"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/reviewerprovider"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/state"
+	"github.com/Santiago1809/teicos/internal/model"
+	"github.com/Santiago1809/teicos/internal/reviewerprovider"
+	"github.com/Santiago1809/teicos/internal/state"
 )
 
 // reviewProviderAdapter resolves a compiled runtime only after the role's

@@ -12,9 +12,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/model"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/reviewerprovider"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/reviewtransaction"
+	"github.com/Santiago1809/teicos/internal/model"
+	"github.com/Santiago1809/teicos/internal/reviewerprovider"
+	"github.com/Santiago1809/teicos/internal/reviewtransaction"
 )
 
 const requestContextFixture = "Feature: budget set\n\nS1 `budget set --year <year>` rejects years before 2000 with exit code 2.\nS2 Existing `budget show` output stays unchanged.\n"

@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/system"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/update"
+	"github.com/Santiago1809/teicos/internal/system"
+	"github.com/Santiago1809/teicos/internal/update"
 )
 
 func TestGentleAIWindowsUpgradeFailsClosedToSourceInstall(t *testing.T) {
@@ -30,8 +30,8 @@ func TestGentleAIWindowsUpgradeFailsClosedToSourceInstall(t *testing.T) {
 			r := update.UpdateResult{
 				Tool: update.ToolInfo{
 					Name:          "gentle-ai",
-					Owner:         "Gentleman-Programming",
-					Repo:          "gentle-ai",
+					Owner:         "Santiago1809",
+					Repo: "teicos",
 					InstallMethod: update.InstallBinary,
 				},
 				LatestVersion: tc.latestVersion,
@@ -49,7 +49,7 @@ func TestGentleAIWindowsUpgradeFailsClosedToSourceInstall(t *testing.T) {
 			}
 			for _, required := range []string{
 				"Windows binary distribution and Scoop are temporarily unavailable",
-				"go install " + update.ModulePathForVersion("github.com/gentleman-programming/gentle-ai/cmd/gentle-ai", "gentle-ai", tc.latestVersion) + tc.wantTarget,
+				"go install " + update.ModulePathForVersion("github.com/Santiago1809/teicos/cmd/teicos", "teicos", tc.latestVersion) + tc.wantTarget,
 			} {
 				if !strings.Contains(hint, required) {
 					t.Errorf("manual hint is missing %q: %s", required, hint)
@@ -71,11 +71,11 @@ func TestGentleAIWindowsUpgradeFailsClosedToSourceInstall(t *testing.T) {
 }
 
 func TestWindowsBetaSourceRecoveryIsPinned(t *testing.T) {
-	tool := update.ToolInfo{Name: "gentle-ai", Owner: "Gentleman-Programming", Repo: "gentle-ai"}
+	tool := update.ToolInfo{Name: "gentle-ai", Owner: "Santiago1809", Repo: "teicos"}
 	sha := "972997650b51abcdef0123456789abcdef012345"
-	result := update.UpdateResult{Tool: tool, LatestVersion: "main@" + sha[:12], BetaCommit: sha, BetaModulePath: "github.com/gentleman-programming/gentle-ai/v4"}
+	result := update.UpdateResult{Tool: tool, LatestVersion: "main@" + sha[:12], BetaCommit: sha, BetaModulePath: "github.com/Santiago1809/teicos"}
 	hint := gentleAIWindowsSourceInstallHint(result)
-	want := "go install github.com/gentleman-programming/gentle-ai/v4/cmd/gentle-ai@" + sha
+	want := "go install github.com/Santiago1809/teicos/cmd/teicos@" + sha
 	if !strings.Contains(hint, want) || strings.Contains(hint, "@main") {
 		t.Fatalf("Windows recovery command not pinned: %s", hint)
 	}
@@ -88,7 +88,7 @@ func TestWindowsBetaSourceRecoveryIsPinned(t *testing.T) {
 func TestWindowsBetaGentleAIUpgradeUsesShippedRegistryGoTarget(t *testing.T) {
 	const (
 		mainSHA = "972997650b51abcdef0123456789abcdef012345"
-		module  = "github.com/gentleman-programming/gentle-ai/v4"
+		module  = "github.com/Santiago1809/teicos"
 	)
 
 	var tool update.ToolInfo
@@ -129,7 +129,7 @@ func TestWindowsBetaGentleAIUpgradeUsesShippedRegistryGoTarget(t *testing.T) {
 		t.Fatalf("runStrategy beta Windows self-upgrade: %v", err)
 	}
 
-	wantTarget := module + "/cmd/gentle-ai@" + mainSHA
+	wantTarget := module + "/cmd/teicos@" + mainSHA
 	if gotName != "go" || len(gotArgs) != 2 || gotArgs[0] != "install" || gotArgs[1] != wantTarget {
 		t.Fatalf("go command = %q %v, want go install %s", gotName, gotArgs, wantTarget)
 	}

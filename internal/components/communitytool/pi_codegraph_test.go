@@ -15,8 +15,8 @@ import (
 	"testing"
 	"time"
 
-	piagent "github.com/gentleman-programming/gentle-ai/v4/internal/agents/pi"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/components/filemerge"
+	piagent "github.com/Santiago1809/teicos/internal/agents/pi"
+	"github.com/Santiago1809/teicos/internal/components/filemerge"
 )
 
 func TestPiCodeGraphUnselectedIsNoOp(t *testing.T) {

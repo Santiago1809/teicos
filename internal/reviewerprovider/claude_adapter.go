@@ -7,7 +7,7 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/model"
+	"github.com/Santiago1809/teicos/internal/model"
 )
 
 // ClaudeAdapter invokes Claude Code with an opaque provider invocation and

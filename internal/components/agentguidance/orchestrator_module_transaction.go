@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"slices"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/components/mutationjournal"
+	"github.com/Santiago1809/teicos/internal/components/mutationjournal"
 )
 
 // #5256 U1b: the private transaction used by global Claude routing and pilot

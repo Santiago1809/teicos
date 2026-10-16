@@ -18,10 +18,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/assets"
-	runtimeopencode "github.com/gentleman-programming/gentle-ai/v4/internal/opencode"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/reviewerprovider"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/reviewtransaction"
+	"github.com/Santiago1809/teicos/internal/assets"
+	runtimeopencode "github.com/Santiago1809/teicos/internal/opencode"
+	"github.com/Santiago1809/teicos/internal/reviewerprovider"
+	"github.com/Santiago1809/teicos/internal/reviewtransaction"
 )
 
 func TestOpenCodeReviewTransportFinalLensClosesAndBurnsThroughSharedGoReducer(t *testing.T) {

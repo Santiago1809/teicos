@@ -20,7 +20,7 @@ on:
       - 'e2e/shell-macos-*'
       - 'docs/gentle-shell-macos-install.md'
       - 'internal/app/app.go'
-      - 'cmd/gentle-ai/main.go'
+      - 'cmd/teicos/main.go'
       - 'go.mod'
       - 'go.sum'
       - '.github/workflows/shell-macos-qualification.yml'
@@ -40,7 +40,7 @@ on:
       - 'e2e/shell-macos-*'
       - 'docs/gentle-shell-macos-install.md'
       - 'internal/app/app.go'
-      - 'cmd/gentle-ai/main.go'
+      - 'cmd/teicos/main.go'
       - 'go.mod'
       - 'go.sum'
       - '.github/workflows/shell-macos-qualification.yml'
@@ -57,7 +57,7 @@ concurrency:
 jobs:
   macos-native:
     name: macOS installation and recovery qualification
-    if: github.repository == 'Gentleman-Programming/gentle-ai' || github.repository == 'decode2/gentle-ai'
+    if: github.repository == 'Santiago1809/teicos' || github.repository == 'decode2/teicos'
     runs-on: macos-latest
     # Every step below has its own deadline; their sum stays inside this job
     # budget, and the qualification script's whole-run deadline stays inside
@@ -106,13 +106,13 @@ jobs:
         timeout-minutes: 1
         run: /usr/bin/python3 -I e2e/shell-macos-ci-contract.test.py
 
-      - name: Build candidate gentle-ai
+      - name: Build candidate teicos
         timeout-minutes: 4
         shell: bash
         run: |
           set -euo pipefail
           mkdir -m 700 "$RUNNER_TEMP/candidate" "$RUNNER_TEMP/macos-qualification"
-          go build -mod=readonly -o "$RUNNER_TEMP/candidate/gentle-ai" ./cmd/gentle-ai
+          go build -mod=readonly -o "$RUNNER_TEMP/candidate/teicos" ./cmd/teicos
 
       - name: Qualify native Separate, Shared and recovery
         id: qualify
@@ -125,7 +125,7 @@ jobs:
           base="$(mktemp -d /private/tmp/gentle-macos-qualification.XXXXXX)"
           test "$(stat -f '%Su:%Lp' "$base")" = "$(id -un):700"
           /usr/bin/env -i PATH=/usr/bin:/bin TMPDIR="$base" /usr/bin/python3 -I e2e/shell-macos-qualification.py \
-            --gentle-ai "$RUNNER_TEMP/candidate/gentle-ai" \
+            --teicos "$RUNNER_TEMP/candidate/teicos" \
             --receipt "$RUNNER_TEMP/macos-qualification/receipt.json" \
             --source-sha "$SOURCE_SHA"
 

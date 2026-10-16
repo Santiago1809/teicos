@@ -14,16 +14,16 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/agents/opencode"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/assets"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/backup"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/components/opencoderuntimeplugins"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/components/telemetryruntime"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/model"
-	opencodeactivation "github.com/gentleman-programming/gentle-ai/v4/internal/opencode"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/pipeline"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/planner"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/telemetry"
+	"github.com/Santiago1809/teicos/internal/agents/opencode"
+	"github.com/Santiago1809/teicos/internal/assets"
+	"github.com/Santiago1809/teicos/internal/backup"
+	"github.com/Santiago1809/teicos/internal/components/opencoderuntimeplugins"
+	"github.com/Santiago1809/teicos/internal/components/telemetryruntime"
+	"github.com/Santiago1809/teicos/internal/model"
+	opencodeactivation "github.com/Santiago1809/teicos/internal/opencode"
+	"github.com/Santiago1809/teicos/internal/pipeline"
+	"github.com/Santiago1809/teicos/internal/planner"
+	"github.com/Santiago1809/teicos/internal/telemetry"
 )
 
 // themeSettingsFixture puts the effective JSONC in the project and a distinct

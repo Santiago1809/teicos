@@ -6,9 +6,9 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/model"
-	opencodeactivation "github.com/gentleman-programming/gentle-ai/v4/internal/opencode"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/pipeline"
+	"github.com/Santiago1809/teicos/internal/model"
+	opencodeactivation "github.com/Santiago1809/teicos/internal/opencode"
+	"github.com/Santiago1809/teicos/internal/pipeline"
 )
 
 // Issue #4940: OpenCode 2.x omits the Gentle logo by design; install and sync

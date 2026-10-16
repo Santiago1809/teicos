@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/tui/screens"
+	"github.com/Santiago1809/teicos/internal/tui/screens"
 )
 
 func TestWelcomeOmitsExternalPluginActions(t *testing.T) {

@@ -10,7 +10,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/telemetry"
+	"github.com/Santiago1809/teicos/internal/telemetry"
 )
 
 // SendClaude handles one Claude Code hook in memory and sends at most once.

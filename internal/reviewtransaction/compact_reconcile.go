@@ -19,7 +19,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/pathquote"
+	"github.com/Santiago1809/teicos/internal/pathquote"
 )
 
 const compactRecoveryEdgeUnchangedTarget = "unchanged_target"

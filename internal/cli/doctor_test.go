@@ -14,10 +14,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/components/engram"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/doctor"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/opencode"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/system"
+	"github.com/Santiago1809/teicos/internal/components/engram"
+	"github.com/Santiago1809/teicos/internal/doctor"
+	"github.com/Santiago1809/teicos/internal/opencode"
+	"github.com/Santiago1809/teicos/internal/system"
 )
 
 // --- checkOneTool ---

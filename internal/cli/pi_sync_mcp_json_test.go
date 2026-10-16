@@ -7,7 +7,7 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/model"
+	"github.com/Santiago1809/teicos/internal/model"
 )
 
 // setupPiSyncHost isolates a Pi sync run in a temporary home with stubbed

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/system"
+	"github.com/Santiago1809/teicos/internal/system"
 )
 
 const WindowsDistributionHoldMessage = "Windows binary distribution and Scoop are temporarily unavailable until publicly trusted Authenticode signing is enforced."
@@ -23,14 +23,14 @@ func GentleAISourceInstallCommand(version string) string {
 	if version != "" {
 		target = "v" + strings.TrimPrefix(version, "v")
 	}
-	module := ModulePathForVersion("github.com/gentleman-programming/gentle-ai/cmd/gentle-ai", "gentle-ai", version)
+	module := ModulePathForVersion("github.com/Santiago1809/teicos/cmd/teicos", "teicos", version)
 	return "go install " + module + "@" + target
 }
 
 // BetaSourceInstallCommand composes a source install from metadata already
 // validated against the exact checked commit. It never follows mutable main.
 func BetaSourceInstallCommand(module, commit string) string {
-	return "go install " + module + "/cmd/gentle-ai@" + commit
+	return "go install " + module + "/cmd/teicos@" + commit
 }
 
 // ValidatedBetaSourceInstallCommand rejects unchecked or inconsistent beta metadata.
@@ -77,7 +77,7 @@ func gentleAIHint(profile system.PlatformProfile) string {
 
 	switch profile.OS {
 	case "linux":
-		return "curl -fsSL https://raw.githubusercontent.com/Gentleman-Programming/gentle-ai/main/scripts/install.sh | bash"
+		return "curl -fsSL https://raw.githubusercontent.com/Santiago1809/teicos/main/scripts/install.sh | bash"
 	case "darwin":
 		return "gentle-ai upgrade (downloads pre-built binary)"
 	case "windows":

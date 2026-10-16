@@ -11,10 +11,10 @@ import (
 	"unicode"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/components/opencodedefault"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/model"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/opencode"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/tui/styles"
+	"github.com/Santiago1809/teicos/internal/components/opencodedefault"
+	"github.com/Santiago1809/teicos/internal/model"
+	"github.com/Santiago1809/teicos/internal/opencode"
+	"github.com/Santiago1809/teicos/internal/tui/styles"
 )
 
 // ModelPickerMode represents the current sub-mode of the model picker screen.

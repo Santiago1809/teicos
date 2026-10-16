@@ -15,8 +15,8 @@ func TestIssueTaxonomyForms(t *testing.T) {
 		name, kind, ids, controlsHash string
 		required                      int
 	}{
-		{"bug_report", "bug", "preflight description steps expected actual version os agent area logs context", "4aa09d0f80cf563290e049132e4f82021685e4470d287fcd883e4c5363d888f8", 10},
-		{"feature_request", "feature", "preflight area problem solution alternatives context", "20a1357018c6013dcff2487f3f27dc7034af8273193df928eb601e6502587e37", 5},
+		{"bug_report", "bug", "preflight description steps expected actual version os agent area logs context", "732c6857ff676e2addc20dc1a4ed56c109fdb7e8e9b7f4196086dc19d0e66512", 10},
+		{"feature_request", "feature", "preflight area problem solution alternatives context", "004e4ec08cb58d70ca643afca24000164a5960e17e451831637b7666de4dd14b", 5},
 	} {
 		t.Run(form.name, func(t *testing.T) {
 			text := taxonomyRead(t, ".github/ISSUE_TEMPLATE/"+form.name+".yml")

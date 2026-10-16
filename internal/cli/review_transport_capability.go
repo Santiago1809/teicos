@@ -9,10 +9,10 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/agents/capabilitymanifest"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/catalog"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/model"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/opencode"
+	"github.com/Santiago1809/teicos/internal/agents/capabilitymanifest"
+	"github.com/Santiago1809/teicos/internal/catalog"
+	"github.com/Santiago1809/teicos/internal/model"
+	"github.com/Santiago1809/teicos/internal/opencode"
 )
 
 // openCodeRelayContractEnvironment carries the managed V2 plugin's relay

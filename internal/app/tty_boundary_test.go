@@ -14,8 +14,8 @@ import (
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/state"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/system"
+	"github.com/Santiago1809/teicos/internal/state"
+	"github.com/Santiago1809/teicos/internal/system"
 )
 
 func assumeInteractiveTTY(t *testing.T) {
@@ -235,10 +235,10 @@ func TestBuiltBinaryClosedStdinRefusesBeforeBubbleTea(t *testing.T) {
 	}
 	repoRoot := filepath.Join(filepath.Dir(sourceFile), "..", "..")
 	binaryPath := filepath.Join(t.TempDir(), "gentle-ai")
-	build := exec.Command("go", "build", "-o", binaryPath, "./cmd/gentle-ai")
+	build := exec.Command("go", "build", "-o", binaryPath, "./cmd/teicos")
 	build.Dir = repoRoot
 	if output, err := build.CombinedOutput(); err != nil {
-		t.Fatalf("go build ./cmd/gentle-ai: %v\n%s", err, output)
+		t.Fatalf("go build ./cmd/teicos: %v\n%s", err, output)
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)

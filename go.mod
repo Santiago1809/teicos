@@ -1,4 +1,4 @@
-module github.com/gentleman-programming/gentle-ai/v4
+module github.com/Santiago1809/teicos
 
 go 1.25.10
 

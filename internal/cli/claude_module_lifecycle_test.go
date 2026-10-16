@@ -10,9 +10,9 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/components/agentguidance"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/model"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/planner"
+	"github.com/Santiago1809/teicos/internal/components/agentguidance"
+	"github.com/Santiago1809/teicos/internal/model"
+	"github.com/Santiago1809/teicos/internal/planner"
 )
 
 // #5256 U2b-1: install and sync continue an installed user-global Claude

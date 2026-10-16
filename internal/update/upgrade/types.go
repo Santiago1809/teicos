@@ -3,7 +3,7 @@ package upgrade
 import (
 	"errors"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/update"
+	"github.com/Santiago1809/teicos/internal/update"
 )
 
 // ToolUpgradeStatus describes the outcome of a single tool upgrade attempt.

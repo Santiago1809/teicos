@@ -4,8 +4,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/agentbuilder"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/model"
+	"github.com/Santiago1809/teicos/internal/agentbuilder"
+	"github.com/Santiago1809/teicos/internal/model"
 )
 
 func TestRenderABComplete_NonEmpty(t *testing.T) {

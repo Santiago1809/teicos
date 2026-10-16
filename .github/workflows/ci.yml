@@ -90,14 +90,14 @@ jobs:
       - name: Build, vet, and test benchmark module
         working-directory: bench
         run: |
-          go build -o "$RUNNER_TEMP/gentle-ai-bench" .
+          go build -o "$RUNNER_TEMP/teicos-bench" .
           go vet ./...
           go test ./...
 
       - name: Run benchmark evidence
         run: |
-          go build -trimpath -o "$RUNNER_TEMP/gentle-ai" ./cmd/gentle-ai
-          "$RUNNER_TEMP/gentle-ai-bench" run --binary "$RUNNER_TEMP/gentle-ai" --out "$RUNNER_TEMP/bench-portable.json"
+          go build -trimpath -o "$RUNNER_TEMP/teicos" ./cmd/teicos
+          "$RUNNER_TEMP/teicos-bench" run --binary "$RUNNER_TEMP/teicos" --out "$RUNNER_TEMP/bench-portable.json"
           jq -e '
             def completed_once($id):
               [.journeys[] | select(.id == $id)] as $matches
@@ -118,7 +118,7 @@ jobs:
             completed_once("j4772-committed-correction-dirty-commit") and
             completed_once("j4773-committed-correction-dirty-amend")
           ' "$RUNNER_TEMP/bench-portable.json"
-          "$RUNNER_TEMP/gentle-ai-bench" run --binary "$RUNNER_TEMP/gentle-ai" --only j105-compiled-provider-capture-retries-same-binding --out "$RUNNER_TEMP/bench-provider-capture.json"
+          "$RUNNER_TEMP/teicos-bench" run --binary "$RUNNER_TEMP/teicos" --only j105-compiled-provider-capture-retries-same-binding --out "$RUNNER_TEMP/bench-provider-capture.json"
           jq -e '
             def completed_once($id):
               [.journeys[] | select(.id == $id)] as $matches
@@ -127,7 +127,7 @@ jobs:
           ' "$RUNNER_TEMP/bench-provider-capture.json"
           # #4612 retires SDD attempt transitions; the standalone review-mode
           # transition must still execute exactly once and complete.
-          "$RUNNER_TEMP/gentle-ai-bench" run --binary "$RUNNER_TEMP/gentle-ai" --axis transition --out "$RUNNER_TEMP/bench-transition.json"
+          "$RUNNER_TEMP/teicos-bench" run --binary "$RUNNER_TEMP/teicos" --axis transition --out "$RUNNER_TEMP/bench-transition.json"
           jq -e '
             def completed_once($id):
               [.journeys[] | select(.id == $id)] as $matches
@@ -136,15 +136,15 @@ jobs:
             ([.journeys[] | select((.id | startswith("tr")) and .status == "completed")] | length) == 1 and
             completed_once("tr09-mode-flip-while-a-review-lineage-is-open")
           ' "$RUNNER_TEMP/bench-transition.json"
-          "$RUNNER_TEMP/gentle-ai-bench" run --binary "$RUNNER_TEMP/gentle-ai" --axis model-picker --only j97-opencode-custom-agent-model-picker-runtime --out "$RUNNER_TEMP/bench-model-picker-untagged.json"
+          "$RUNNER_TEMP/teicos-bench" run --binary "$RUNNER_TEMP/teicos" --axis model-picker --only j97-opencode-custom-agent-model-picker-runtime --out "$RUNNER_TEMP/bench-model-picker-untagged.json"
           jq -e '
             def unsupported_once($id):
               [.journeys[] | select(.id == $id)] as $matches
               | ($matches | length == 1) and ($matches[0].status == "unsupported");
             unsupported_once("j97-opencode-custom-agent-model-picker-runtime")
           ' "$RUNNER_TEMP/bench-model-picker-untagged.json"
-          go build -tags bench_fixture -trimpath -o "$RUNNER_TEMP/gentle-ai-bench-fixture" ./cmd/gentle-ai
-          "$RUNNER_TEMP/gentle-ai-bench" run --binary "$RUNNER_TEMP/gentle-ai-bench-fixture" --axis model-picker --only j97-opencode-custom-agent-model-picker-runtime --out "$RUNNER_TEMP/bench-model-picker.json"
+          go build -tags bench_fixture -trimpath -o "$RUNNER_TEMP/teicos-bench-fixture" ./cmd/teicos
+          "$RUNNER_TEMP/teicos-bench" run --binary "$RUNNER_TEMP/teicos-bench-fixture" --axis model-picker --only j97-opencode-custom-agent-model-picker-runtime --out "$RUNNER_TEMP/bench-model-picker.json"
           jq -e '
             def completed_once($id):
               [.journeys[] | select(.id == $id)] as $matches
@@ -174,14 +174,14 @@ jobs:
           repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - name: Build pinned Claude runtime proof image
-        run: docker build -f e2e/Dockerfile.claude-network-none -t gentle-ai-claude-network-none:ci .
+        run: docker build -f e2e/Dockerfile.claude-network-none -t teicos-claude-network-none:ci .
       - name: Prove Claude transport without external networking
         run: |
           docker run --rm --pull=never --network none --cap-drop=ALL \
             --security-opt=no-new-privileges --read-only \
             --tmpfs /tmp:rw,noexec,nosuid,nodev,mode=1777 \
             -e GENTLE_AI_PARENT_NETNS="$(stat -Lc %i /proc/self/ns/net)" \
-            gentle-ai-claude-network-none:ci
+            teicos-claude-network-none:ci
 
   windows-runtime:
     name: Windows Runtime
@@ -216,7 +216,7 @@ jobs:
         run: |
           Add-MpPreference -ExclusionPath $env:GITHUB_WORKSPACE -ErrorAction SilentlyContinue
           Add-MpPreference -ExclusionPath $env:RUNNER_TEMP -ErrorAction SilentlyContinue
-          Add-MpPreference -ExclusionProcess 'git.exe','go.exe','gentle-ai.exe' -ErrorAction SilentlyContinue
+          Add-MpPreference -ExclusionProcess 'git.exe','go.exe','teicos.exe' -ErrorAction SilentlyContinue
 
       - name: Checkout exact event candidate
         uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd  # v5.0.1
@@ -265,13 +265,13 @@ jobs:
 
       - name: Build native test binary
         shell: pwsh
-        run: go build -trimpath -ldflags="-s -w -X main.version=ci" -o "$env:RUNNER_TEMP\gentle-ai.exe" ./cmd/gentle-ai
+        run: go build -trimpath -ldflags="-s -w -X main.version=ci" -o "$env:RUNNER_TEMP\teicos.exe" ./cmd/teicos
 
       - name: Run Windows release-blocker tests
         shell: pwsh
         timeout-minutes: 10
         env:
-          GENTLE_AI_TEST_BINARY: ${{ runner.temp }}\gentle-ai.exe
+          GENTLE_AI_TEST_BINARY: ${{ runner.temp }}\teicos.exe
           GENTLE_AI_REQUIRE_DISTINCT_WINDOWS_TOKEN_OWNER: "1"
         run: |
           $packages = @('./internal/cli', './internal/reviewtransaction', './internal/components/engram')
@@ -410,13 +410,13 @@ jobs:
 
       - name: Install Claude Code runtime
         # This suite drives the real install pipeline end to end, so it needs
-        # the real binary the same way it needs OpenCode above — gentle-ai
+        # the real binary the same way it needs OpenCode above — teicos
         # itself no longer installs this (agentInstallStep in
         # internal/cli/run.go refuses instead), so CI installs what it needs
         # to test, same as any other test dependency. No exact-pin test
         # applies here the way TestOrganicRuntimeE2EUsesInstalledOpenCodePin
         # asserts for OpenCode: there is no versions.go constant backing this
-        # one, since gentle-ai's own display-only refusal for Claude Code
+        # one, since teicos's own display-only refusal for Claude Code
         # advises "latest" too (see internal/installcmd/resolver.go).
         run: npm install --global @anthropic-ai/claude-code@latest
 
@@ -508,7 +508,7 @@ jobs:
         with:
           context: .
           file: e2e/${{ matrix.platform.dockerfile }}
-          tags: gentle-ai-e2e-${{ matrix.platform.name }}:ci
+          tags: teicos-e2e-${{ matrix.platform.name }}:ci
           load: true
           cache-from: type=gha,scope=e2e-${{ matrix.platform.name }}
           cache-to: type=gha,mode=max,scope=e2e-${{ matrix.platform.name }}
@@ -522,7 +522,7 @@ jobs:
       - name: Diagnose pinned OpenCode runtime before E2E
         run: |
           docker run --rm --pull=never --network none --entrypoint /bin/bash \
-            gentle-ai-e2e-${{ matrix.platform.name }}:ci -c '
+            teicos-e2e-${{ matrix.platform.name }}:ci -c '
               set -u
               export HOME=$(mktemp -d)
               export XDG_CONFIG_HOME="$HOME/config" XDG_DATA_HOME="$HOME/data"
@@ -545,4 +545,4 @@ jobs:
             -e RUN_FULL_E2E \
             -e RUN_BACKUP_TESTS \
             -e GITHUB_TOKEN \
-            gentle-ai-e2e-${{ matrix.platform.name }}:ci
+            teicos-e2e-${{ matrix.platform.name }}:ci

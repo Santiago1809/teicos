@@ -144,6 +144,23 @@ const (
 	SkillRDDDefectWorkflow   SkillID = "rdd-defect-workflow"
 	SkillSystemicIssueTriage SkillID = "systemic-issue-triage"
 	SkillGentleAIBench       SkillID = "gentle-ai-bench"
+	SkillSecurity            SkillID = "security"
+
+	// Vendored third-party skills. Attribution lives in
+	// internal/assets/skills/THIRD_PARTY_NOTICES.md.
+	SkillAPISecurity     SkillID = "api-security-tester"
+	SkillCryptoAudit     SkillID = "crypto-audit"
+	SkillBanditSAST      SkillID = "bandit-sast"
+	SkillSocketSCA       SkillID = "socket-sca"
+	SkillSecurityHeaders SkillID = "security-headers-audit"
+	SkillSecurityTests   SkillID = "security-test-generator"
+	SkillMobileSecurity  SkillID = "mobile-security"
+	SkillDevSecOps       SkillID = "devsecops-pipeline"
+	SkillDockerScout     SkillID = "docker-scout-scanner"
+	SkillPCIDSS          SkillID = "pci-dss-audit"
+	SkillTDD             SkillID = "tdd"
+	SkillDiagnosingBugs  SkillID = "diagnosing-bugs"
+	SkillCodeReview      SkillID = "code-review"
 )
 
 type PersonaID string

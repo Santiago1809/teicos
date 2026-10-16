@@ -14,7 +14,7 @@ import (
 	"strings"
 	"time"
 
-	opencodeactivation "github.com/gentleman-programming/gentle-ai/v4/internal/opencode"
+	opencodeactivation "github.com/Santiago1809/teicos/internal/opencode"
 )
 
 // openCodeRuntimeMajorForManagedAssets fails closed when the runtime is

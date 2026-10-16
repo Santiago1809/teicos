@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/shellinstaller"
+	"github.com/Santiago1809/teicos/internal/shellinstaller"
 )
 
 // Linux and macOS review model; shell_install_view.go renders it.

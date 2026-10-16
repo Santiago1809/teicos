@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/components/gga"
+	"github.com/Santiago1809/teicos/internal/components/gga"
 )
 
 func TestInstallTestHomeIsolatesGGA(t *testing.T) {

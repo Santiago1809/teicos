@@ -8,10 +8,10 @@ import (
 	"strings"
 	"testing"
 
-	piagent "github.com/gentleman-programming/gentle-ai/v4/internal/agents/pi"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/backup"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/state"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/system"
+	piagent "github.com/Santiago1809/teicos/internal/agents/pi"
+	"github.com/Santiago1809/teicos/internal/backup"
+	"github.com/Santiago1809/teicos/internal/state"
+	"github.com/Santiago1809/teicos/internal/system"
 )
 
 func TestRunArgsRejectsInvalidIsolationVariablesBeforeDetection(t *testing.T) {

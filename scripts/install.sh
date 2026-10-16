@@ -2,21 +2,21 @@
 set -euo pipefail
 
 # ============================================================================
-# Gentle-AI — Install Script
+# Teicos — Install Script
 # Ecosystem, Frameworks, Workflows for AI coding agents.
 #
 # Usage:
-#   curl -sL https://raw.githubusercontent.com/Gentleman-Programming/gentle-ai/main/scripts/install.sh | bash
+#   curl -sL https://raw.githubusercontent.com/Santiago1809/teicos/main/scripts/install.sh | bash
 #
 # Or download and run:
-#   curl -sLO https://raw.githubusercontent.com/Gentleman-Programming/gentle-ai/main/scripts/install.sh
+#   curl -sLO https://raw.githubusercontent.com/Santiago1809/teicos/main/scripts/install.sh
 #   chmod +x install.sh
 #   ./install.sh
 # ============================================================================
 
-GITHUB_OWNER="Gentleman-Programming"
-GITHUB_REPO="gentle-ai"
-BINARY_NAME="gentle-ai"
+GITHUB_OWNER="Santiago1809"
+GITHUB_REPO="teicos"
+BINARY_NAME="teicos"
 BREW_TAP="Gentleman-Programming/homebrew-tap"
 BREW_FORMULA_REF="gentleman-programming/tap/${BINARY_NAME}"
 
@@ -64,7 +64,7 @@ print_homebrew_failure_help() {
 
     if [[ "$lower" == *"untrusted tap"* || "$lower" == *"tap trust is required"* || "$lower" == *"homebrew_require_tap_trust"* ]]; then
         warn "Homebrew requires explicit trust for external taps."
-        echo "Trust only the Gentle AI formula, then retry:" >&2
+        echo "Trust only the Teicos formula, then retry:" >&2
         echo "  brew trust --formula ${BREW_FORMULA_REF}" >&2
         echo "  brew upgrade ${BINARY_NAME}" >&2
     fi
@@ -88,13 +88,13 @@ print_homebrew_failure_help() {
 
 show_help() {
     cat <<EOF
-${BOLD}Gentle-AI installer${NC}
+${BOLD}Teicos installer${NC}
 
 Usage: install.sh [OPTIONS]
 
 Options:
   --method METHOD   Force install method: brew, go, binary (default: auto-detect)
-  --channel CHANNEL Gentle AI channel: stable (default), beta, or nightly (env: GENTLE_AI_CHANNEL)
+  --channel CHANNEL Teicos channel: stable (default), beta, or nightly (env: GENTLE_AI_CHANNEL)
   --dir DIR         Custom install directory for binary method
   --insecure        Skip checksum verification (not recommended)
   -h, --help        Show this help
@@ -148,8 +148,8 @@ detect_platform() {
 # GoReleaser v2 {{ .Os }} produces GOOS values (lowercase: darwin, linux)
 # GoReleaser {{ .Arch }} produces GOARCH values (amd64, arm64)
 # Examples:
-#   gentle-ai_1.0.0_darwin_arm64.tar.gz
-#   gentle-ai_1.0.0_linux_amd64.tar.gz
+#   teicos_1.0.0_darwin_arm64.tar.gz
+#   teicos_1.0.0_linux_amd64.tar.gz
 # ============================================================================
 
 get_archive_name() {
@@ -188,7 +188,7 @@ check_prerequisites() {
 detect_install_method() {
     if [ "${CHANNEL}" = "beta" ]; then
         if [ -n "${FORCE_METHOD:-}" ] && [ "${FORCE_METHOD}" != "go" ]; then
-            fatal "--channel beta installs Gentle AI from main and only supports --method go"
+            fatal "--channel beta installs Teicos from main and only supports --method go"
         fi
         INSTALL_METHOD="go"
         info "Using beta channel — will install ${BINARY_NAME} from main via go install"
@@ -367,7 +367,10 @@ install_go() {
     # a module whose tags are vN.x unless the import path carries the major
     # version suffix. The path is now derived from go.mod at ${ref}, so the
     # suffix travels with whatever the repo actually declares.
-    local go_package="${module}/cmd/${BINARY_NAME}@${ref}"
+    #
+    # The command directory is cmd/teicos, which is also the binary name the
+    # released archive ships.
+    local go_package="${module}/cmd/teicos@${ref}"
 
     info "Running: go install ${go_package}"
     if [ "${CHANNEL}" = "beta" ]; then
@@ -632,7 +635,7 @@ print_banner() {
     echo " | |_| |  __/ | | | |_| |  __/_____/ ___ \ | | "
     echo "  \____|\___|_| |_|\__|_|\___|    /_/   \_\___|"
     echo -e "${NC}"
-    echo -e "  ${DIM}Gentle-AI — Ecosystem, Frameworks, Workflows${NC}"
+    echo -e "  ${DIM}Teicos — Ecosystem, Frameworks, Workflows${NC}"
     echo ""
 }
 

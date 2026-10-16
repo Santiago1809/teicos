@@ -8,15 +8,15 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/agents/claude"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/agents/gemini"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/agents/kilocode"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/agents/openclaw"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/agents/opencode"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/agents/qwen"
-	runtimeopencode "github.com/gentleman-programming/gentle-ai/v4/internal/opencode"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/telemetry"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/testenv"
+	"github.com/Santiago1809/teicos/internal/agents/claude"
+	"github.com/Santiago1809/teicos/internal/agents/gemini"
+	"github.com/Santiago1809/teicos/internal/agents/kilocode"
+	"github.com/Santiago1809/teicos/internal/agents/openclaw"
+	"github.com/Santiago1809/teicos/internal/agents/opencode"
+	"github.com/Santiago1809/teicos/internal/agents/qwen"
+	runtimeopencode "github.com/Santiago1809/teicos/internal/opencode"
+	"github.com/Santiago1809/teicos/internal/telemetry"
+	"github.com/Santiago1809/teicos/internal/testenv"
 )
 
 // telemetryTestSpawnRecorder is the RecordingSpawner installed as

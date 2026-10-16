@@ -8,7 +8,7 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/reviewtransaction"
+	"github.com/Santiago1809/teicos/internal/reviewtransaction"
 )
 
 const ReviewIntegrationRepairSchema = "gentle-ai.review-integration.repair/v1"

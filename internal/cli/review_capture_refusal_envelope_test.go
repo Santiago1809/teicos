@@ -11,7 +11,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/reviewtransaction"
+	"github.com/Santiago1809/teicos/internal/reviewtransaction"
 )
 
 // These tests prove each surviving collect-satisfying capture operation

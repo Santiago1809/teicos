@@ -27,7 +27,7 @@ import (
 	"testing"
 	"time"
 
-	assets "github.com/gentleman-programming/gentle-ai/v4/scripts"
+	assets "github.com/Santiago1809/teicos/scripts"
 )
 
 // Independent literals: changing production pins cannot silently change the controls.

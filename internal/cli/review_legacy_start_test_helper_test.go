@@ -10,7 +10,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/reviewtransaction"
+	"github.com/Santiago1809/teicos/internal/reviewtransaction"
 )
 
 // runLegacyFacadeStartForTest preserves the historical test-helper signature

@@ -3,7 +3,7 @@ package tui
 import (
 	"context"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/opencode"
+	"github.com/Santiago1809/teicos/internal/opencode"
 )
 
 // Presentation evidence never changes runtime selection or installation policy.

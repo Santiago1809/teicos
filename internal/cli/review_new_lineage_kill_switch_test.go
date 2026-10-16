@@ -8,7 +8,7 @@ import (
 	"sort"
 	"testing"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/reviewtransaction"
+	"github.com/Santiago1809/teicos/internal/reviewtransaction"
 )
 
 // This file is coverage closure for spec rdd-new-lineage-activation ->

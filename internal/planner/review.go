@@ -1,8 +1,8 @@
 package planner
 
 import (
-	"github.com/gentleman-programming/gentle-ai/v4/internal/catalog"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/model"
+	"github.com/Santiago1809/teicos/internal/catalog"
+	"github.com/Santiago1809/teicos/internal/model"
 )
 
 func BuildReviewPayload(selection model.Selection, resolved ResolvedPlan) ReviewPayload {
