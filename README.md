@@ -21,16 +21,19 @@ were missing.
 
 ## Install
 
+Requires Go 1.25.10+.
+
 ```bash
-# Claude Code
-teicos install --agent claude-code
-
-# Cursor
-teicos install --agent cursor
-
-# OpenCode
-teicos install --agent opencode
+go install github.com/Santiago1809/teicos/cmd/teicos@latest
 ```
+
+Make sure `$GOPATH/bin` (or `$HOME/go/bin`) is in your `PATH`, then:
+
+```bash
+teicos install --agent claude-code   # or cursor, opencode
+```
+
+Homebrew and Scoop support coming in v1.0.
 
 ## Skills included
 
