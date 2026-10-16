@@ -573,7 +573,7 @@ test_cc_skills_full() {
         assert_dir_exists "$skills_dir" "Claude skills directory"
 
         # #4669: the six contributor workflow skills are selectable, never default.
-        assert_file_count "$skills_dir" "SKILL.md" 8 "Full preset (skills alone): 8 skill files"
+        assert_file_count "$skills_dir" "SKILL.md" 22 "Full preset (skills alone): 22 skill files"
 
         # Verify foundation skills exist
         assert_file_exists "$skills_dir/go-testing/SKILL.md" "go-testing SKILL.md"
@@ -602,7 +602,7 @@ test_cc_skills_ecosystem() {
         assert_dir_exists "$skills_dir" "Claude skills directory"
 
         # #4669: contributor workflow skills are not part of this preset.
-        assert_file_count "$skills_dir" "SKILL.md" 8 "Ecosystem preset (skills alone): 8 skill files"
+        assert_file_count "$skills_dir" "SKILL.md" 22 "Ecosystem preset (skills alone): 22 skill files"
         # Foundation skills present
         assert_file_exists "$skills_dir/go-testing/SKILL.md" "Foundation skills present"
         assert_file_exists "$skills_dir/skill-creator/SKILL.md" "skill-creator present"
@@ -782,7 +782,7 @@ test_oc_skills_full() {
     if $BINARY install --agent opencode --component skills --preset full-gentleman 2>&1; then
         local skill_dir="$HOME/.config/opencode/skills"
         assert_dir_exists "$skill_dir" "OpenCode skill directory"
-        assert_file_count "$skill_dir" "SKILL.md" 8 "Full preset (skills alone): 8 skill files"
+        assert_file_count "$skill_dir" "SKILL.md" 22 "Full preset (skills alone): 22 skill files"
         assert_file_exists "$skill_dir/go-testing/SKILL.md" "go-testing skill"
         assert_file_exists "$skill_dir/skill-creator/SKILL.md" "skill-creator skill"
         assert_file_not_exists "$skill_dir/branch-pr/SKILL.md" "branch-pr NOT installed by default"
@@ -1334,8 +1334,8 @@ test_edge_theme_not_in_presets() {
         if [ -f "$HOME/.claude/CLAUDE.md" ]; then
             local sections
             sections=$(grep -o '<!-- gentle-ai:[a-z0-9-]* -->' "$HOME/.claude/CLAUDE.md" | sort -u | tr '\n' ' ')
-            if [ "$(printf '%s' "$sections" | xargs)" = "<!-- gentle-ai:agent-routing --> <!-- gentle-ai:orchestrator --> <!-- gentle-ai:remote-authorization -->" ]; then
-                log_pass "Theme-only: CLAUDE.md carries orchestrator, routing and remote authorization only"
+            if [ "$(printf '%s' "$sections" | xargs)" = "<!-- gentle-ai:agent-routing --> <!-- gentle-ai:orchestrator --> <!-- gentle-ai:remote-authorization --> <!-- gentle-ai:teicos-security-context -->" ]; then
+                log_pass "Theme-only: CLAUDE.md carries orchestrator, routing, remote authorization and security context only"
             else
                 log_fail "Theme-only install wrote component sections: $sections"
             fi
@@ -1546,7 +1546,7 @@ test_integrity_full_preset_all_skills_nonempty() {
 
     if $BINARY install --agent opencode --component skills --preset full-gentleman 2>&1; then
         local skill_dir="$HOME/.config/opencode/skills"
-        assert_file_count "$skill_dir" "SKILL.md" 8 "Full preset installs 8 foundation skills"
+        assert_file_count "$skill_dir" "SKILL.md" 22 "Full preset installs 22 foundation skills"
         local all_ok=true
         local empty_count=0
 
@@ -1562,10 +1562,10 @@ test_integrity_full_preset_all_skills_nonempty() {
 
         local total
         total=$(find "$skill_dir" -name "SKILL.md" -type f | wc -l | tr -d ' ')
-        if $all_ok && [ "$total" -eq 8 ]; then
+        if $all_ok && [ "" -eq 22 ]; then
             log_pass "All 8 foundation skill files have >= 100 bytes of real content"
         else
-            log_fail "Expected 8 non-empty foundation skills (found $total; $empty_count empty or corrupt)"
+            log_fail "Expected 22 non-empty foundation skills (found $total; $empty_count empty or corrupt)"
         fi
     else
         log_fail "Full preset install for integrity check failed"

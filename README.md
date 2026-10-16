@@ -2,6 +2,8 @@
 
 > The wall in the code
 
+<img src="https://img.shields.io/badge/agents-17-blue" alt="17 agents">
+
 Teicos is a secure-by-default AI coding environment. It configures the AI coding
 agent you already use — Claude Code, Cursor, OpenCode — and injects a persistent
 security context that enforces safe patterns automatically, without you having to ask.
