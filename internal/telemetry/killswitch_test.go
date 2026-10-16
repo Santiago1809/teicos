@@ -2,8 +2,22 @@ package telemetry
 
 import "testing"
 
+// testEndpoint stands in for a configured collector: with no default endpoint,
+// telemetry is disabled unless one is set, so most tests need one.
+const testEndpoint = "https://collector.example.invalid/v1/events"
+
+// envMap returns a Getenv over values. EndpointEnvVar defaults to testEndpoint
+// unless values sets it explicitly (an empty string means "no endpoint").
 func envMap(values map[string]string) Getenv {
-	return func(key string) string { return values[key] }
+	return func(key string) string {
+		if value, ok := values[key]; ok {
+			return value
+		}
+		if key == EndpointEnvVar {
+			return testEndpoint
+		}
+		return ""
+	}
 }
 
 func TestDecidePrecedence(t *testing.T) {
@@ -43,8 +57,20 @@ func TestDecidePrecedence(t *testing.T) {
 	}
 }
 
+func TestDecideIsDisabledWithoutAnEndpoint(t *testing.T) {
+	for _, env := range []map[string]string{{EndpointEnvVar: ""}, {EndpointEnvVar: "  "}} {
+		decision := Decide(envMap(env), State{Enabled: true})
+		if decision.Enabled || decision.Source != SourceNoEndpoint {
+			t.Fatalf("Decide() = %+v, want disabled by %q", decision, SourceNoEndpoint)
+		}
+	}
+}
+
 func TestEndpointDefaultAndOverride(t *testing.T) {
-	if got := Endpoint(envMap(nil)); got != DefaultEndpoint {
+	if DefaultEndpoint != "" {
+		t.Fatalf("DefaultEndpoint = %q, want empty: nothing is sent unless an endpoint is configured", DefaultEndpoint)
+	}
+	if got := Endpoint(envMap(map[string]string{EndpointEnvVar: ""})); got != DefaultEndpoint {
 		t.Fatalf("Endpoint() = %q, want default %q", got, DefaultEndpoint)
 	}
 	custom := "https://example.invalid/v1/events"

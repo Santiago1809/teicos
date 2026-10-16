@@ -44,6 +44,7 @@ func TestIncrementSyncsWaitsForWriterBeforeReadingPolicy(t *testing.T) {
 	t.Setenv("GENTLE_AI_TELEMETRY", "")
 	t.Setenv("CI", "")
 	t.Setenv("GITHUB_ACTIONS", "")
+	t.Setenv(EndpointEnvVar, testEndpoint)
 
 	if err := IncrementSyncs(home); err != nil {
 		t.Fatal(err)
@@ -110,6 +111,7 @@ func TestIncrementSyncsDisabledOrUnreadableStateRemainsUnchanged(t *testing.T) {
 			t.Setenv("GENTLE_AI_TELEMETRY", "")
 			t.Setenv("CI", "")
 			t.Setenv("GITHUB_ACTIONS", "")
+			t.Setenv(EndpointEnvVar, testEndpoint)
 			if err := os.MkdirAll(filepath.Join(home, stateDir), 0o755); err != nil {
 				t.Fatal(err)
 			}
@@ -138,6 +140,7 @@ func TestIncrementSyncsWhenEnabledPersistsTheCounter(t *testing.T) {
 	t.Setenv("GENTLE_AI_TELEMETRY", "")
 	t.Setenv("CI", "")
 	t.Setenv("GITHUB_ACTIONS", "")
+	t.Setenv(EndpointEnvVar, testEndpoint)
 
 	if err := IncrementSyncs(home); err != nil {
 		t.Fatal(err)
@@ -160,6 +163,7 @@ func TestIncrementSyncsConcurrentDoesNotLoseUpdates(t *testing.T) {
 	t.Setenv("GENTLE_AI_TELEMETRY", "")
 	t.Setenv("CI", "")
 	t.Setenv("GITHUB_ACTIONS", "")
+	t.Setenv(EndpointEnvVar, testEndpoint)
 
 	const n = 20
 	var wg sync.WaitGroup

@@ -25,9 +25,10 @@ const (
 	EventHeartbeat = "heartbeat"
 )
 
-// DefaultEndpoint is the collector URL used when GENTLE_AI_TELEMETRY_ENDPOINT
-// is not set.
-const DefaultEndpoint = "https://telemetry.gentlemanprogramming.com/v1/events"
+// DefaultEndpoint is empty on purpose: Teicos has no collector of its own, so
+// nothing is sent unless GENTLE_AI_TELEMETRY_ENDPOINT names one. The inherited
+// upstream collector URL must not come back as a default.
+const DefaultEndpoint = ""
 
 // EndpointEnvVar overrides DefaultEndpoint.
 const EndpointEnvVar = "GENTLE_AI_TELEMETRY_ENDPOINT"

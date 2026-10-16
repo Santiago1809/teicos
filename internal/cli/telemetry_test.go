@@ -221,6 +221,7 @@ func enableTelemetryForTest(t *testing.T) {
 	t.Helper()
 	t.Setenv("DO_NOT_TRACK", "")
 	t.Setenv("GENTLE_AI_TELEMETRY", "")
+	t.Setenv("GENTLE_AI_TELEMETRY_ENDPOINT", "https://collector.example.invalid/v1/events")
 	t.Setenv("CI", "")
 	t.Setenv("GITHUB_ACTIONS", "")
 	// The test binary reports "dev", which the client refuses to count;
@@ -242,6 +243,7 @@ func telemetryTestHome(t *testing.T) string {
 	// Pin the other kill switches too, so a test that re-enables telemetry
 	// with DO_NOT_TRACK="" is hermetic on a CI runner or an opted-out shell.
 	t.Setenv("GENTLE_AI_TELEMETRY", "")
+	t.Setenv("GENTLE_AI_TELEMETRY_ENDPOINT", "https://collector.example.invalid/v1/events")
 	t.Setenv("CI", "")
 	return home
 }

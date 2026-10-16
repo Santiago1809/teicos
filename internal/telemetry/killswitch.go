@@ -10,6 +10,7 @@ const (
 	SourceDoNotTrack   Source = "DO_NOT_TRACK"
 	SourceEnvOptOut    Source = "GENTLE_AI_TELEMETRY"
 	SourceCI           Source = "CI"
+	SourceNoEndpoint   Source = "no-endpoint"
 	SourceStateDisable Source = "state"
 	SourceDefault      Source = "default"
 )
@@ -39,6 +40,9 @@ func Decide(getenv Getenv, persisted State) Decision {
 	}
 	if truthy(getenv("CI")) || truthy(getenv("GITHUB_ACTIONS")) {
 		return Decision{Enabled: false, Source: SourceCI}
+	}
+	if Endpoint(getenv) == "" {
+		return Decision{Enabled: false, Source: SourceNoEndpoint}
 	}
 	if !persisted.Enabled {
 		return Decision{Enabled: false, Source: SourceStateDisable}

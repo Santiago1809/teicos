@@ -26,6 +26,7 @@ func TestOpenCodeV2Envelope(t *testing.T) {
 			home := t.TempDir()
 			t.Setenv("HOME", home)
 			t.Setenv("XDG_CONFIG_HOME", "")
+			t.Setenv("GENTLE_AI_TELEMETRY_ENDPOINT", "https://collector.example.invalid/v1/events")
 			for _, key := range []string{"DO_NOT_TRACK", "GENTLE_AI_TELEMETRY", "CI", "GITHUB_ACTIONS"} {
 				t.Setenv(key, "")
 			}

@@ -25,6 +25,7 @@ func TestSendOpenCodeReadsAssignmentFromRealisticLargeConfig(t *testing.T) {
 	t.Setenv("XDG_CONFIG_HOME", "")
 	t.Setenv("DO_NOT_TRACK", "")
 	t.Setenv("GENTLE_AI_TELEMETRY", "")
+	t.Setenv("GENTLE_AI_TELEMETRY_ENDPOINT", "https://collector.example.invalid/v1/events")
 	t.Setenv("CI", "")
 	t.Setenv("GITHUB_ACTIONS", "")
 	if err := telemetry.Save(home, telemetry.State{InstallID: "local", Enabled: true, NoticeShown: true}); err != nil {
@@ -181,6 +182,7 @@ func TestSendOpenCodeResolvesConfiguredReasoningEffort(t *testing.T) {
 			home := t.TempDir()
 			t.Setenv("HOME", home)
 			t.Setenv("XDG_CONFIG_HOME", "")
+			t.Setenv("GENTLE_AI_TELEMETRY_ENDPOINT", "https://collector.example.invalid/v1/events")
 			for _, key := range []string{"DO_NOT_TRACK", "GENTLE_AI_TELEMETRY", "CI", "GITHUB_ACTIONS"} {
 				t.Setenv(key, "")
 			}

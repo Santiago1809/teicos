@@ -46,6 +46,7 @@ func TestIncrementSyncsAcrossProcessesDoesNotLoseUpdates(t *testing.T) {
 	for _, key := range []string{"DO_NOT_TRACK", "GENTLE_AI_TELEMETRY", "CI", "GITHUB_ACTIONS"} {
 		t.Setenv(key, "")
 	}
+	t.Setenv(EndpointEnvVar, testEndpoint)
 	t.Setenv(counterProcessHomeEnv, home)
 	self, err := os.Executable()
 	if err != nil {
