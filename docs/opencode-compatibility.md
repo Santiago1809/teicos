@@ -87,10 +87,10 @@ one bound to its role.
   hooks for that call. Other plugins must not rely on observing refused review
   Tasks.
 
-V1 regression coverage and V2 fixture checks are recorded in
-[`odd/tasks/opencode-v2-support.md`](../odd/tasks/opencode-v2-support.md). Integrated functional checks passed through the scoped follow-ups recorded there;
-the initial full-suite command failed on its CLI timeout and legacy Bash. Native
-review and complete runtime certification remain separate pending gates.
+V1 regression coverage and V2 fixture checks were run for this surface.
+Integrated functional checks passed through the scoped follow-ups; the initial
+full-suite command failed on its CLI timeout and legacy Bash. Native review
+and complete runtime certification remain separate pending gates.
 
 ## Installation and verification boundaries
 
