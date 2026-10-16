@@ -1562,7 +1562,7 @@ test_integrity_full_preset_all_skills_nonempty() {
 
         local total
         total=$(find "$skill_dir" -name "SKILL.md" -type f | wc -l | tr -d ' ')
-        if $all_ok && [ "" -eq 22 ]; then
+        if $all_ok && [ "$total" -eq 22 ]; then
             log_pass "All 8 foundation skill files have >= 100 bytes of real content"
         else
             log_fail "Expected 22 non-empty foundation skills (found $total; $empty_count empty or corrupt)"
