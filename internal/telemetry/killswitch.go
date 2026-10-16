@@ -41,11 +41,11 @@ func Decide(getenv Getenv, persisted State) Decision {
 	if truthy(getenv("CI")) || truthy(getenv("GITHUB_ACTIONS")) {
 		return Decision{Enabled: false, Source: SourceCI}
 	}
-	if Endpoint(getenv) == "" {
-		return Decision{Enabled: false, Source: SourceNoEndpoint}
-	}
 	if !persisted.Enabled {
 		return Decision{Enabled: false, Source: SourceStateDisable}
+	}
+	if Endpoint(getenv) == "" {
+		return Decision{Enabled: false, Source: SourceNoEndpoint}
 	}
 	return Decision{Enabled: true, Source: SourceDefault}
 }

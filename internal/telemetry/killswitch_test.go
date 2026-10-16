@@ -63,6 +63,12 @@ func TestDecideIsDisabledWithoutAnEndpoint(t *testing.T) {
 		if decision.Enabled || decision.Source != SourceNoEndpoint {
 			t.Fatalf("Decide() = %+v, want disabled by %q", decision, SourceNoEndpoint)
 		}
+		// An explicit disable is the user's own decision and is reported as
+		// such, even when there is also no endpoint.
+		decision = Decide(envMap(env), State{Enabled: false})
+		if decision.Enabled || decision.Source != SourceStateDisable {
+			t.Fatalf("Decide() with state disabled = %+v, want disabled by %q", decision, SourceStateDisable)
+		}
 	}
 }
 
