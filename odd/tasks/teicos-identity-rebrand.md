@@ -74,6 +74,8 @@ It is not a workflow tool and ships no development methodologies.
   to `mvpSkills` and to `selectableFoundationSkills` (line 36) — deliberately NOT `orchestrationSkills`, so the
   minimal preset stays judgment-day-only and `TestSkillsForPresetMinimalRetainsJudgmentDay` is untouched.
   The generic contract is still **inert**: not yet wired into an injection path.
+  *(Superseded — see "Runtime verification of the shipped state" at the end of this document. That entry was
+  accurate when written and is kept as history; the contract is live today.)*
 - 13 external skills vendored (T4 part 2) with attribution in
   `internal/assets/skills/THIRD_PARTY_NOTICES.md`; licenses verified against the upstream `LICENSE` files
   (both MIT). `TestEmbeddedAssetCount` 17 -> 30.
@@ -250,3 +252,131 @@ not exist yet:
 - Likewise `installcmd/resolver.go:347` still taps `Gentleman-Programming/homebrew-tap` (left untouched by
   standing instruction).
 - No Scoop section exists in `.goreleaser.yaml` yet.
+
+## Committed — `624defbd`
+
+The whole tree (PASO 1 + the security layer + the 13 vendored skills + the wave-1 identity convergences)
+landed as one commit: `chore: rename identity and release pipeline from gentle-ai to teicos`,
+848 files changed, 10199 insertions / 2305 deletions. Working tree clean, no stray binaries, no hooks
+that could reformat. Recovery point before this commit is still `75c4776a`.
+
+## Runtime verification of the shipped state
+
+Nothing about the security layer or the vendored skills is a promise in this document; it was observed
+against the built binary in a throwaway `HOME` (`/tmp/teicos-verify/home`, never the real one), installed
+with `--preset full-gentleman --agent claude-code --scope global`:
+
+- `InjectSecurityContext` is live. The generated `~/.claude/CLAUDE.md` (758 lines) carries the block
+  `<!-- gentle-ai:teicos-security-context -->` … `<!-- /gentle-ai:teicos-security-context -->` at
+  **lines 677-757**. The call sits at `inject.go:128`, inside `InjectRoutingWithOptions` — the single
+  shared routing entry — right after `InjectRemoteAuthorization` and before the persona/orchestrator
+  switch, so it is unconditional. `conductor` is the only skip, and correctly so: it inherits Claude Code
+  configuration as a catalog-only target.
+- The 13 vendored SkillIDs are **active, not inert**. The install wrote 23 skill directories (the 14 new
+  ones including `security`, the 9 retained, and `_shared`) and the installer's own verification passed
+  **39 checks / 0 failures**, one named check per new skill. The chain is closed end to end:
+  `skill_picker.go:54` → `AllSkillIDs()`, `run.go:3789` → `SkillsForPreset()`,
+  `run.go:3353` and `sync.go:1530` → `skills.Inject()`, which walks `assets.FS` at `skills/<id>`.
+- `minimal` still resolves to judgment-day only, by code (`orchestrationSkills`) and by test.
+- `claudeModuleOverheadCeiling` is a **test-only** bound (`orchestrator_module_budget_test.go:22`),
+  asserted at line 155. 4096 is the correct value: `overhead = core + modules − monolith`, and the
+  monolith is rendered by the same `InjectRoutingWithOptions`, so it grows with the injection and
+  cancels — 1635 before and after. The earlier "it is blocking" reading compared a fresh core against a
+  stale monolith baseline in testdata.
+
+## Suite state — 75 OK / 3 FAIL, all three environmental
+
+`go list ./internal/...` minus `internal/cli` = 82 packages, of which 78 have tests: **75 pass, 3 fail.**
+Each failure was reproduced with its cause isolated from Teicos code:
+
+- `internal/components/reviewassets` — `TestOwnershipReuseRejectsLedgerWithoutMutation/hash_number` pins
+  the exact `encoding/json` error text as `...struct field ownershipLedger.files...`; this toolchain
+  answers `...struct field .files.jd-judge-a.md...` (nested key path). Reproduced standalone with a
+  two-line `json.Unmarshal` and no Teicos code in the program. The behaviour under test is correct — the
+  malformed ledger was still rejected. Per standing instruction the pinned test is not touched.
+- `internal/releaseprovenancecmd` — `goPattern` at `provenance.go:33` is
+  `^go1\.[0-9]+(?:\.[0-9]+)?$` and this machine reports `go1.27.0-X:nodwarf5`; the `-X:nodwarf5`
+  suffix cannot match. Verified with a shell regex test against `go version` output. Pattern and
+  assertion are NOT weakened.
+- `internal/shellinstaller` — `TestUserFrozenLockAcquisition` runs the node suite
+  `e2e/frozen-global-materialization.test.mjs`, whose fixture asserts the local npm own-tree layout:
+  `stock.endsWith('/bin/npm-cli.js')`, failing as `identify the stock npm package`. Needs a stock npm
+  package that this environment does not provide.
+
+`internal/cli` stays excluded from the suite: it invokes the native RDD review, which cannot obtain
+consent without a TTY and hangs for the full 10-minute timeout.
+
+The count moved from 74/4 in the previous run to 75/3 here because the fourth failure was self-caused by
+the wave-1 install-script edit and was fixed in that same wave.
+
+## Wave 3 (partial) — tagline: "Ecosystem, Frameworks, Workflows" -> "The wall in the code"
+
+Owner decision: the product tagline is now **"The wall in the code"**. Scope was the tagline string only,
+in user-visible copy; command names, flags and protocol strings were left alone.
+
+Full inventory before editing (grep for `Ecosystem, Frameworks, Workflows` and
+`Ecosystem, Framework, Workflows`, whole repo): 9 occurrences across 7 files. No test, golden or testdata
+file pinned any of them, so no test needed changing.
+
+Changed (7 edits / 6 files):
+- `internal/app/help.go` — CLI `--help` header line.
+- `internal/tui/styles/styles.go` — `Tagline(version)`, the welcome-screen line, used by
+  `internal/tui/screens/welcome.go:77`.
+- `.goreleaser.yaml` + `internal/releasepolicy/policy.go` — the Homebrew formula `description`, changed
+  **in lockstep**. These two files hold the same block twice: the real config and the embedded canonical
+  copy that `internal/releasepolicycmd` compares at release time. Editing one alone would fail that
+  comparison.
+- `scripts/install.sh` — the banner line and the script header comment.
+- `scripts/install.ps1` — the banner line.
+
+Deliberately NOT changed, and why:
+- `README.md:6` — the only README occurrence is the **alt text of the hero banner GIF**, and that alt text
+  describes what the GIF renders: "the tagline Ecosystem, Framework, Workflows appears". The GIF
+  (`docs/assets/brand/gentle-ai-banner.gif`) literally draws the old tagline, so rewriting the alt text
+  would make it describe something the image does not show. The real fix is regenerating the banner, not
+  editing the description of it.
+- `odd/tasks/teicos-identity-rebrand.md` — this document; history, not copy.
+- Brand strings in the very same lines (`gentle-ai — Gentle-AI:` in the help header, `Gentle-AI` in the TUI
+  tagline, the README `h1` and its badges) are a separate change: the brand, not the tagline.
+
+Verification: `go build ./...` exit 0; `go vet ./...` exit 0; `go test` over
+`./internal/app/... ./internal/tui/... ./internal/releasepolicy/... ./internal/releasepolicycmd/...
+./internal/assets/...` all green. Residual grep for the old tagline returns only the README alt text and
+this document.
+
+## Wave 3 (partial, cont.) — installer ASCII banner: "Gentle AI" -> "Teicos"
+
+The installer banner was the figlet render of the literal string `Gentle AI` in the `standard` font, with
+two manual edits on top: **+1 leading space on every line**, and the gap between the two words bridged with
+`_____` on lines 3 and 4 so the words read as connected. Confirmed by regenerating
+`figlet -f standard "Gentle AI"` and diffing it against the script: the letterforms match byte for byte
+apart from those two deliberate edits.
+
+The art existed in exactly two places, both installers, and nowhere else in the repo (no TUI logo, no docs
+copy, no test). No test, golden or e2e file pinned it.
+
+Replacement is `figlet -f standard "Teicos"` with the same **+1 leading space** rule. The `_____` bridge
+is dropped because a single word has no gap to bridge. The full five lines are the figlet output verbatim,
+trailing spaces included, so the banner stays byte-reproducible by re-running figlet.
+
+- `scripts/install.sh` `print_banner` — the five `echo` lines.
+- `scripts/install.ps1` `Show-Banner` — the five `Write-Host` lines.
+
+**Escaping note, and why the quotes changed.** figlet's line 4 for `Teicos` is
+`  | |  __/ | (_| (_) \__ \` — it ENDS in a backslash. Inside a bash double-quoted string that would
+escape the closing quote and break the script. The five art lines in `install.sh` now use **single
+quotes**: the art contains no `$`, backtick or apostrophe, so single quotes are safe and make every
+backslash literal. PowerShell treats backslash as an ordinary character, so `install.ps1` keeps its double
+quotes.
+
+Verification: `bash -n scripts/install.sh` clean, and `print_banner` was **executed** in a subshell with
+`cat -A` on the output to confirm the exact bytes and the intended trailing spaces. `go build ./...` exit
+0, `go vet ./...` exit 0. PowerShell is not installed in this environment, so `install.ps1` was reviewed by
+reading only — the trailing backslash is not an escape in PowerShell, but it is unverified at runtime.
+
+## Known gap
+
+`TestAllSkillIDsIncludesEveryKnownSkill` (`presets_test.go:129`) lists only pre-existing skills. No unit
+test asserts that every selectable SkillID has a matching embedded asset directory, so an ID added
+without its directory is silently skipped by the `log.Printf` in `directoryAssets` and only surfaces at
+install time. The installer's runtime verification covers it; a unit test would catch it for free.

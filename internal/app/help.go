@@ -6,7 +6,7 @@ import (
 )
 
 func printHelp(w io.Writer, version string) {
-	fmt.Fprintf(w, `gentle-ai — Gentle-AI: Ecosystem, Frameworks, Workflows (%s)
+	fmt.Fprintf(w, `gentle-ai — Gentle-AI: The wall in the code (%s)
 
 USAGE
   gentle-ai                     Launch interactive TUI

@@ -674,7 +674,7 @@ brews:
     directory: Formula
     name: teicos
     homepage: "https://github.com/Santiago1809/teicos"
-    description: "Teicos — Ecosystem, Frameworks, Workflows for AI coding agents."
+    description: "Teicos — The wall in the code."
     license: "MIT"
     commit_msg_template: "chore: update teicos formula to {{ .Tag }}"
 `

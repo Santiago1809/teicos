@@ -45,13 +45,13 @@ function Stop-WithError {
 
 function Show-Banner {
     Write-Host ""
-    Write-Host "   ____            _   _              _    ___ " -ForegroundColor Cyan
-    Write-Host "  / ___| ___ _ __ | |_| | ___        / \  |_ _|" -ForegroundColor Cyan
-    Write-Host " | |  _ / _ \ '_ \| __| |/ _ \_____ / _ \  | | " -ForegroundColor Cyan
-    Write-Host " | |_| |  __/ | | | |_| |  __/_____/ ___ \ | | " -ForegroundColor Cyan
-    Write-Host "  \____|\___|_| |_|\__|_|\___|    /_/   \_\___|" -ForegroundColor Cyan
+    Write-Host "  _____    _               " -ForegroundColor Cyan
+    Write-Host " |_   _|__(_) ___ ___  ___ " -ForegroundColor Cyan
+    Write-Host "   | |/ _ \ |/ __/ _ \/ __|" -ForegroundColor Cyan
+    Write-Host "   | |  __/ | (_| (_) \__ \" -ForegroundColor Cyan
+    Write-Host "   |_|\___|_|\___\___/|___/" -ForegroundColor Cyan
     Write-Host ""
-    Write-Host "  Teicos - Ecosystem, Frameworks, Workflows" -ForegroundColor DarkGray
+    Write-Host "  Teicos - The wall in the code" -ForegroundColor DarkGray
     Write-Host ""
 }
 

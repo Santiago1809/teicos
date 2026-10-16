@@ -3,7 +3,7 @@ set -euo pipefail
 
 # ============================================================================
 # Teicos — Install Script
-# Ecosystem, Frameworks, Workflows for AI coding agents.
+# The wall in the code.
 #
 # Usage:
 #   curl -sL https://raw.githubusercontent.com/Santiago1809/teicos/main/scripts/install.sh | bash
@@ -629,13 +629,13 @@ verify_installation() {
 print_banner() {
     echo ""
     echo -e "${CYAN}${BOLD}"
-    echo "   ____            _   _              _    ___ "
-    echo "  / ___| ___ _ __ | |_| | ___        / \  |_ _|"
-    echo " | |  _ / _ \ '_ \| __| |/ _ \_____ / _ \  | | "
-    echo " | |_| |  __/ | | | |_| |  __/_____/ ___ \ | | "
-    echo "  \____|\___|_| |_|\__|_|\___|    /_/   \_\___|"
+    echo '  _____    _               '
+    echo ' |_   _|__(_) ___ ___  ___ '
+    echo '   | |/ _ \ |/ __/ _ \/ __|'
+    echo '   | |  __/ | (_| (_) \__ \'
+    echo '   |_|\___|_|\___\___/|___/'
     echo -e "${NC}"
-    echo -e "  ${DIM}Teicos — Ecosystem, Frameworks, Workflows${NC}"
+    echo -e "  ${DIM}Teicos — The wall in the code${NC}"
     echo ""
 }
 
