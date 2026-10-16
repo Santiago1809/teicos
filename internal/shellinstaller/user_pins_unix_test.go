@@ -11,7 +11,7 @@ import (
 	"strings"
 	"testing"
 
-	assets "github.com/gentleman-programming/gentle-ai/v4/scripts"
+	assets "github.com/Santiago1809/teicos/scripts"
 )
 
 // Independent literals: every POSIX platform pins the same release versions;

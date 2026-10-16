@@ -11,8 +11,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/assets"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/components/reviewassets"
+	"github.com/Santiago1809/teicos/internal/assets"
+	"github.com/Santiago1809/teicos/internal/components/reviewassets"
 )
 
 // TestCursorJudgmentDayCLISmoke exercises the shipped executable, not CLI test
@@ -38,7 +38,7 @@ func TestCursorJudgmentDayCLISmoke(t *testing.T) {
 	defer cancel()
 	// This test binary needs no release VCS stamp. TestMain isolates HOME,
 	// including Git configuration, so do not require repository trust metadata.
-	build := exec.CommandContext(ctx, goBinary, "build", "-buildvcs=false", "-o", binary, "./cmd/gentle-ai")
+	build := exec.CommandContext(ctx, goBinary, "build", "-buildvcs=false", "-o", binary, "./cmd/teicos")
 	build.Dir = root
 	if output, err := build.CombinedOutput(); err != nil {
 		t.Fatalf("build CLI: %v\n%s", err, output)

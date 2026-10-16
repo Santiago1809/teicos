@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/system"
+	"github.com/Santiago1809/teicos/internal/system"
 )
 
 // openCodeAgentConfigAllowedKeys is the explicit allowlist of OpenCode

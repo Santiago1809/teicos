@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/reviewtransaction"
+	"github.com/Santiago1809/teicos/internal/reviewtransaction"
 )
 
 const ReviewInspectAuthoritySchema = "gentle-ai.review-authority-inspection/v1"

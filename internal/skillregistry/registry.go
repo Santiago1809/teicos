@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/components/filemerge"
+	"github.com/Santiago1809/teicos/internal/components/filemerge"
 )
 
 const (
@@ -44,6 +44,7 @@ type SkillEntry struct {
 	Name        string
 	Path        string
 	Description string
+	WhenToUse   string
 }
 
 type Result struct {
@@ -251,14 +252,14 @@ func LoadSkill(file string) (SkillEntry, bool) {
 	if err != nil {
 		return SkillEntry{}, false
 	}
-	name, desc := parseFrontmatter(string(data))
+	name, desc, whenToUse := parseFrontmatter(string(data))
 	if strings.TrimSpace(name) == "" {
 		name = filepath.Base(filepath.Dir(file))
 	}
 	if isExcluded(name) {
 		return SkillEntry{}, false
 	}
-	return SkillEntry{Name: name, Path: file, Description: desc}, true
+	return SkillEntry{Name: name, Path: file, Description: desc, WhenToUse: whenToUse}, true
 }
 
 func RenderRegistry(cwd string, sources []string, entries []SkillEntry) string {
@@ -279,7 +280,11 @@ func RenderRegistry(cwd string, sources []string, entries []SkillEntry) string {
 	lines = append(lines, "| --- | --- | --- | --- |")
 	for _, entry := range entries {
 		scope := ScopeForPath(cwd, entry.Path)
-		lines = append(lines, fmt.Sprintf("| `%s` | %s | %s | `%s` |", markdownCell(entry.Name), markdownCell(entry.Description), markdownCell(scope), markdownCell(entry.Path)))
+		trigger := entry.Description
+		if entry.WhenToUse != "" {
+			trigger += " " + entry.WhenToUse
+		}
+		lines = append(lines, fmt.Sprintf("| `%s` | %s | %s | `%s` |", markdownCell(entry.Name), markdownCell(trigger), markdownCell(scope), markdownCell(entry.Path)))
 	}
 	lines = append(lines, "", "## Loading protocol", "")
 	lines = append(lines, "1. Match task context and target files against the `Trigger / description` column.")
@@ -332,15 +337,15 @@ func uniqueExistingDirs(dirs []string) []string {
 	return out
 }
 
-func parseFrontmatter(source string) (name, description string) {
+func parseFrontmatter(source string) (name, description, whenToUse string) {
 	source = strings.ReplaceAll(source, "\r\n", "\n")
 	source = strings.ReplaceAll(source, "\r", "\n")
 	if !strings.HasPrefix(source, "---\n") {
-		return "", ""
+		return "", "", ""
 	}
 	end := strings.Index(source[4:], "\n---")
 	if end == -1 {
-		return "", ""
+		return "", "", ""
 	}
 	end += 4
 	fm := source[4:end]
@@ -376,9 +381,11 @@ func parseFrontmatter(source string) (name, description string) {
 			name = value
 		case "description":
 			description = value
+		case "when_to_use":
+			whenToUse = value
 		}
 	}
-	return name, description
+	return name, description, whenToUse
 }
 
 func dedupeBySkillName(entries []SkillEntry, cwd string) []SkillEntry {

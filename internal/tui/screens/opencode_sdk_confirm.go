@@ -3,7 +3,7 @@ package screens
 import (
 	"strings"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/tui/styles"
+	"github.com/Santiago1809/teicos/internal/tui/styles"
 )
 
 // RenderOpenCodeSDKConfirm asks for a package mutation separately from Review.

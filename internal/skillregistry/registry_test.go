@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/agents/antigravity"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/agents/trae"
+	"github.com/Santiago1809/teicos/internal/agents/antigravity"
+	"github.com/Santiago1809/teicos/internal/agents/trae"
 )
 
 func TestRegenerateWritesRegistryAndCacheThenHitsCache(t *testing.T) {
@@ -620,6 +620,7 @@ func TestParseFrontmatterHandlesCRLF(t *testing.T) {
 		source   string
 		wantName string
 		wantDesc string
+		wantWhen string
 	}{
 		{
 			name:     "LF baseline",
@@ -645,17 +646,52 @@ func TestParseFrontmatterHandlesCRLF(t *testing.T) {
 			wantName: "demo",
 			wantDesc: "ok",
 		},
+		{
+			name:     "when_to_use",
+			source:   "---\nname: demo\ndescription: ok\nwhen_to_use: revisar código\n---\n",
+			wantName: "demo",
+			wantDesc: "ok",
+			wantWhen: "revisar código",
+		},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			gotName, gotDesc := parseFrontmatter(tc.source)
+			gotName, gotDesc, gotWhen := parseFrontmatter(tc.source)
 			if gotName != tc.wantName {
 				t.Errorf("name = %q, want %q", gotName, tc.wantName)
 			}
 			if gotDesc != tc.wantDesc {
 				t.Errorf("description = %q, want %q", gotDesc, tc.wantDesc)
 			}
+			if gotWhen != tc.wantWhen {
+				t.Errorf("when_to_use = %q, want %q", gotWhen, tc.wantWhen)
+			}
 		})
+	}
+}
+
+func TestRenderRegistryAppendsWhenToUseToTriggerColumn(t *testing.T) {
+	entries := []SkillEntry{
+		{
+			Name:        "with-when",
+			Path:        filepath.Join("/repo", "skills", "with-when", "SKILL.md"),
+			Description: "Trigger: base.",
+			WhenToUse:   "revisar código",
+		},
+		{
+			Name:        "without-when",
+			Path:        filepath.Join("/repo", "skills", "without-when", "SKILL.md"),
+			Description: "Trigger: base.",
+		},
+	}
+
+	registry := RenderRegistry("/repo", nil, entries)
+
+	if !strings.Contains(registry, "Trigger: base. revisar código") {
+		t.Errorf("trigger column must append when_to_use:\n%s", registry)
+	}
+	if got := strings.Count(registry, "Trigger: base."); got != 2 {
+		t.Errorf("every entry must keep its description, got %d rows with it:\n%s", got, registry)
 	}
 }
 

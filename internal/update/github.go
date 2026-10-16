@@ -163,7 +163,9 @@ var betaCommitPattern = regexp.MustCompile(`^[0-9a-fA-F]{40}$`)
 func validBetaCommit(sha string) bool { return betaCommitPattern.MatchString(sha) }
 
 func validBetaModulePath(module, owner, repo string) bool {
-	base := strings.ToLower(fmt.Sprintf("github.com/%s/%s", owner, repo))
+	// Compare exact case: a Go module path is case-sensitive, and the fork's
+	// canonical module (github.com/Santiago1809/teicos) is not all-lowercase.
+	base := fmt.Sprintf("github.com/%s/%s", owner, repo)
 	if module == base {
 		return true
 	}

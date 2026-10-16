@@ -9,10 +9,10 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/agents"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/components/filemerge"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/components/opencodedefault"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/model"
+	"github.com/Santiago1809/teicos/internal/agents"
+	"github.com/Santiago1809/teicos/internal/components/filemerge"
+	"github.com/Santiago1809/teicos/internal/components/opencodedefault"
+	"github.com/Santiago1809/teicos/internal/model"
 )
 
 // RoutingSectionID is the managed marker section that owns routing guidance.
@@ -125,6 +125,7 @@ func InjectRoutingWithOptions(targetDir string, agent model.AgentID, options Rou
 	// persona and SDD selection. Nesting inside the owned routing section also
 	// preserves it when other component writers retain that section.
 	rendered = InjectRemoteAuthorization(rendered)
+	rendered = InjectSecurityContext(rendered)
 
 	// The orchestrator travels with routing into the same always-loaded scope
 	// and the same write, so the two can never land in different files or be

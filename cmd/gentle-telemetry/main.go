@@ -20,7 +20,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/telemetrycollector"
+	"github.com/Santiago1809/teicos/internal/telemetrycollector"
 )
 
 const (
@@ -115,7 +115,7 @@ func run() error {
 	var npmPackages repeatableFlag
 	flag.Var(&npmPackages, "npm-package", "npm package to fetch daily download counts for (repeatable; default gentle-pi,gentle-engram)")
 	var githubRepos repeatableFlag
-	flag.Var(&githubRepos, "github-repo", "GitHub owner/repo to fetch release download counts for (repeatable; default Gentleman-Programming/gentle-ai)")
+	flag.Var(&githubRepos, "github-repo", "GitHub owner/repo to fetch release download counts for (repeatable; default Santiago1809/teicos)")
 	githubTokenFile := flag.String("github-token-file", "", "path to a file containing a GitHub token, to raise the API rate limit for --github-repo")
 	runtimeStore := flag.String("runtime-store", "", "how to persist a newly stored runtime delivery: sqlite (default, raw rows), metrics (Prometheus counters only, no raw rows), or both")
 	flag.Parse()
@@ -142,7 +142,7 @@ func run() error {
 		npmPackages = repeatableFlag{"gentle-pi", "gentle-engram"}
 	}
 	if len(githubRepos) == 0 {
-		githubRepos = repeatableFlag{"Gentleman-Programming/gentle-ai"}
+		githubRepos = repeatableFlag{"Santiago1809/teicos"}
 	}
 	var githubToken string
 	if *githubTokenFile != "" {

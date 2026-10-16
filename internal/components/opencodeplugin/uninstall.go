@@ -8,8 +8,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/components/mutationjournal"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/model"
+	"github.com/Santiago1809/teicos/internal/components/mutationjournal"
+	"github.com/Santiago1809/teicos/internal/model"
 )
 
 // UninstallResult summarizes what the 4-layer engine touched.

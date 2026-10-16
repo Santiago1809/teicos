@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	componentuninstall "github.com/gentleman-programming/gentle-ai/v4/internal/components/uninstall"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/model"
+	componentuninstall "github.com/Santiago1809/teicos/internal/components/uninstall"
+	"github.com/Santiago1809/teicos/internal/model"
 )
 
 func TestRenderUninstallResultIncludesManualCleanup(t *testing.T) {

@@ -11,8 +11,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/state"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/telemetry"
+	"github.com/Santiago1809/teicos/internal/state"
+	"github.com/Santiago1809/teicos/internal/telemetry"
 )
 
 func TestTelemetryRuntimeCodexDirectSend(t *testing.T) {

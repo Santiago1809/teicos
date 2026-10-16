@@ -1,10 +1,10 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-    Gentle-AI source installer for Windows.
+    Teicos source installer for Windows.
 
 .DESCRIPTION
-    Installs Gentle AI from source with Go. Official Windows binary distribution
+    Installs Teicos from source with Go. Official Windows binary distribution
     and Scoop are temporarily unavailable until public-trust Authenticode signing
     is enforced. Accepted channels: stable (default), beta, nightly.
 
@@ -25,11 +25,11 @@ $ErrorActionPreference = "Stop"
 $null = & chcp 65001 2>$null
 try { [Console]::OutputEncoding = [System.Text.Encoding]::UTF8 } catch {}
 
-$GITHUB_OWNER = "Gentleman-Programming"
-$GITHUB_REPO = "gentle-ai"
-$BINARY_NAME = "gentle-ai"
+$GITHUB_OWNER = "Santiago1809"
+$GITHUB_REPO = "teicos"
+$BINARY_NAME = "teicos"
 $WINDOWS_DISTRIBUTION_HOLD = "Windows binary distribution and Scoop are temporarily unavailable until publicly trusted Authenticode signing is enforced."
-$STABLE_SOURCE_COMMAND = "go install github.com/gentleman-programming/gentle-ai/v4/cmd/gentle-ai@latest"
+$STABLE_SOURCE_COMMAND = "go install github.com/Santiago1809/teicos/cmd/teicos@latest"
 
 function Write-Info    { param([string]$Message) Write-Host "[info]    $Message" -ForegroundColor Blue }
 function Write-Success { param([string]$Message) Write-Host "[ok]      $Message" -ForegroundColor Green }
@@ -45,13 +45,13 @@ function Stop-WithError {
 
 function Show-Banner {
     Write-Host ""
-    Write-Host "   ____            _   _              _    ___ " -ForegroundColor Cyan
-    Write-Host "  / ___| ___ _ __ | |_| | ___        / \  |_ _|" -ForegroundColor Cyan
-    Write-Host " | |  _ / _ \ '_ \| __| |/ _ \_____ / _ \  | | " -ForegroundColor Cyan
-    Write-Host " | |_| |  __/ | | | |_| |  __/_____/ ___ \ | | " -ForegroundColor Cyan
-    Write-Host "  \____|\___|_| |_|\__|_|\___|    /_/   \_\___|" -ForegroundColor Cyan
+    Write-Host "  _____    _               " -ForegroundColor Cyan
+    Write-Host " |_   _|__(_) ___ ___  ___ " -ForegroundColor Cyan
+    Write-Host "   | |/ _ \ |/ __/ _ \/ __|" -ForegroundColor Cyan
+    Write-Host "   | |  __/ | (_| (_) \__ \" -ForegroundColor Cyan
+    Write-Host "   |_|\___|_|\___\___/|___/" -ForegroundColor Cyan
     Write-Host ""
-    Write-Host "  Gentle-AI - Ecosystem, Frameworks, Workflows" -ForegroundColor DarkGray
+    Write-Host "  Teicos - The wall in the code" -ForegroundColor DarkGray
     Write-Host ""
 }
 
@@ -92,14 +92,13 @@ function Install-ViaGo {
     Write-Step "Installing via go install"
     if ($Channel -eq "beta") {
         $version = "main"
-        # /v4 is part of the module path, not decoration: Go refuses to resolve a
-        # module whose tags are v4.x unless the import path carries the major
-        # version suffix.
-        $goPackage = "github.com/$($GITHUB_OWNER.ToLower())/$GITHUB_REPO/v4/cmd/$BINARY_NAME@$version"
+        # The module is unsuffixed (github.com/Santiago1809/teicos), so the beta
+        # package path carries no /vN. The command directory is cmd/teicos.
+        $goPackage = "github.com/$($GITHUB_OWNER.ToLower())/$GITHUB_REPO/cmd/teicos@$version"
     } else {
         # Stable pins the latest release tag and derives the module path from
-        # its major. Never use @latest: before a v4.x tag exists Go resolves the
-        # /v4 path to an unreleased pseudo-version at the default-branch tip.
+        # its major. Never use @latest: it can resolve to an unreleased
+        # pseudo-version at the default-branch tip.
         $releaseUrl = "https://api.github.com/repos/$GITHUB_OWNER/$GITHUB_REPO/releases/latest"
         $tag = ""
         try {
@@ -113,14 +112,14 @@ function Install-ViaGo {
         $major = [int]$Matches[1]
         $module = "github.com/{0}/{1}" -f $GITHUB_OWNER.ToLower(), $GITHUB_REPO
         if ($major -ge 2) { $module = "{0}/v{1}" -f $module, $major }
-        $goPackage = "{0}/cmd/{1}@{2}" -f $module, $BINARY_NAME, $tag
+        $goPackage = "{0}/cmd/teicos@{1}" -f $module, $tag
     }
     Write-Info "Running: go install $goPackage"
 
     if ($Channel -eq "beta") {
-        Add-GoEnvPattern -Name "GONOSUMDB" -Pattern "github.com/gentleman-programming/gentle-ai/v4"
-        Add-GoEnvPattern -Name "GOPRIVATE" -Pattern "github.com/gentleman-programming/gentle-ai/v4"
-        Add-GoEnvPattern -Name "GONOPROXY" -Pattern "github.com/gentleman-programming/gentle-ai/v4"
+        Add-GoEnvPattern -Name "GONOSUMDB" -Pattern "github.com/Santiago1809/teicos"
+        Add-GoEnvPattern -Name "GOPRIVATE" -Pattern "github.com/Santiago1809/teicos"
+        Add-GoEnvPattern -Name "GONOPROXY" -Pattern "github.com/Santiago1809/teicos"
     }
 
     & go install $goPackage

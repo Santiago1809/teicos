@@ -8,7 +8,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/reviewerprovider"
+	"github.com/Santiago1809/teicos/internal/reviewerprovider"
 )
 
 // ReviewerResultSchema is the published input schema for one reviewer result.

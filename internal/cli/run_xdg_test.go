@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/system"
+	"github.com/Santiago1809/teicos/internal/system"
 )
 
 // OpenCode guidance and its verification both resolve XDG_CONFIG_HOME rather

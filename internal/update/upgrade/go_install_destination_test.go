@@ -10,8 +10,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/system"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/update"
+	"github.com/Santiago1809/teicos/internal/system"
+	"github.com/Santiago1809/teicos/internal/update"
 )
 
 // captureStderr runs fn with os.Stderr redirected to a pipe and returns what fn wrote.
@@ -309,13 +309,13 @@ func TestBetaGoInstallMainUpgradeWarnsWhenDestinationDiffers(t *testing.T) {
 	r := update.UpdateResult{
 		Tool: update.ToolInfo{
 			Name:          "gentle-ai",
-			Owner:         "Gentleman-Programming",
-			Repo:          "gentle-ai",
+			Owner:         "Santiago1809",
+			Repo: "teicos",
 			InstallMethod: update.InstallBinary,
 		},
 		LatestVersion:  "main@abc1234abcde",
 		BetaCommit:     "abc1234abcde0123456789abcdef0123456789ab",
-		BetaModulePath: "github.com/gentleman-programming/gentle-ai/v4",
+		BetaModulePath: "github.com/Santiago1809/teicos",
 		Status:         update.UpdateAvailable,
 	}
 

@@ -16,8 +16,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/system"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/update"
+	"github.com/Santiago1809/teicos/internal/system"
+	"github.com/Santiago1809/teicos/internal/update"
 )
 
 // --- test helpers ---
@@ -247,8 +247,8 @@ func TestDownload_WindowsAlwaysManualFallback(t *testing.T) {
 	r := update.UpdateResult{
 		Tool: update.ToolInfo{
 			Name:          "gentle-ai",
-			Owner:         "Gentleman-Programming",
-			Repo:          "gentle-ai",
+			Owner:         "Santiago1809",
+			Repo: "teicos",
 			InstallMethod: update.InstallBinary,
 		},
 		LatestVersion: "1.5.0",

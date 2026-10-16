@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/pathquote"
+	"github.com/Santiago1809/teicos/internal/pathquote"
 )
 
 const CompactReclaimRecordSchema = "gentle-ai.review-reclaim-record/v1"

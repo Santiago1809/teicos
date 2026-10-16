@@ -14,9 +14,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/pathquote"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/reviewtransaction"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/state"
+	"github.com/Santiago1809/teicos/internal/pathquote"
+	"github.com/Santiago1809/teicos/internal/reviewtransaction"
+	"github.com/Santiago1809/teicos/internal/state"
 )
 
 // ReviewModeSchema identifies the user-facing kill-switch projection.

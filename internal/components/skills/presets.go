@@ -1,6 +1,6 @@
 package skills
 
-import "github.com/gentleman-programming/gentle-ai/v4/internal/model"
+import "github.com/Santiago1809/teicos/internal/model"
 
 // Retained orchestration skill installed by every non-custom preset.
 var orchestrationSkills = []model.SkillID{model.SkillJudgmentDay}
@@ -33,6 +33,20 @@ var selectableFoundationSkills = []model.SkillID{
 	model.SkillWorkUnitCommits,
 	model.SkillRDDDefectWorkflow,
 	model.SkillSystemicIssueTriage,
+	model.SkillSecurity,
+	model.SkillAPISecurity,
+	model.SkillCryptoAudit,
+	model.SkillBanditSAST,
+	model.SkillSocketSCA,
+	model.SkillSecurityHeaders,
+	model.SkillSecurityTests,
+	model.SkillMobileSecurity,
+	model.SkillDevSecOps,
+	model.SkillDockerScout,
+	model.SkillPCIDSS,
+	model.SkillTDD,
+	model.SkillDiagnosingBugs,
+	model.SkillCodeReview,
 }
 
 var foundationSkills = excludeSkills(selectableFoundationSkills, contributorSkills)

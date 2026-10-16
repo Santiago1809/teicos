@@ -9,8 +9,8 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/components/filemerge"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/model"
+	"github.com/Santiago1809/teicos/internal/components/filemerge"
+	"github.com/Santiago1809/teicos/internal/model"
 )
 
 // SDDRuntimeFiles locates what releases wrote for one runtime outside its

@@ -1,6 +1,6 @@
 package catalog
 
-import "github.com/gentleman-programming/gentle-ai/v4/internal/model"
+import "github.com/Santiago1809/teicos/internal/model"
 
 type Skill struct {
 	ID       model.SkillID
@@ -39,6 +39,22 @@ var mvpSkills = []Skill{
 	{ID: model.SkillWorkUnitCommits, Name: "work-unit-commits", Category: "workflow", Priority: "p0"},
 	{ID: model.SkillRDDDefectWorkflow, Name: "rdd-defect-workflow", Category: "workflow", Priority: "p0"},
 	{ID: model.SkillSystemicIssueTriage, Name: "systemic-issue-triage", Category: "workflow", Priority: "p0"},
+	// Teicos security context layer
+	{ID: model.SkillSecurity, Name: "security", Category: "security", Priority: "p0"},
+	// Vendored third-party skills
+	{ID: model.SkillAPISecurity, Name: "api-security-tester", Category: "security", Priority: "p0"},
+	{ID: model.SkillCryptoAudit, Name: "crypto-audit", Category: "security", Priority: "p0"},
+	{ID: model.SkillBanditSAST, Name: "bandit-sast", Category: "security", Priority: "p0"},
+	{ID: model.SkillSocketSCA, Name: "socket-sca", Category: "security", Priority: "p0"},
+	{ID: model.SkillSecurityHeaders, Name: "security-headers-audit", Category: "security", Priority: "p0"},
+	{ID: model.SkillSecurityTests, Name: "security-test-generator", Category: "security", Priority: "p0"},
+	{ID: model.SkillMobileSecurity, Name: "mobile-security", Category: "security", Priority: "p0"},
+	{ID: model.SkillDevSecOps, Name: "devsecops-pipeline", Category: "security", Priority: "p0"},
+	{ID: model.SkillDockerScout, Name: "docker-scout-scanner", Category: "security", Priority: "p0"},
+	{ID: model.SkillPCIDSS, Name: "pci-dss-audit", Category: "security", Priority: "p0"},
+	{ID: model.SkillTDD, Name: "tdd", Category: "testing", Priority: "p0"},
+	{ID: model.SkillDiagnosingBugs, Name: "diagnosing-bugs", Category: "testing", Priority: "p0"},
+	{ID: model.SkillCodeReview, Name: "code-review", Category: "workflow", Priority: "p0"},
 }
 
 func MVPSkills() []Skill {

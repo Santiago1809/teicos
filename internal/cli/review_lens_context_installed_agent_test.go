@@ -9,8 +9,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/agents/claude"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/components/reviewassets"
+	"github.com/Santiago1809/teicos/internal/agents/claude"
+	"github.com/Santiago1809/teicos/internal/components/reviewassets"
 )
 
 // gentleAIMarkerToken matches every envelope marker either half of the

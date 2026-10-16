@@ -5,7 +5,7 @@ import (
 	"errors"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/shellinstaller"
+	"github.com/Santiago1809/teicos/internal/shellinstaller"
 )
 
 // ShellInstallSelection is the reviewed request, not execution authority.

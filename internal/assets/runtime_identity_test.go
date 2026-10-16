@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/catalog"
+	"github.com/Santiago1809/teicos/internal/catalog"
 )
 
 // runtimeIdentityBindingRegexp captures the runtime identity an embedded asset

@@ -59,7 +59,7 @@ The registry is an **index**, not a generated summary.
 | Field | Meaning |
 | --- | --- |
 | `Skill` | Skill `name` from frontmatter, or directory name fallback |
-| `Trigger / description` | Full `description`, including YAML folded multiline descriptions |
+| `Trigger / description` | Full `description`, followed by `when_to_use` when present |
 | `Scope` | `project` or `user` |
 | `Path` | Exact `SKILL.md` file to load |
 

@@ -4,7 +4,7 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/model"
+	"github.com/Santiago1809/teicos/internal/model"
 )
 
 // TestScreensShowNoRetiredWorkflowText guards S2 of the SDD retirement: no

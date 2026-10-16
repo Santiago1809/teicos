@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	piagent "github.com/gentleman-programming/gentle-ai/v4/internal/agents/pi"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/model"
+	piagent "github.com/Santiago1809/teicos/internal/agents/pi"
+	"github.com/Santiago1809/teicos/internal/model"
 )
 
 // PiExcludePackagesEnv lists managed Pi package sources the install must not

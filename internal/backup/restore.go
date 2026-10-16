@@ -8,7 +8,7 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/components/filemerge"
+	"github.com/Santiago1809/teicos/internal/components/filemerge"
 )
 
 // UserHomeDirFn is the function used to resolve the user's home directory.

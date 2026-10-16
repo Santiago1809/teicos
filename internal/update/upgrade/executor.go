@@ -3,9 +3,9 @@
 // isolated from install, pipeline, planner, and config-sync code paths.
 //
 // Import boundary: this package MUST NOT import:
-//   - github.com/gentleman-programming/gentle-ai/v4/internal/pipeline
-//   - github.com/gentleman-programming/gentle-ai/v4/internal/planner
-//   - github.com/gentleman-programming/gentle-ai/v4/internal/cli
+//   - github.com/Santiago1809/teicos/internal/pipeline
+//   - github.com/Santiago1809/teicos/internal/planner
+//   - github.com/Santiago1809/teicos/internal/cli
 package upgrade
 
 import (
@@ -20,22 +20,22 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/agents"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/agents/claude"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/assets"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/backup"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/components/agentguidance"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/components/gga"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/components/legacyassets"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/components/opencodedefault"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/components/opencoderuntimeplugins"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/components/skills"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/components/theme"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/model"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/opencode"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/state"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/system"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/update"
+	"github.com/Santiago1809/teicos/internal/agents"
+	"github.com/Santiago1809/teicos/internal/agents/claude"
+	"github.com/Santiago1809/teicos/internal/assets"
+	"github.com/Santiago1809/teicos/internal/backup"
+	"github.com/Santiago1809/teicos/internal/components/agentguidance"
+	"github.com/Santiago1809/teicos/internal/components/gga"
+	"github.com/Santiago1809/teicos/internal/components/legacyassets"
+	"github.com/Santiago1809/teicos/internal/components/opencodedefault"
+	"github.com/Santiago1809/teicos/internal/components/opencoderuntimeplugins"
+	"github.com/Santiago1809/teicos/internal/components/skills"
+	"github.com/Santiago1809/teicos/internal/components/theme"
+	"github.com/Santiago1809/teicos/internal/model"
+	"github.com/Santiago1809/teicos/internal/opencode"
+	"github.com/Santiago1809/teicos/internal/state"
+	"github.com/Santiago1809/teicos/internal/system"
+	"github.com/Santiago1809/teicos/internal/update"
 )
 
 // Package-level vars for testability — same pattern as internal/update/detect.go.
@@ -583,7 +583,7 @@ func ExecuteWithOptions(ctx context.Context, results []update.UpdateResult, prof
 			NewVersion: r.LatestVersion,
 			Method:     effectiveMethod(r.Tool, profile),
 			Status:     UpgradeSkipped,
-			ManualHint: fmt.Sprintf("source build — upgrade manually or install a release binary from https://github.com/Gentleman-Programming/%s/releases", r.Tool.Repo),
+			ManualHint: fmt.Sprintf("source build — upgrade manually or install a release binary from https://github.com/%s/%s/releases", r.Tool.Owner, r.Tool.Repo),
 		})
 	}
 

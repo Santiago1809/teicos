@@ -9,8 +9,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/components/mutationjournal"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/model"
+	"github.com/Santiago1809/teicos/internal/components/mutationjournal"
+	"github.com/Santiago1809/teicos/internal/model"
 )
 
 // ─── Shared fixtures ────────────────────────────────────────────────────────

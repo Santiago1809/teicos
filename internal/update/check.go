@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/system"
+	"github.com/Santiago1809/teicos/internal/system"
 )
 
 var updateChannelEnv = os.Getenv
@@ -176,7 +176,7 @@ func usesBetaMainHeadCheck(tool ToolInfo, currentVersion string) bool {
 }
 
 func isGentleAIRepo(tool ToolInfo) bool {
-	return tool.Name == "gentle-ai" && strings.EqualFold(tool.Owner, "Gentleman-Programming") && tool.Repo == "gentle-ai"
+	return tool.Name == "gentle-ai" && strings.EqualFold(tool.Owner, "Santiago1809") && tool.Repo == "teicos"
 }
 
 func isBetaUpdateChannel() bool {

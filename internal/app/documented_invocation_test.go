@@ -13,9 +13,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/app"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/assets"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/cli"
+	"github.com/Santiago1809/teicos/internal/app"
+	"github.com/Santiago1809/teicos/internal/assets"
+	"github.com/Santiago1809/teicos/internal/cli"
 )
 
 // This corpus exists because of #2506: the product states runnable commands

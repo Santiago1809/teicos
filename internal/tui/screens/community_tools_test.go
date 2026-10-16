@@ -4,8 +4,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/components/communitytool"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/model"
+	"github.com/Santiago1809/teicos/internal/components/communitytool"
+	"github.com/Santiago1809/teicos/internal/model"
 )
 
 func TestRenderCommunityToolsShowsCodeGraph(t *testing.T) {

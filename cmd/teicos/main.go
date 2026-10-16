@@ -7,8 +7,8 @@ import (
 	"os/exec"
 	"syscall"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/app"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/shellinstaller"
+	"github.com/Santiago1809/teicos/internal/app"
+	"github.com/Santiago1809/teicos/internal/shellinstaller"
 )
 
 // version is set by GoReleaser via ldflags at build time.

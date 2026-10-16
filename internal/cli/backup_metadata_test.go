@@ -14,7 +14,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/backup"
+	"github.com/Santiago1809/teicos/internal/backup"
 )
 
 // TestPrepareBackupStep_InstallWritesMetadataToManifest verifies that when

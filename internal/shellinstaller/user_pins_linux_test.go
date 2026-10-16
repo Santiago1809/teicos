@@ -12,7 +12,7 @@ import (
 	"strings"
 	"testing"
 
-	assets "github.com/gentleman-programming/gentle-ai/v4/scripts"
+	assets "github.com/Santiago1809/teicos/scripts"
 )
 
 // Exact role captures, not literal presence: missing or duplicate roles fail closed.

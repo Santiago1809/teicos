@@ -6,10 +6,10 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/model"
-	opencodeactivation "github.com/gentleman-programming/gentle-ai/v4/internal/opencode"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/state"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/verify"
+	"github.com/Santiago1809/teicos/internal/model"
+	opencodeactivation "github.com/Santiago1809/teicos/internal/opencode"
+	"github.com/Santiago1809/teicos/internal/state"
+	"github.com/Santiago1809/teicos/internal/verify"
 )
 
 const OpenCodeBackgroundSubagentsEnv = "GENTLE_AI_OPENCODE_BACKGROUND_SUBAGENTS"

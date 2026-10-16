@@ -18,7 +18,7 @@ func provenanceArgs(t *testing.T) (string, []string) {
 func ciEnvironment(t *testing.T) {
 	t.Helper()
 	t.Setenv("GITHUB_ACTIONS", "true")
-	t.Setenv("GITHUB_REPOSITORY", "Gentleman-Programming/gentle-ai")
+	t.Setenv("GITHUB_REPOSITORY", "Santiago1809/teicos")
 	t.Setenv("GITHUB_REF_NAME", "v1.2.3-rc.4")
 	t.Setenv("GITHUB_SHA", strings.Repeat("0123456789abcdef", 2)+strings.Repeat("0", 8))
 	t.Setenv("GITHUB_WORKFLOW", "Release candidate")
@@ -54,7 +54,7 @@ func TestLocalBuildWritesNoReleaseClaim(t *testing.T) {
 	if err := json.Unmarshal(payload, &body); err != nil {
 		t.Fatalf("local manifest is not JSON: %v", err)
 	}
-	if body["schema"] != "gentle-ai.release-provenance/local-build" {
+	if body["schema"] != "teicos.release-provenance/local-build" {
 		t.Fatalf("local manifest schema = %v, want the local-build schema: %s", body["schema"], payload)
 	}
 	if reason, _ := body["reason"].(string); !strings.Contains(reason, "no release provenance") {
@@ -90,7 +90,7 @@ func TestPartialReleaseIdentityNeverDowngrades(t *testing.T) {
 				if err != nil || readErr != nil {
 					t.Fatalf("losing %s alone must still record real provenance: %v, %v", missing, err, readErr)
 				}
-				if !strings.Contains(string(payload), `"schema":"gentle-ai.release-provenance/v1"`) {
+				if !strings.Contains(string(payload), `"schema":"teicos.release-provenance/v1"`) {
 					t.Fatalf("a release build missing %s downgraded: %s", missing, payload)
 				}
 				return
@@ -118,7 +118,7 @@ func TestCIBuildStillProducesReleaseProvenance(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !strings.Contains(string(payload), `"schema":"gentle-ai.release-provenance/v1"`) {
+	if !strings.Contains(string(payload), `"schema":"teicos.release-provenance/v1"`) {
 		t.Fatalf("CI manifest is not release provenance: %s", payload)
 	}
 
@@ -136,7 +136,7 @@ func TestCIBuildStillProducesReleaseProvenance(t *testing.T) {
 	t.Run("another repository still refuses", func(t *testing.T) {
 		out, args := provenanceArgs(t)
 		ciEnvironment(t)
-		t.Setenv("GITHUB_REPOSITORY", "someone-else/gentle-ai")
+		t.Setenv("GITHUB_REPOSITORY", "someone-else/teicos")
 		if err := run(args); err == nil {
 			t.Fatal("CI build accepted another repository")
 		}

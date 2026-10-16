@@ -11,7 +11,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/managedownership"
+	"github.com/Santiago1809/teicos/internal/managedownership"
 )
 
 // #5256 U1a covers only the private module install helpers against a

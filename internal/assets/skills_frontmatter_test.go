@@ -35,6 +35,7 @@ func TestSkillFrontmatterIsLintClean(t *testing.T) {
 		"version":                  true,
 		"user-invocable":           true,
 		"disable-model-invocation": true,
+		"when_to_use":              true,
 	}
 
 	for _, path := range skillPaths {

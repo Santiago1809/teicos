@@ -20,8 +20,8 @@ import (
 
 	minisign "github.com/jedisct1/go-minisign"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/system"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/update"
+	"github.com/Santiago1809/teicos/internal/system"
+	"github.com/Santiago1809/teicos/internal/update"
 )
 
 const testMinisignKeyDomain = "gentle-ai issue 359 minisign TEST KEY; never use for releases"
@@ -75,8 +75,8 @@ func useTestReleaseKey(t *testing.T) minisign.PrivateKey {
 
 func TestVerifyChecksumsSignatureFailsClosed(t *testing.T) {
 	const (
-		owner   = "Gentleman-Programming"
-		repo    = "gentle-ai"
+		owner   = "Santiago1809"
+		repo    = "teicos"
 		version = "2.2.0"
 	)
 	manifest := []byte(strings.Repeat("a", sha256.Size*2) + "  gentle-ai_2.2.0_linux_amd64.tar.gz\n")
@@ -287,8 +287,8 @@ func TestDownloadVerifiesSignatureBeforeArchiveAndPreservesInstalledBinary(t *te
 		t.Skip("binary replacement is Unix-only")
 	}
 	const (
-		owner      = "Gentleman-Programming"
-		repo       = "gentle-ai"
+		owner      = "Santiago1809"
+		repo       = "teicos"
 		version    = "2.2.0"
 		binaryName = "gentle-ai"
 	)

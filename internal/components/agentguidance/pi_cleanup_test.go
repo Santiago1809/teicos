@@ -6,7 +6,7 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/agents/pi"
+	"github.com/Santiago1809/teicos/internal/agents/pi"
 )
 
 func TestRetirePiSystemPromptBlocksPreservesUnownedAndIsIdempotent(t *testing.T) {

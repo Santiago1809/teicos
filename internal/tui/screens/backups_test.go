@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/backup"
+	"github.com/Santiago1809/teicos/internal/backup"
 )
 
 // TestRenderBackupsShowsDisplayLabel verifies that RenderBackups uses the

@@ -10,7 +10,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/telemetry"
+	"github.com/Santiago1809/teicos/internal/telemetry"
 )
 
 // Published V1 AssistantMessage subset: no batch/session/message identities.

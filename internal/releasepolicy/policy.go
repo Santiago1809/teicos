@@ -341,8 +341,8 @@ func validateArtifacts(root string, payload []byte, markerTime time.Time, contra
 		if !ok || item.Target != target {
 			return fmt.Errorf("resolved binary matrix changed at %s", platform)
 		}
-		expectedPath := fmt.Sprintf("dist/gentle-ai_%s/gentle-ai", target)
-		if item.Name != "gentle-ai" || item.Path != expectedPath || extraString(item.Extra, "Binary") != "gentle-ai" || extraString(item.Extra, "ID") != "gentle-ai" {
+		expectedPath := fmt.Sprintf("dist/teicos_%s/teicos", target)
+		if item.Name != "teicos" || item.Path != expectedPath || extraString(item.Extra, "Binary") != "teicos" || extraString(item.Extra, "ID") != "teicos" {
 			return fmt.Errorf("resolved binary identity changed at %s", platform)
 		}
 		if _, exists := seenBinaries[platform]; exists {
@@ -358,7 +358,7 @@ func validateArtifacts(root string, payload []byte, markerTime time.Time, contra
 	snapshotVersion := ""
 	providerArchive, provenanceArchive := false, false
 	for _, item := range byType["Archive"] {
-		if item.Name == "gentle-ai-release-provenance-v1.tar.gz" {
+		if item.Name == "teicos-release-provenance-v1.tar.gz" {
 			if item.Path != "dist/"+item.Name || item.GOOS != "" || item.GOARCH != "" || item.Target != "" || extraString(item.Extra, "Format") != "tar.gz" || extraString(item.Extra, "ID") != "release-provenance" || !reflect.DeepEqual(extraStrings(item.Extra, "Binaries"), []string{}) || provenanceArchive {
 				return errors.New("resolved release provenance archive identity changed")
 			}
@@ -379,8 +379,8 @@ func validateArtifacts(root string, payload []byte, markerTime time.Time, contra
 			return fmt.Errorf("resolved archive matrix changed at %s", platform)
 		}
 		suffix := fmt.Sprintf("_%s_%s.tar.gz", item.GOOS, item.GOARCH)
-		version := strings.TrimSuffix(strings.TrimPrefix(item.Name, "gentle-ai_"), suffix)
-		if !strings.HasPrefix(item.Name, "gentle-ai_") || !strings.HasSuffix(item.Name, suffix) || !validSnapshotVersion(version) {
+		version := strings.TrimSuffix(strings.TrimPrefix(item.Name, "teicos_"), suffix)
+		if !strings.HasPrefix(item.Name, "teicos_") || !strings.HasSuffix(item.Name, suffix) || !validSnapshotVersion(version) {
 			return fmt.Errorf("resolved archive name changed at %s", platform)
 		}
 		if snapshotVersion == "" {
@@ -388,7 +388,7 @@ func validateArtifacts(root string, payload []byte, markerTime time.Time, contra
 		} else if version != snapshotVersion {
 			return errors.New("resolved archives do not share one snapshot version")
 		}
-		if item.Path != "dist/"+item.Name || extraString(item.Extra, "Format") != "tar.gz" || extraString(item.Extra, "ID") != "default" || !reflect.DeepEqual(extraStrings(item.Extra, "Binaries"), []string{"gentle-ai"}) {
+		if item.Path != "dist/"+item.Name || extraString(item.Extra, "Format") != "tar.gz" || extraString(item.Extra, "ID") != "default" || !reflect.DeepEqual(extraStrings(item.Extra, "Binaries"), []string{"teicos"}) {
 			return fmt.Errorf("resolved archive identity changed at %s", platform)
 		}
 		if _, exists := seenArchives[platform]; exists {
@@ -413,12 +413,12 @@ func validateArtifacts(root string, payload []byte, markerTime time.Time, contra
 		return errors.New("resolved metadata output changed")
 	}
 	formula := byType["Homebrew Formula"][0]
-	if formula.Name != "gentle-ai.rb" || formula.Path != "dist/homebrew/Formula/gentle-ai.rb" {
+	if formula.Name != "teicos.rb" || formula.Path != "dist/homebrew/Formula/teicos.rb" {
 		return errors.New("resolved Homebrew formula output changed")
 	}
 	brewConfig := extraMap(formula.Extra, "BrewConfig")
 	repository := extraMap(brewConfig, "repository")
-	if extraString(brewConfig, "name") != "gentle-ai" || extraString(brewConfig, "directory") != "Formula" ||
+	if extraString(brewConfig, "name") != "teicos" || extraString(brewConfig, "directory") != "Formula" ||
 		extraString(repository, "owner") != "Gentleman-Programming" || extraString(repository, "name") != "homebrew-tap" || extraString(repository, "token") != "{{ .Env.HOMEBREW_TAP_TOKEN }}" {
 		return errors.New("resolved Homebrew publisher changed")
 	}
@@ -550,7 +550,7 @@ func validateSnapshotFile(root, artifactPath string, markerTime time.Time) error
 }
 
 const expectedGoReleaserYAML = `version: 2
-project_name: gentle-ai
+project_name: teicos
 before:
   hooks:
     - go run ./internal/providercontractbundlecmd generate --out .goreleaser-provider-contract
@@ -558,8 +558,8 @@ before:
     - mkdir -p .goreleaser-provenance
     - go run ./internal/releaseprovenancecmd --out .goreleaser-provenance/manifest.json --config .goreleaser.yaml --goreleaser-version v2.15.2
 builds:
-  - main: ./cmd/gentle-ai
-    binary: gentle-ai
+  - main: ./cmd/teicos
+    binary: teicos
     env:
       - CGO_ENABLED=0
     goos:
@@ -574,7 +574,7 @@ builds:
       - >-
         -s -w
         -X main.version={{ .Version }}
-        -X github.com/gentleman-programming/gentle-ai/v4/internal/update/upgrade.releaseMinisignPublicKeys={{ .Env.MINISIGN_PUBLIC_KEYS_CANONICAL }}
+        -X github.com/Santiago1809/teicos/internal/update/upgrade.releaseMinisignPublicKeys={{ .Env.MINISIGN_PUBLIC_KEYS_CANONICAL }}
 archives:
   - formats:
       - tar.gz
@@ -632,7 +632,7 @@ archives:
     meta: true
     formats:
       - tar.gz
-    name_template: "gentle-ai-release-provenance-v1"
+    name_template: "teicos-release-provenance-v1"
     files:
       - src: .goreleaser-provenance/manifest.json
         strip_parent: true
@@ -655,9 +655,9 @@ signs:
       - "-x"
       - "${signature}"
       - "-c"
-      - "signature from gentle-ai release"
+      - "signature from teicos release"
       - "-t"
-      - "repo=Gentleman-Programming/gentle-ai;tag={{ .Tag }}"
+      - "repo=Santiago1809/teicos;tag={{ .Tag }}"
     output: true
 changelog:
   sort: asc
@@ -672,11 +672,11 @@ brews:
       name: homebrew-tap
       token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
     directory: Formula
-    name: gentle-ai
-    homepage: "https://github.com/Gentleman-Programming/gentle-ai"
-    description: "Gentle-AI — Ecosystem, Frameworks, Workflows for AI coding agents."
+    name: teicos
+    homepage: "https://github.com/Santiago1809/teicos"
+    description: "Teicos — The wall in the code."
     license: "MIT"
-    commit_msg_template: "chore: update gentle-ai formula to {{ .Tag }}"
+    commit_msg_template: "chore: update teicos formula to {{ .Tag }}"
 `
 
 const expectedReleaseWorkflowYAML = `name: Release

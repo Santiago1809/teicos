@@ -9,13 +9,13 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/agents"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/assets"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/components/agentguidance"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/components/filemerge"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/components/legacyassets"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/components/mutationjournal"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/model"
+	"github.com/Santiago1809/teicos/internal/agents"
+	"github.com/Santiago1809/teicos/internal/assets"
+	"github.com/Santiago1809/teicos/internal/components/agentguidance"
+	"github.com/Santiago1809/teicos/internal/components/filemerge"
+	"github.com/Santiago1809/teicos/internal/components/legacyassets"
+	"github.com/Santiago1809/teicos/internal/components/mutationjournal"
+	"github.com/Santiago1809/teicos/internal/model"
 )
 
 // NativeAgentManifest is an explicit allowlist: never enumerate the embedded agents directory.

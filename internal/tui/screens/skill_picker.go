@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/components/skills"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/model"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/tui/styles"
+	"github.com/Santiago1809/teicos/internal/components/skills"
+	"github.com/Santiago1809/teicos/internal/model"
+	"github.com/Santiago1809/teicos/internal/tui/styles"
 )
 
 // skillLabels maps each SkillID to a human-readable display label.
@@ -28,6 +28,20 @@ var additionalSkillLabels = map[model.SkillID]string{
 	model.SkillRDDDefectWorkflow:   "RDD Defect Workflow",
 	model.SkillSystemicIssueTriage: "Systemic Issue Triage",
 	model.SkillGentleAIBench:       "Gentle AI Bench",
+	model.SkillSecurity:            "Security Context",
+	model.SkillAPISecurity:         "API Security Tester",
+	model.SkillCryptoAudit:         "Crypto Audit",
+	model.SkillBanditSAST:          "Bandit SAST",
+	model.SkillSocketSCA:           "Socket SCA",
+	model.SkillSecurityHeaders:     "Security Headers Audit",
+	model.SkillSecurityTests:       "Security Test Generator",
+	model.SkillMobileSecurity:      "Mobile Security",
+	model.SkillDevSecOps:           "DevSecOps Pipeline",
+	model.SkillDockerScout:         "Docker Scout Scanner",
+	model.SkillPCIDSS:              "PCI DSS Audit",
+	model.SkillTDD:                 "TDD",
+	model.SkillDiagnosingBugs:      "Diagnosing Bugs",
+	model.SkillCodeReview:          "Code Review",
 }
 
 // SkillPickerOptions returns the action buttons shown after the skill checkboxes.

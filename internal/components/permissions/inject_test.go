@@ -10,17 +10,17 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/agents"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/agents/antigravity"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/agents/claude"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/agents/codex"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/agents/cursor"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/agents/gemini"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/agents/hermes"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/agents/kilocode"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/agents/opencode"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/agents/vscode"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/model"
+	"github.com/Santiago1809/teicos/internal/agents"
+	"github.com/Santiago1809/teicos/internal/agents/antigravity"
+	"github.com/Santiago1809/teicos/internal/agents/claude"
+	"github.com/Santiago1809/teicos/internal/agents/codex"
+	"github.com/Santiago1809/teicos/internal/agents/cursor"
+	"github.com/Santiago1809/teicos/internal/agents/gemini"
+	"github.com/Santiago1809/teicos/internal/agents/hermes"
+	"github.com/Santiago1809/teicos/internal/agents/kilocode"
+	"github.com/Santiago1809/teicos/internal/agents/opencode"
+	"github.com/Santiago1809/teicos/internal/agents/vscode"
+	"github.com/Santiago1809/teicos/internal/model"
 )
 
 func TestSelectedPermissionsRefuseNestedCommentsAndLockedMode(t *testing.T) {

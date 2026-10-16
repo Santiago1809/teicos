@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	assets "github.com/gentleman-programming/gentle-ai/v4/scripts"
+	assets "github.com/Santiago1809/teicos/scripts"
 )
 
 // Run the process-boundary regression through the ordinary Go test entrypoint.

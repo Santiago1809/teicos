@@ -11,8 +11,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/state"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/system"
+	"github.com/Santiago1809/teicos/internal/state"
+	"github.com/Santiago1809/teicos/internal/system"
 )
 
 func TestCheckAllWithCooldown_ConcurrentReviewModeDisablePreservesMode(t *testing.T) {
@@ -220,7 +220,7 @@ func buildCandidateBinary(t *testing.T) string {
 	const buildTimeout = 2 * time.Minute
 	ctx, cancel := context.WithTimeout(context.Background(), buildTimeout)
 	defer cancel()
-	command := exec.CommandContext(ctx, "go", "build", "-o", binary, "./cmd/gentle-ai")
+	command := exec.CommandContext(ctx, "go", "build", "-o", binary, "./cmd/teicos")
 	command.Dir = repositoryRoot(t)
 	started := time.Now()
 	if output, err := command.CombinedOutput(); err != nil {

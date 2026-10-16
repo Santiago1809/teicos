@@ -7,8 +7,8 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/assets"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/model"
+	"github.com/Santiago1809/teicos/internal/assets"
+	"github.com/Santiago1809/teicos/internal/model"
 )
 
 // Ratchet: every embedded plugin asset must stay recognizable as Gentle

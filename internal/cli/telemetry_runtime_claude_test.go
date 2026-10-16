@@ -13,7 +13,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/telemetry"
+	"github.com/Santiago1809/teicos/internal/telemetry"
 )
 
 // expectedClaudeStopDeliveryID mirrors the documented Stop delivery-id

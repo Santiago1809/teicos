@@ -6,9 +6,9 @@ import (
 	"os"
 	"time"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/state"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/statecoord"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/system"
+	"github.com/Santiago1809/teicos/internal/state"
+	"github.com/Santiago1809/teicos/internal/statecoord"
+	"github.com/Santiago1809/teicos/internal/system"
 )
 
 // UpdateCheckTTL is the minimum time between automatic remote update checks.

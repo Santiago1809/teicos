@@ -65,7 +65,7 @@ func TestFetchAndStoreDownloads_WritesExpectedRows(t *testing.T) {
 	now := time.Date(2026, 6, 10, 3, 0, 0, 0, time.UTC)
 	cfg := DownloadsConfig{
 		NpmPackages: []string{"gentle-pi", "gentle-engram"},
-		GithubRepos: []string{"Gentleman-Programming/gentle-ai"},
+		GithubRepos: []string{"Santiago1809/teicos"},
 	}
 	FetchAndStoreDownloads(ctx, s, http.DefaultClient, cfg, now, nil)
 
@@ -270,7 +270,7 @@ func TestFetchAndStoreDownloads_FailingAPILeavesPriorRowsIntact(t *testing.T) {
 		},
 	)
 	day1 := time.Date(2026, 6, 10, 3, 0, 0, 0, time.UTC)
-	cfg := DownloadsConfig{NpmPackages: []string{"gentle-pi"}, GithubRepos: []string{"Gentleman-Programming/gentle-ai"}}
+	cfg := DownloadsConfig{NpmPackages: []string{"gentle-pi"}, GithubRepos: []string{"Santiago1809/teicos"}}
 	FetchAndStoreDownloads(ctx, s, http.DefaultClient, cfg, day1, nil)
 
 	// Second run, a day later: npm now fails (500); github still succeeds
@@ -330,7 +330,7 @@ func TestBuildSummary_IncludesDownloads(t *testing.T) {
 	)
 
 	day1 := time.Date(2026, 6, 10, 3, 0, 0, 0, time.UTC)
-	cfg := DownloadsConfig{NpmPackages: []string{"gentle-pi"}, GithubRepos: []string{"Gentleman-Programming/gentle-ai"}}
+	cfg := DownloadsConfig{NpmPackages: []string{"gentle-pi"}, GithubRepos: []string{"Santiago1809/teicos"}}
 	FetchAndStoreDownloads(ctx, s, http.DefaultClient, cfg, day1, nil)
 
 	day2 := day1.AddDate(0, 0, 1)
@@ -389,7 +389,7 @@ func TestRunMaintenance_DownloadRowsDoNotPoisonRollupCatchUp(t *testing.T) {
 			w.Write([]byte(`[{"tag_name":"v1.0.0","assets":[{"download_count":22}]}]`))
 		},
 	)
-	cfg := DownloadsConfig{NpmPackages: []string{"gentle-pi"}, GithubRepos: []string{"Gentleman-Programming/gentle-ai"}}
+	cfg := DownloadsConfig{NpmPackages: []string{"gentle-pi"}, GithubRepos: []string{"Santiago1809/teicos"}}
 	FetchAndStoreDownloads(ctx, s, http.DefaultClient, cfg, day2, nil)
 
 	if err := RunMaintenance(ctx, s, now, 90, 2); err != nil {
@@ -440,7 +440,7 @@ func TestFetchAndStoreDownloads_CancelledContextSkipsStorage(t *testing.T) {
 	)
 
 	now := time.Date(2026, 6, 10, 3, 0, 0, 0, time.UTC)
-	cfg := DownloadsConfig{NpmPackages: []string{"gentle-pi"}, GithubRepos: []string{"Gentleman-Programming/gentle-ai"}}
+	cfg := DownloadsConfig{NpmPackages: []string{"gentle-pi"}, GithubRepos: []string{"Santiago1809/teicos"}}
 
 	done := make(chan struct{})
 	go func() {

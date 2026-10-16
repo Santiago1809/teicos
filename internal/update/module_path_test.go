@@ -11,8 +11,8 @@ func TestModulePathForVersion(t *testing.T) {
 	t.Cleanup(func() { runningGoMajor = origRunning })
 	runningGoMajor = func() int { return 4 }
 
-	const base = "github.com/gentleman-programming/gentle-ai/cmd/gentle-ai"
-	const repo = "gentle-ai"
+	const base = "github.com/Santiago1809/teicos/cmd/teicos"
+	const repo = "teicos"
 
 	tests := []struct {
 		name    string
@@ -26,28 +26,28 @@ func TestModulePathForVersion(t *testing.T) {
 			base:    base,
 			repo:    repo,
 			version: "v3.4.0",
-			want:    "github.com/gentleman-programming/gentle-ai/v3/cmd/gentle-ai",
+			want:    "github.com/Santiago1809/teicos/v3/cmd/teicos",
 		},
 		{
 			name:    "v2.0.0 inserts /v2 before /cmd subpath",
 			base:    base,
 			repo:    repo,
 			version: "v2.0.0",
-			want:    "github.com/gentleman-programming/gentle-ai/v2/cmd/gentle-ai",
+			want:    "github.com/Santiago1809/teicos/v2/cmd/teicos",
 		},
 		{
 			name:    "v4.0.0-rc.1 inserts /v4 before /cmd subpath",
 			base:    base,
 			repo:    repo,
 			version: "v4.0.0-rc.1",
-			want:    "github.com/gentleman-programming/gentle-ai/v4/cmd/gentle-ai",
+			want:    "github.com/Santiago1809/teicos/v4/cmd/teicos",
 		},
 		{
 			name:    "10.0.0 multi-digit inserts /v10 before /cmd subpath",
 			base:    base,
 			repo:    repo,
 			version: "10.0.0",
-			want:    "github.com/gentleman-programming/gentle-ai/v10/cmd/gentle-ai",
+			want:    "github.com/Santiago1809/teicos/v10/cmd/teicos",
 		},
 		{
 			name:    "v1.9.0 stays unsuffixed (major 1)",
@@ -68,35 +68,35 @@ func TestModulePathForVersion(t *testing.T) {
 			base:    base,
 			repo:    repo,
 			version: "latest",
-			want:    "github.com/gentleman-programming/gentle-ai/v4/cmd/gentle-ai",
+			want:    "github.com/Santiago1809/teicos/v4/cmd/teicos",
 		},
 		{
 			name:    "unparseable 'main@abc' falls back to running major /v4",
 			base:    base,
 			repo:    repo,
 			version: "main@abc",
-			want:    "github.com/gentleman-programming/gentle-ai/v4/cmd/gentle-ai",
+			want:    "github.com/Santiago1809/teicos/v4/cmd/teicos",
 		},
 		{
 			name:    "empty version falls back to running major /v4",
 			base:    base,
 			repo:    repo,
 			version: "",
-			want:    "github.com/gentleman-programming/gentle-ai/v4/cmd/gentle-ai",
+			want:    "github.com/Santiago1809/teicos/v4/cmd/teicos",
 		},
 		{
 			name:    "base without subpath appends /vN",
-			base:    "github.com/gentleman-programming/gentle-ai",
+			base:    "github.com/Santiago1809/teicos",
 			repo:    repo,
 			version: "v3.0.1",
-			want:    "github.com/gentleman-programming/gentle-ai/v3",
+			want:    "github.com/Santiago1809/teicos/v3",
 		},
 		{
 			name:    "leading v stripped when parsing",
 			base:    base,
 			repo:    repo,
 			version: "V3.0.0",
-			want:    "github.com/gentleman-programming/gentle-ai/v3/cmd/gentle-ai",
+			want:    "github.com/Santiago1809/teicos/v3/cmd/teicos",
 		},
 		{
 			name:    "repo substring inside longer name is not matched as a segment",
@@ -147,19 +147,18 @@ func TestParseMajorVersion(t *testing.T) {
 }
 
 // TestParseMajorFromModulePath covers the running-binary's module-path
-// parser. The repo's own path is .../gentle-ai/v4 → 4; an unsuffixed path
-// returns 0.
+// parser. A suffixed path .../teicos/v4 → 4; an unsuffixed path returns 0.
 func TestParseMajorFromModulePath(t *testing.T) {
 	tests := []struct {
 		path string
 		want int
 	}{
-		{"github.com/gentleman-programming/gentle-ai/v4", 4},
-		{"github.com/gentleman-programming/gentle-ai/v4/cmd/gentle-ai", 4},
-		{"github.com/gentleman-programming/gentle-ai/v3", 3},
-		{"github.com/gentleman-programming/gentle-ai/v10/cmd/x", 10},
-		{"github.com/gentleman-programming/gentle-ai", 0},
-		{"github.com/gentleman-programming/gentle-ai/cmd/x", 0},
+		{"github.com/Santiago1809/teicos/v4", 4},
+		{"github.com/Santiago1809/teicos/v4/cmd/teicos", 4},
+		{"github.com/Santiago1809/teicos/v3", 3},
+		{"github.com/Santiago1809/teicos/v10/cmd/x", 10},
+		{"github.com/Santiago1809/teicos", 0},
+		{"github.com/Santiago1809/teicos/cmd/x", 0},
 		{"", 0},
 		{"/v3", 3},
 		{"/v", 0},

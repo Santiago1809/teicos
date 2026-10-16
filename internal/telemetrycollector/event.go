@@ -6,7 +6,7 @@
 // branch under contracts/telemetry/v1/schemas/event.schema.json. Until that
 // branch lands, the schema is defined locally at
 // internal/telemetrycollector/schema/event.schema.json, byte-identical to
-// the contract described in Gentleman-Programming/gentle-ai#4310. Once the
+// the contract described in Santiago1809/teicos#4310. Once the
 // canonical copy is published, this local copy should be replaced by a
 // reference to it rather than kept as a second source of truth.
 package telemetrycollector

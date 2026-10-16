@@ -8,8 +8,8 @@ import (
 	"strings"
 	"testing"
 
-	opencode "github.com/gentleman-programming/gentle-ai/v4/internal/agents/opencode"
-	opencodeactivation "github.com/gentleman-programming/gentle-ai/v4/internal/opencode"
+	opencode "github.com/Santiago1809/teicos/internal/agents/opencode"
+	opencodeactivation "github.com/Santiago1809/teicos/internal/opencode"
 )
 
 // sdkRangeConfig prepares a V2 runtime whose OpenCode package directory is

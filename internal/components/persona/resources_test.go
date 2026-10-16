@@ -5,8 +5,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/components/persona"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/model"
+	"github.com/Santiago1809/teicos/internal/components/persona"
+	"github.com/Santiago1809/teicos/internal/model"
 )
 
 func TestResourcePlanOutputStylePaths(t *testing.T) {

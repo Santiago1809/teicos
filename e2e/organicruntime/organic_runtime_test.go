@@ -33,9 +33,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/assets"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/reviewerprovider"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/versions"
+	"github.com/Santiago1809/teicos/internal/assets"
+	"github.com/Santiago1809/teicos/internal/reviewerprovider"
+	"github.com/Santiago1809/teicos/internal/versions"
 )
 
 const (
@@ -4064,7 +4064,7 @@ func buildOrganicBinary(workspace string) (string, error) {
 	path := filepath.Join(workspace, name)
 	ctx, cancel := context.WithTimeout(context.Background(), organicSetupTimeout)
 	defer cancel()
-	command := organicCommandContext(ctx, "go", "build", "-trimpath", "-o", path, "./cmd/gentle-ai")
+	command := organicCommandContext(ctx, "go", "build", "-trimpath", "-o", path, "./cmd/teicos")
 	command.Dir = moduleRoot
 	command.Env = os.Environ()
 	if output, err := command.CombinedOutput(); err != nil {

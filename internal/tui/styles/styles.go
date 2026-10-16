@@ -24,7 +24,7 @@ const Cursor = "▸ "
 
 // Tagline returns the welcome screen tagline with the given version.
 func Tagline(version string) string {
-	return "Gentle-AI " + version + " — Ecosystem, Frameworks, Workflows"
+	return "Gentle-AI " + version + " — The wall in the code"
 }
 
 // Pre-built reusable styles.

@@ -10,7 +10,7 @@ import (
 	"path/filepath"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/shellinstaller"
+	"github.com/Santiago1809/teicos/internal/shellinstaller"
 )
 
 const shellInstallHelp = `gentle-ai shell install --target C:\owned\shell --mode separate

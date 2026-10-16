@@ -7,7 +7,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/telemetry"
+	"github.com/Santiago1809/teicos/internal/telemetry"
 	sqlite "modernc.org/sqlite"
 )
 

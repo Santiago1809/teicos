@@ -7,8 +7,8 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/gentleman-programming/gentle-ai/v4/internal/model"
-	"github.com/gentleman-programming/gentle-ai/v4/internal/state"
+	"github.com/Santiago1809/teicos/internal/model"
+	"github.com/Santiago1809/teicos/internal/state"
 )
 
 func releasedSDDSkill(t *testing.T) string {
