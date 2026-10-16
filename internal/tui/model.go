@@ -15,8 +15,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/charmbracelet/bubbles/textarea"
-	tea "github.com/charmbracelet/bubbletea"
 	"github.com/Santiago1809/teicos/internal/agentbuilder"
 	"github.com/Santiago1809/teicos/internal/agents"
 	"github.com/Santiago1809/teicos/internal/backup"
@@ -36,6 +34,8 @@ import (
 	"github.com/Santiago1809/teicos/internal/tui/screens"
 	"github.com/Santiago1809/teicos/internal/update"
 	"github.com/Santiago1809/teicos/internal/update/upgrade"
+	"github.com/charmbracelet/bubbles/textarea"
+	tea "github.com/charmbracelet/bubbletea"
 )
 
 // tuiNowFn returns the current time for the update-check cooldown gate.

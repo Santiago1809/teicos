@@ -9,8 +9,8 @@ import (
 	"os"
 	"path/filepath"
 
-	tea "github.com/charmbracelet/bubbletea"
 	"github.com/Santiago1809/teicos/internal/shellinstaller"
+	tea "github.com/charmbracelet/bubbletea"
 )
 
 const shellInstallHelp = `gentle-ai shell install --target C:\owned\shell --mode separate

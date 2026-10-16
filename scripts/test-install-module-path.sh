@@ -105,7 +105,7 @@ test_stable_v3_current() {
     CHANNEL="stable"; LATEST_VERSION=""
     install_go
     assert_eq "install target" \
-        "github.com/gentleman-programming/gentle-ai/v3/cmd/gentle-ai@v3.7.0" \
+        "github.com/gentleman-programming/gentle-ai/v3/cmd/teicos@v3.7.0" \
         "${INSTALL_LOG}"
 }
 
@@ -117,7 +117,7 @@ test_stable_v4_regression() {
     CHANNEL="stable"; LATEST_VERSION=""
     install_go
     assert_eq "install target follows the new /v4 path" \
-        "github.com/gentleman-programming/gentle-ai/v4/cmd/gentle-ai@v4.0.0" \
+        "github.com/gentleman-programming/gentle-ai/v4/cmd/teicos@v4.0.0" \
         "${INSTALL_LOG}"
 }
 
@@ -131,7 +131,7 @@ test_beta_v5_derives_module_and_env() {
     CHANNEL="beta"; LATEST_VERSION=""
     install_go
     assert_eq "install target uses derived /v5 path and SHA" \
-        "github.com/gentleman-programming/gentle-ai/v5/cmd/gentle-ai@abcdef1234567890abcdef1234567890abcdef12" \
+        "github.com/gentleman-programming/gentle-ai/v5/cmd/teicos@abcdef1234567890abcdef1234567890abcdef12" \
         "${INSTALL_LOG}" || return 1
     assert_eq "GONOSUMDB" "github.com/gentleman-programming/gentle-ai/v5" "${GONOSUMDB:-}" || return 1
     assert_eq "GOPRIVATE" "github.com/gentleman-programming/gentle-ai/v5" "${GOPRIVATE:-}" || return 1

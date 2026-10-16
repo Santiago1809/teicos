@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"testing"
 
-	tea "github.com/charmbracelet/bubbletea"
 	"github.com/Santiago1809/teicos/internal/backup"
 	"github.com/Santiago1809/teicos/internal/model"
 	"github.com/Santiago1809/teicos/internal/system"
 	"github.com/Santiago1809/teicos/internal/tui/screens"
+	tea "github.com/charmbracelet/bubbletea"
 )
 
 func screenName(s Screen) string { return fmt.Sprintf("Screen#%d", int(s)) }

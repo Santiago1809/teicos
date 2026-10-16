@@ -14,8 +14,8 @@ import (
 	"syscall"
 	"testing"
 
-	tea "github.com/charmbracelet/bubbletea"
 	"github.com/Santiago1809/teicos/internal/shellinstaller"
+	tea "github.com/charmbracelet/bubbletea"
 )
 
 func TestShellInstallSharedInspectDisclosesSettingsWithoutEffects(t *testing.T) {

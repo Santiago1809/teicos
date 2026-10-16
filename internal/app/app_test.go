@@ -18,7 +18,6 @@ import (
 	"testing"
 	"time"
 
-	tea "github.com/charmbracelet/bubbletea"
 	"github.com/Santiago1809/teicos/internal/agents/codex"
 	"github.com/Santiago1809/teicos/internal/backup"
 	"github.com/Santiago1809/teicos/internal/model"
@@ -31,6 +30,7 @@ import (
 	"github.com/Santiago1809/teicos/internal/tui/screens"
 	"github.com/Santiago1809/teicos/internal/update"
 	"github.com/Santiago1809/teicos/internal/update/upgrade"
+	tea "github.com/charmbracelet/bubbletea"
 )
 
 func TestClaudeNativeReviewAssignmentsPersistThroughAppStateConversion(t *testing.T) {

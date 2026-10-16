@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/charmbracelet/lipgloss"
 	"github.com/Santiago1809/teicos/internal/tui/styles"
 	"github.com/Santiago1809/teicos/internal/update"
+	"github.com/charmbracelet/lipgloss"
 	"github.com/rivo/uniseg"
 )
 

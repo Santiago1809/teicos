@@ -11,9 +11,9 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Santiago1809/teicos/internal/shellinstaller"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/x/ansi"
-	"github.com/Santiago1809/teicos/internal/shellinstaller"
 )
 
 func TestShellInstallReviewFitsAndScrolls(t *testing.T) {

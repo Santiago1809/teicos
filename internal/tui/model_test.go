@@ -12,8 +12,6 @@ import (
 	"testing"
 	"time"
 
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
 	"github.com/Santiago1809/teicos/internal/backup"
 	"github.com/Santiago1809/teicos/internal/cli"
 	"github.com/Santiago1809/teicos/internal/components/communitytool"
@@ -30,6 +28,8 @@ import (
 	"github.com/Santiago1809/teicos/internal/tui/styles"
 	"github.com/Santiago1809/teicos/internal/update"
 	"github.com/Santiago1809/teicos/internal/update/upgrade"
+	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 	"github.com/muesli/termenv"
 )
 

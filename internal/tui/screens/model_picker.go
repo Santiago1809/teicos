@@ -10,11 +10,11 @@ import (
 	"strings"
 	"unicode"
 
-	tea "github.com/charmbracelet/bubbletea"
 	"github.com/Santiago1809/teicos/internal/components/opencodedefault"
 	"github.com/Santiago1809/teicos/internal/model"
 	"github.com/Santiago1809/teicos/internal/opencode"
 	"github.com/Santiago1809/teicos/internal/tui/styles"
+	tea "github.com/charmbracelet/bubbletea"
 )
 
 // ModelPickerMode represents the current sub-mode of the model picker screen.

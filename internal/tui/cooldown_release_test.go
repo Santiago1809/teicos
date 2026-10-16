@@ -7,10 +7,10 @@ import (
 	"testing"
 	"time"
 
-	tea "github.com/charmbracelet/bubbletea"
 	"github.com/Santiago1809/teicos/internal/state"
 	"github.com/Santiago1809/teicos/internal/system"
 	"github.com/Santiago1809/teicos/internal/update"
+	tea "github.com/charmbracelet/bubbletea"
 )
 
 func TestCooldownReleaseWelcomeDoesNotClaimCurrent(t *testing.T) {

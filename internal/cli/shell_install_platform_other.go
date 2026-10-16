@@ -9,8 +9,8 @@ import (
 	"io"
 	"os"
 
-	tea "github.com/charmbracelet/bubbletea"
 	"github.com/Santiago1809/teicos/internal/shellinstaller"
+	tea "github.com/charmbracelet/bubbletea"
 )
 
 // Platform help and TUI title live in shell_install_help_{darwin,other}.go.

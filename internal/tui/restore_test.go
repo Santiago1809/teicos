@@ -5,9 +5,9 @@ import (
 	"testing"
 	"time"
 
-	tea "github.com/charmbracelet/bubbletea"
 	"github.com/Santiago1809/teicos/internal/backup"
 	"github.com/Santiago1809/teicos/internal/system"
+	tea "github.com/charmbracelet/bubbletea"
 )
 
 func makeTestBackup(id string, t time.Time, source backup.BackupSource) backup.Manifest {

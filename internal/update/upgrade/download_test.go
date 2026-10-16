@@ -248,7 +248,7 @@ func TestDownload_WindowsAlwaysManualFallback(t *testing.T) {
 		Tool: update.ToolInfo{
 			Name:          "gentle-ai",
 			Owner:         "Santiago1809",
-			Repo: "teicos",
+			Repo:          "teicos",
 			InstallMethod: update.InstallBinary,
 		},
 		LatestVersion: "1.5.0",

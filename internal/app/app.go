@@ -10,7 +10,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	tea "github.com/charmbracelet/bubbletea"
 	"github.com/Santiago1809/teicos/internal/backup"
 	"github.com/Santiago1809/teicos/internal/cli"
 	componentuninstall "github.com/Santiago1809/teicos/internal/components/uninstall"
@@ -26,6 +25,7 @@ import (
 	"github.com/Santiago1809/teicos/internal/update"
 	"github.com/Santiago1809/teicos/internal/update/upgrade"
 	"github.com/Santiago1809/teicos/internal/verify"
+	tea "github.com/charmbracelet/bubbletea"
 )
 
 // Version is set from main via ldflags at build time.

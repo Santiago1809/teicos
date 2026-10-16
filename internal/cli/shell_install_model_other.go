@@ -6,8 +6,8 @@ import (
 	"context"
 	"strings"
 
-	tea "github.com/charmbracelet/bubbletea"
 	"github.com/Santiago1809/teicos/internal/shellinstaller"
+	tea "github.com/charmbracelet/bubbletea"
 )
 
 // Linux and macOS review model; shell_install_view.go renders it.

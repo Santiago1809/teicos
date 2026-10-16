@@ -12,7 +12,6 @@ import (
 	"testing"
 	"time"
 
-	tea "github.com/charmbracelet/bubbletea"
 	"github.com/Santiago1809/teicos/internal/assets"
 	"github.com/Santiago1809/teicos/internal/components/telemetryruntime"
 	"github.com/Santiago1809/teicos/internal/model"
@@ -22,6 +21,7 @@ import (
 	"github.com/Santiago1809/teicos/internal/state"
 	"github.com/Santiago1809/teicos/internal/system"
 	"github.com/Santiago1809/teicos/internal/tui"
+	tea "github.com/charmbracelet/bubbletea"
 )
 
 // This exercises the real app/CLI bridge, but deliberately fails Prepare after

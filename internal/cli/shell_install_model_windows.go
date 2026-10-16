@@ -9,8 +9,8 @@ import (
 	"strings"
 	"unicode"
 
-	tea "github.com/charmbracelet/bubbletea"
 	"github.com/Santiago1809/teicos/internal/shellinstaller"
+	tea "github.com/charmbracelet/bubbletea"
 )
 
 type shellInstallDone struct{ err error }

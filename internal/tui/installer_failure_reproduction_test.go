@@ -6,11 +6,11 @@ import (
 	"strings"
 	"testing"
 
-	tea "github.com/charmbracelet/bubbletea"
 	"github.com/Santiago1809/teicos/internal/model"
 	"github.com/Santiago1809/teicos/internal/pipeline"
 	"github.com/Santiago1809/teicos/internal/planner"
 	"github.com/Santiago1809/teicos/internal/system"
+	tea "github.com/charmbracelet/bubbletea"
 )
 
 type installerFailureStep struct {

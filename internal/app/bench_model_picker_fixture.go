@@ -10,10 +10,10 @@ import (
 	"path/filepath"
 	"strings"
 
-	tea "github.com/charmbracelet/bubbletea"
 	"github.com/Santiago1809/teicos/internal/opencode"
 	"github.com/Santiago1809/teicos/internal/tui"
 	"github.com/Santiago1809/teicos/internal/tui/screens"
+	tea "github.com/charmbracelet/bubbletea"
 )
 
 func runBenchModelPickerCommand(args []string, stdout io.Writer) (bool, error) {

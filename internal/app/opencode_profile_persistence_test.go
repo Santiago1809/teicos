@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 	"testing"
 
-	tea "github.com/charmbracelet/bubbletea"
 	opencodeagent "github.com/Santiago1809/teicos/internal/agents/opencode"
 	"github.com/Santiago1809/teicos/internal/model"
 	"github.com/Santiago1809/teicos/internal/opencode"
@@ -15,6 +14,7 @@ import (
 	"github.com/Santiago1809/teicos/internal/system"
 	"github.com/Santiago1809/teicos/internal/tui"
 	"github.com/Santiago1809/teicos/internal/tui/screens"
+	tea "github.com/charmbracelet/bubbletea"
 )
 
 // TestTuiSyncOpenCodeSequentialProfilesPersist drives Configure Models ->

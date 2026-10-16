@@ -13,9 +13,9 @@ import (
 	"testing"
 	"time"
 
-	tea "github.com/charmbracelet/bubbletea"
 	"github.com/Santiago1809/teicos/internal/state"
 	"github.com/Santiago1809/teicos/internal/system"
+	tea "github.com/charmbracelet/bubbletea"
 )
 
 func assumeInteractiveTTY(t *testing.T) {

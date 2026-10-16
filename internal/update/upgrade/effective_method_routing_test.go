@@ -156,7 +156,7 @@ func TestGentleAILegacyScriptDeclarationNeverReachesScriptUpgradeOnWindows(t *te
 			tool := update.ToolInfo{
 				Name:          "gentle-ai",
 				Owner:         "Santiago1809",
-				Repo: "teicos",
+				Repo:          "teicos",
 				InstallMethod: update.InstallScript,
 				GoImportPath:  tc.goImportPath,
 			}
@@ -419,7 +419,7 @@ func TestGentleAIWindowsWithoutGoNamesRunnableSourceInstall(t *testing.T) {
 		Tool: update.ToolInfo{
 			Name:          "gentle-ai",
 			Owner:         "Santiago1809",
-			Repo: "teicos",
+			Repo:          "teicos",
 			InstallMethod: update.InstallBinary,
 			GoImportPath:  "github.com/Santiago1809/teicos/v3/cmd/teicos",
 		},
