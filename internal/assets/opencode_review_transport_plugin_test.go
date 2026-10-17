@@ -324,6 +324,44 @@ console.log(JSON.stringify({ prompt: before.args.prompt, refused }))
 	}
 }
 
+// TestOpenCodeReviewTransportPluginParsesTeicosVersionOutput proves the probe
+// accepts the `teicos <semver>` prefix: the shim's version is parsed (and then
+// refused as skew), rather than being reported as an unavailable binary.
+func TestOpenCodeReviewTransportPluginParsesTeicosVersionOutput(t *testing.T) {
+	source, err := Read("opencode/plugins/opencode-review-transport.ts")
+	if err != nil {
+		t.Fatal(err)
+	}
+	teicosBin := t.TempDir()
+	teicosShim := strings.ReplaceAll(posixOldRelayFixture, "gentle-ai 1.9.0", "teicos 0.1.0-alpha")
+	if err := os.WriteFile(filepath.Join(teicosBin, "gentle-ai"), []byte(teicosShim), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	const harness = `import plugin from "./plugin.mts"
+const hooks = await plugin({ directory: process.cwd(), worktree: process.cwd() })
+const before = { args: { subagent_type: "review-risk", prompt: "Go must receive this original host prompt" } }
+let refused = ""
+try {
+  await hooks["tool.execute.before"]({ tool: "task", sessionID: "session", callID: "call" }, before)
+} catch (cause) {
+  refused = cause instanceof Error ? cause.message : String(cause)
+}
+console.log(JSON.stringify({ refused }))
+`
+	output, _, _ := runOpenCodeTransportPluginHarness(t, map[string]string{"plugin.mts": string(source)}, harness, posixRelayFixture, teicosBin)
+	var result struct {
+		Refused string `json:"refused"`
+	}
+	if err := json.Unmarshal([]byte(output), &result); err != nil {
+		t.Fatalf("decode teicos harness output %q: %v", output, err)
+	}
+	for _, want := range []string{"opencode_review_transport_binary_skew", "0.1.0-alpha"} {
+		if !strings.Contains(result.Refused, want) {
+			t.Fatalf("teicos version refusal %q must contain %q", result.Refused, want)
+		}
+	}
+}
+
 func TestOpenCodeReviewTransportPluginBinaryHandshakeRefusesUnavailable(t *testing.T) {
 	source, err := Read("opencode/plugins/opencode-review-transport.ts")
 	if err != nil {

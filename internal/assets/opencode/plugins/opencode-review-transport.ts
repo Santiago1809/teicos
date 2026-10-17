@@ -116,7 +116,7 @@ function relayRefusedOutput(reason: string): string {
 // treated as a probe failure so a binary that does not implement the
 // version command cannot be mistaken for a healthy handshake.
 function parseGentleAiVersion(stdout: string): string | undefined {
-  const match = /^gentle-ai\s+(\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?)\s*$/m.exec(stdout)
+  const match = /^(?:teicos|gentle-ai)\s+(\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?)\s*$/m.exec(stdout)
   return match?.[1]
 }
 

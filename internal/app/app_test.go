@@ -1500,8 +1500,8 @@ func TestVersionBeforeSystemGuards(t *testing.T) {
 	if err != nil {
 		t.Fatalf("version should not fail: %v", err)
 	}
-	if !strings.Contains(buf.String(), "gentle-ai") {
-		t.Error("version output should contain 'gentle-ai'")
+	if !strings.HasPrefix(buf.String(), "teicos ") {
+		t.Errorf("version output should start with %q, got %q", "teicos ", buf.String())
 	}
 }
 
