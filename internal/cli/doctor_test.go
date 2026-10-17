@@ -17,6 +17,7 @@ import (
 	"github.com/Santiago1809/teicos/internal/components/engram"
 	"github.com/Santiago1809/teicos/internal/doctor"
 	"github.com/Santiago1809/teicos/internal/opencode"
+	"github.com/Santiago1809/teicos/internal/state"
 	"github.com/Santiago1809/teicos/internal/system"
 )
 
@@ -318,7 +319,7 @@ func TestCheckStateJSON_Missing(t *testing.T) {
 
 func TestCheckStateJSON_Malformed(t *testing.T) {
 	homeDir := t.TempDir()
-	stateDir := filepath.Join(homeDir, ".gentle-ai")
+	stateDir := filepath.Join(homeDir, state.StateDirName)
 	if err := os.MkdirAll(stateDir, 0o755); err != nil {
 		t.Fatal(err)
 	}
@@ -338,7 +339,7 @@ func TestCheckStateJSON_Malformed(t *testing.T) {
 
 func TestCheckStateJSON_AgentConfigDirMissing(t *testing.T) {
 	homeDir := t.TempDir()
-	stateDir := filepath.Join(homeDir, ".gentle-ai")
+	stateDir := filepath.Join(homeDir, state.StateDirName)
 	if err := os.MkdirAll(stateDir, 0o755); err != nil {
 		t.Fatal(err)
 	}
@@ -362,7 +363,7 @@ func TestCheckStateJSON_AgentConfigDirMissing(t *testing.T) {
 
 func TestCheckStateJSON_ManagedConfigPathUnreadable(t *testing.T) {
 	homeDir := t.TempDir()
-	stateDir := filepath.Join(homeDir, ".gentle-ai")
+	stateDir := filepath.Join(homeDir, state.StateDirName)
 	if err := os.MkdirAll(stateDir, 0o755); err != nil {
 		t.Fatal(err)
 	}
@@ -410,7 +411,7 @@ func setupDanglingOpenCodeFixture(t *testing.T, statePayload, symlinkTarget stri
 	if err := os.MkdirAll(filepath.Dir(configDir), 0o755); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.MkdirAll(filepath.Join(homeDir, ".gentle-ai"), 0o755); err != nil {
+	if err := os.MkdirAll(filepath.Join(homeDir, state.StateDirName), 0o755); err != nil {
 		t.Fatal(err)
 	}
 	if symlinkTarget == "" {
@@ -420,7 +421,7 @@ func setupDanglingOpenCodeFixture(t *testing.T, statePayload, symlinkTarget stri
 	if err := os.Symlink(targetPath, configDir); err != nil {
 		t.Skipf("symlink creation unavailable: %v", err)
 	}
-	if err := os.WriteFile(filepath.Join(homeDir, ".gentle-ai", "state.json"), []byte(statePayload), 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(homeDir, state.StateDirName, "state.json"), []byte(statePayload), 0o644); err != nil {
 		t.Fatal(err)
 	}
 	return homeDir, configDir, targetPath
@@ -485,7 +486,7 @@ func TestCheckStateJSON_DanglingAndAbsentConfigDirsSuppressSync(t *testing.T) {
 
 func TestCheckStateJSON_DanglingAncestorSymlinkSuppressesSync(t *testing.T) {
 	homeDir := t.TempDir()
-	if err := os.MkdirAll(filepath.Join(homeDir, ".gentle-ai"), 0o755); err != nil {
+	if err := os.MkdirAll(filepath.Join(homeDir, state.StateDirName), 0o755); err != nil {
 		t.Fatal(err)
 	}
 	ancestor := filepath.Join(homeDir, ".config")
@@ -493,7 +494,7 @@ func TestCheckStateJSON_DanglingAncestorSymlinkSuppressesSync(t *testing.T) {
 	if err := os.Symlink(missingTarget, ancestor); err != nil {
 		t.Skipf("symlink creation unavailable: %v", err)
 	}
-	if err := os.WriteFile(filepath.Join(homeDir, ".gentle-ai", "state.json"), []byte(`{"installed_agents":["opencode"]}`), 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(homeDir, state.StateDirName, "state.json"), []byte(`{"installed_agents":["opencode"]}`), 0o644); err != nil {
 		t.Fatal(err)
 	}
 	configDir := filepath.Join(ancestor, "opencode")
@@ -531,12 +532,12 @@ func TestCheckStateJSON_DanglingAncestorSymlinkSuppressesSync(t *testing.T) {
 
 func TestCheckStateJSON_AbsentAncestorChainKeepsSyncRemedy(t *testing.T) {
 	homeDir := t.TempDir()
-	if err := os.MkdirAll(filepath.Join(homeDir, ".gentle-ai"), 0o755); err != nil {
+	if err := os.MkdirAll(filepath.Join(homeDir, state.StateDirName), 0o755); err != nil {
 		t.Fatal(err)
 	}
 	// windsurf lives two levels below home (~/.codeium/windsurf); neither
 	// level exists, so the path is genuinely missing and sync must stay.
-	if err := os.WriteFile(filepath.Join(homeDir, ".gentle-ai", "state.json"), []byte(`{"installed_agents":["windsurf"]}`), 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(homeDir, state.StateDirName, "state.json"), []byte(`{"installed_agents":["windsurf"]}`), 0o644); err != nil {
 		t.Fatal(err)
 	}
 
@@ -555,7 +556,7 @@ func TestCheckStateJSON_AbsentAncestorChainKeepsSyncRemedy(t *testing.T) {
 
 func TestCheckStateJSON_HealthySymlinkAncestorKeepsSyncRemedy(t *testing.T) {
 	homeDir := t.TempDir()
-	if err := os.MkdirAll(filepath.Join(homeDir, ".gentle-ai"), 0o755); err != nil {
+	if err := os.MkdirAll(filepath.Join(homeDir, state.StateDirName), 0o755); err != nil {
 		t.Fatal(err)
 	}
 	realConfigRoot := filepath.Join(t.TempDir(), "real-config-root")
@@ -566,7 +567,7 @@ func TestCheckStateJSON_HealthySymlinkAncestorKeepsSyncRemedy(t *testing.T) {
 		t.Skipf("symlink creation unavailable: %v", err)
 	}
 	// ~/.config resolves fine; only the opencode dir underneath is absent.
-	if err := os.WriteFile(filepath.Join(homeDir, ".gentle-ai", "state.json"), []byte(`{"installed_agents":["opencode"]}`), 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(homeDir, state.StateDirName, "state.json"), []byte(`{"installed_agents":["opencode"]}`), 0o644); err != nil {
 		t.Fatal(err)
 	}
 
@@ -585,7 +586,7 @@ func TestCheckStateJSON_HealthySymlinkAncestorKeepsSyncRemedy(t *testing.T) {
 
 func TestCheckStateJSON_OK(t *testing.T) {
 	homeDir := t.TempDir()
-	stateDir := filepath.Join(homeDir, ".gentle-ai")
+	stateDir := filepath.Join(homeDir, state.StateDirName)
 	if err := os.MkdirAll(stateDir, 0o755); err != nil {
 		t.Fatal(err)
 	}
@@ -611,7 +612,7 @@ func TestCheckStateJSON_OK(t *testing.T) {
 
 func TestCheckInstalledAssetVersion_MatchingPass(t *testing.T) {
 	homeDir := t.TempDir()
-	stateDir := filepath.Join(homeDir, ".gentle-ai")
+	stateDir := filepath.Join(homeDir, state.StateDirName)
 	if err := os.MkdirAll(stateDir, 0o755); err != nil {
 		t.Fatal(err)
 	}
@@ -628,7 +629,7 @@ func TestCheckInstalledAssetVersion_MatchingPass(t *testing.T) {
 
 func TestCheckInstalledAssetVersion_SkewWarning(t *testing.T) {
 	homeDir := t.TempDir()
-	stateDir := filepath.Join(homeDir, ".gentle-ai")
+	stateDir := filepath.Join(homeDir, state.StateDirName)
 	if err := os.MkdirAll(stateDir, 0o755); err != nil {
 		t.Fatal(err)
 	}
@@ -972,7 +973,7 @@ func TestRunDoctor_IntegrationAllMocked(t *testing.T) {
 	}()
 
 	homeDir := t.TempDir()
-	stateDir := filepath.Join(homeDir, ".gentle-ai")
+	stateDir := filepath.Join(homeDir, state.StateDirName)
 	if err := os.MkdirAll(stateDir, 0o755); err != nil {
 		t.Fatal(err)
 	}
@@ -1023,7 +1024,7 @@ func TestRunDoctor_IntegrationAllMocked(t *testing.T) {
 
 Summary: 8 passed, 0 failed, 0 warnings
 Status:  healthy
-`, configPath, filepath.Join(homeDir, ".gentle-ai"))
+`, configPath, filepath.Join(homeDir, state.StateDirName))
 	if got := buf.String(); got != want {
 		t.Fatalf("RunDoctor output mismatch\ngot:\n%s\nwant:\n%s", got, want)
 	}
@@ -1050,7 +1051,7 @@ func TestRunDoctor_DanglingConfigSymlinkIsReadOnly(t *testing.T) {
 	}()
 
 	homeDir, configDir, missingTarget := setupDanglingOpenCodeFixture(t, `{"installed_agents":["opencode"]}`, "")
-	statePath := filepath.Join(homeDir, ".gentle-ai", "state.json")
+	statePath := filepath.Join(homeDir, state.StateDirName, "state.json")
 	stateDir := filepath.Dir(statePath)
 	stateBefore, err := os.ReadFile(statePath)
 	if err != nil {
@@ -1106,7 +1107,7 @@ func TestRunDoctor_DanglingConfigSymlinkIsReadOnly(t *testing.T) {
 
 func TestDoctorSyncDisagreement_RealCLIBoundary(t *testing.T) {
 	homeDir, configDir, missingTarget := setupDanglingOpenCodeFixture(t, `{"installed_agents":["opencode"]}`, "")
-	statePath := filepath.Join(homeDir, ".gentle-ai", "state.json")
+	statePath := filepath.Join(homeDir, state.StateDirName, "state.json")
 	stateBefore, err := os.ReadFile(statePath)
 	if err != nil {
 		t.Fatal(err)
@@ -1464,10 +1465,10 @@ func TestRunDoctorAddsOpenCodeProfileCheckOnlyWhenBackgroundIsOn(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			doctorGOOS = tt.goos
 			homeDir := t.TempDir()
-			if err := os.MkdirAll(filepath.Join(homeDir, ".gentle-ai"), 0o755); err != nil {
+			if err := os.MkdirAll(filepath.Join(homeDir, state.StateDirName), 0o755); err != nil {
 				t.Fatal(err)
 			}
-			if err := os.WriteFile(filepath.Join(homeDir, ".gentle-ai", "state.json"), []byte(tt.payload), 0o644); err != nil {
+			if err := os.WriteFile(filepath.Join(homeDir, state.StateDirName, "state.json"), []byte(tt.payload), 0o644); err != nil {
 				t.Fatal(err)
 			}
 			osUserHomeDirDoctor = func() (string, error) { return homeDir, nil }
@@ -1698,7 +1699,7 @@ func TestRunDoctor_OnlySelectedAgentsAreRequired(t *testing.T) {
 	executableExtsFn = func() []string { return []string{""} }
 
 	homeDir := t.TempDir()
-	stateDir := filepath.Join(homeDir, ".gentle-ai")
+	stateDir := filepath.Join(homeDir, state.StateDirName)
 	if err := os.MkdirAll(stateDir, 0o755); err != nil {
 		t.Fatal(err)
 	}

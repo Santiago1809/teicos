@@ -16,6 +16,7 @@ import (
 	"github.com/Santiago1809/teicos/internal/model"
 	"github.com/Santiago1809/teicos/internal/pipeline"
 	"github.com/Santiago1809/teicos/internal/planner"
+	"github.com/Santiago1809/teicos/internal/state"
 	"github.com/Santiago1809/teicos/internal/system"
 )
 
@@ -109,7 +110,7 @@ func TestInstallRuntimeStagePlanDeselectionCleansOwnedPiIntegration(t *testing.T
 	if runtime.state.piCodeGraph == nil || !runtime.state.piCodeGraph.Changed {
 		t.Fatalf("pipeline Pi result = %#v, want reported cleanup", runtime.state.piCodeGraph)
 	}
-	if _, err := os.Stat(filepath.Join(home, ".gentle-ai", "pi-codegraph.json")); !os.IsNotExist(err) {
+	if _, err := os.Stat(filepath.Join(home, state.StateDirName, "pi-codegraph.json")); !os.IsNotExist(err) {
 		t.Fatalf("manifest remains after pipeline deselection: %v", err)
 	}
 }
@@ -117,7 +118,7 @@ func TestInstallRuntimeStagePlanDeselectionCleansOwnedPiIntegration(t *testing.T
 func TestBackupTargetsSnapshotPiManifestOverlayDuringDeselection(t *testing.T) {
 	home := t.TempDir()
 	overlay := filepath.Join(home, ".pi", "agent", "subagents", "package.md")
-	manifest := filepath.Join(home, ".gentle-ai", "pi-codegraph.json")
+	manifest := filepath.Join(home, state.StateDirName, "pi-codegraph.json")
 	writePiInstallFixture(t, home)
 	if err := os.MkdirAll(filepath.Dir(manifest), 0o755); err != nil {
 		t.Fatal(err)
@@ -352,7 +353,7 @@ func TestSuccessfulCodeGraphReconciliationStillRegistersOpenCodePlugin(t *testin
 func TestPiCodeGraphReconcileStepRollbackRemovesDynamicPackageOverlay(t *testing.T) {
 	home := t.TempDir()
 	overlay := filepath.Join(home, ".pi", "agent", "subagents", "package.md")
-	manifest := filepath.Join(home, ".gentle-ai", "pi-codegraph.json")
+	manifest := filepath.Join(home, state.StateDirName, "pi-codegraph.json")
 	writePiInstallFixture(t, home)
 	mustWriteFile(t, overlay, []byte("owned overlay\n"))
 	if err := os.MkdirAll(filepath.Dir(manifest), 0o700); err != nil {

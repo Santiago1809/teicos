@@ -77,7 +77,7 @@ func TestTUIOpenCodeSDKConsentProvisioningIntegration(t *testing.T) {
 				}
 			}
 			assertSDKBridgeMissing(t, log)
-			assertSDKBridgeMissing(t, filepath.Join(home, ".gentle-ai", "backups"))
+			assertSDKBridgeMissing(t, filepath.Join(home, state.StateDirName, "backups"))
 			if tc.decline {
 				updated, cmd = m.Update(tea.KeyMsg{Type: tea.KeyEnter})
 				m = updated.(tui.Model)
@@ -86,7 +86,7 @@ func TestTUIOpenCodeSDKConsentProvisioningIntegration(t *testing.T) {
 				}
 				assertSDKBridgeMissing(t, log)
 				assertSDKBridgeMissing(t, filepath.Join(config, "node_modules"))
-				assertSDKBridgeMissing(t, filepath.Join(home, ".gentle-ai", "backups"))
+				assertSDKBridgeMissing(t, filepath.Join(home, state.StateDirName, "backups"))
 				return
 			}
 			if tc.stale {

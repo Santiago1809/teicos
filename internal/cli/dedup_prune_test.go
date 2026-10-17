@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/Santiago1809/teicos/internal/backup"
+	"github.com/Santiago1809/teicos/internal/state"
 )
 
 // TestPrepareBackupStep_SkipsDuplicateBackup verifies that when the new checksum
@@ -17,7 +18,7 @@ import (
 // does NOT create a new backup directory (BKUP-T16).
 func TestPrepareBackupStep_SkipsDuplicateBackup(t *testing.T) {
 	home := t.TempDir()
-	backupRoot := filepath.Join(home, ".gentle-ai", "backups")
+	backupRoot := filepath.Join(home, state.StateDirName, "backups")
 	if err := os.MkdirAll(backupRoot, 0o755); err != nil {
 		t.Fatalf("MkdirAll backupRoot: %v", err)
 	}
@@ -87,7 +88,7 @@ func TestPrepareBackupStep_SkipsDuplicateBackup(t *testing.T) {
 // content changes, prepareBackupStep creates a new backup (not a duplicate).
 func TestPrepareBackupStep_ProceedsWhenContentChanged(t *testing.T) {
 	home := t.TempDir()
-	backupRoot := filepath.Join(home, ".gentle-ai", "backups")
+	backupRoot := filepath.Join(home, state.StateDirName, "backups")
 	if err := os.MkdirAll(backupRoot, 0o755); err != nil {
 		t.Fatalf("MkdirAll backupRoot: %v", err)
 	}
@@ -155,7 +156,7 @@ func TestPrepareBackupStep_ProceedsWhenContentChanged(t *testing.T) {
 // creation, old unpinned backups beyond DefaultRetentionCount are pruned (BKUP-T27).
 func TestPrepareBackupStep_PrunesOldBackups(t *testing.T) {
 	home := t.TempDir()
-	backupRoot := filepath.Join(home, ".gentle-ai", "backups")
+	backupRoot := filepath.Join(home, state.StateDirName, "backups")
 	if err := os.MkdirAll(backupRoot, 0o755); err != nil {
 		t.Fatalf("MkdirAll backupRoot: %v", err)
 	}
@@ -223,7 +224,7 @@ func TestPrepareBackupStep_PrunesOldBackups(t *testing.T) {
 // is empty, prepareBackupStep runs without error and creates the first backup.
 func TestPrepareBackupStep_NoPruneWhenBackupRootEmpty(t *testing.T) {
 	home := t.TempDir()
-	backupRoot := filepath.Join(home, ".gentle-ai", "backups")
+	backupRoot := filepath.Join(home, state.StateDirName, "backups")
 	if err := os.MkdirAll(backupRoot, 0o755); err != nil {
 		t.Fatalf("MkdirAll backupRoot: %v", err)
 	}

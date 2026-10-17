@@ -9,6 +9,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/Santiago1809/teicos/internal/state"
 )
 
 // Exercise the public doctor entry point with isolated homes and deterministic
@@ -118,7 +120,7 @@ func runDoctorAgentConfigFixture(t *testing.T, home, payload string) string {
 	osExecutableDoctor = func() (string, error) { return filepath.Join(home, "bin", "gentle-ai"), nil }
 	t.Setenv(engramHealthEnvVar, "https://engram.example.test")
 	httpGetFn = func(string, time.Duration) (int, error) { return 200, nil }
-	statePath := filepath.Join(home, ".gentle-ai", "state.json")
+	statePath := filepath.Join(home, state.StateDirName, "state.json")
 	if err := os.MkdirAll(filepath.Dir(statePath), 0o755); err != nil {
 		t.Fatal(err)
 	}

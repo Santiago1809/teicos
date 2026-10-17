@@ -11,6 +11,7 @@ import (
 	"github.com/Santiago1809/teicos/internal/backup"
 	"github.com/Santiago1809/teicos/internal/components/agentguidance"
 	"github.com/Santiago1809/teicos/internal/model"
+	"github.com/Santiago1809/teicos/internal/state"
 	"github.com/Santiago1809/teicos/internal/system"
 )
 
@@ -178,7 +179,7 @@ func TestClaudeModuleOptInCreatesPilotAndKeepsItOnRerun(t *testing.T) {
 
 	// The pre-install snapshot planned all nine paths, recording the absent
 	// ones, so restoring it removes the pilot again.
-	manifests, err := filepath.Glob(filepath.Join(home, ".gentle-ai", "backups", "*", backup.ManifestFilename))
+	manifests, err := filepath.Glob(filepath.Join(home, state.StateDirName, "backups", "*", backup.ManifestFilename))
 	if err != nil || len(manifests) != 1 {
 		t.Fatalf("install snapshots = %v, %v; want exactly one", manifests, err)
 	}

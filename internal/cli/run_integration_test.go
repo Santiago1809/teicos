@@ -144,7 +144,7 @@ func TestRunInstallReturnsStatePersistenceFailure(t *testing.T) {
 		t.Fatalf("pre-install config read error = %v, want absent", err)
 	}
 	statePath := state.Path(home)
-	target := filepath.Join(home, ".gentle-ai", "persisted-state.json")
+	target := filepath.Join(home, state.StateDirName, "persisted-state.json")
 	if err := os.Rename(statePath, target); err != nil {
 		t.Fatal(err)
 	}

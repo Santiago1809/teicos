@@ -71,7 +71,7 @@ func TestFreshSyncWritesNoRetiredWorkflowReferences(t *testing.T) {
 			if _, err := RunSync([]string{"--agents", string(tc.agent)}); err != nil {
 				t.Fatalf("RunSync() error = %v", err)
 			}
-			backups := filepath.Join(home, ".gentle-ai", "backups")
+			backups := filepath.Join(home, state.StateDirName, "backups")
 			scanned := 0
 			err := filepath.WalkDir(home, func(path string, entry fs.DirEntry, err error) error {
 				if err != nil {

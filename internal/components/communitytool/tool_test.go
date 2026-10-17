@@ -17,6 +17,7 @@ import (
 	"github.com/Santiago1809/teicos/internal/agents/claude"
 	"github.com/Santiago1809/teicos/internal/agents/opencode"
 	"github.com/Santiago1809/teicos/internal/model"
+	"github.com/Santiago1809/teicos/internal/state"
 	"github.com/Santiago1809/teicos/internal/testenv"
 )
 
@@ -254,7 +255,7 @@ func TestInstallWithHomeReportsWorkspaceChildAndOwnershipTarget(t *testing.T) {
 	if result.PiCodeGraph == nil || len(result.PiCodeGraph.Children) != 1 || result.PiCodeGraph.Children[0].Target != target {
 		t.Fatalf("workspace Pi result = %#v, want target %q", result.PiCodeGraph, target)
 	}
-	manifestData, err := os.ReadFile(filepath.Join(home, ".gentle-ai", "pi-codegraph.json"))
+	manifestData, err := os.ReadFile(filepath.Join(home, state.StateDirName, "pi-codegraph.json"))
 	var manifest piCodeGraphManifest
 	if err != nil || json.Unmarshal(manifestData, &manifest) != nil {
 		t.Fatalf("ownership manifest = %q, err=%v", manifestData, err)
@@ -1252,7 +1253,7 @@ func TestDetectStatusReportsPiRuntimeMissingWhenAppendSystemHasNoMarker(t *testi
 	if !pi.Detected || pi.Configured || pi.Status != AgentStatusMissing {
 		t.Fatalf("Pi status = %#v, want detected missing", pi)
 	}
-	if pi.Path != filepath.Join(home, ".gentle-ai", "pi-codegraph.json") {
+	if pi.Path != filepath.Join(home, state.StateDirName, "pi-codegraph.json") {
 		t.Fatalf("Pi path = %q, want ownership manifest path", pi.Path)
 	}
 }

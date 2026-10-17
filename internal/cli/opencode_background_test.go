@@ -183,7 +183,7 @@ func TestOpenCodeBackgroundStateIsOptionalAndLossless(t *testing.T) {
 	}
 
 	legacy := t.TempDir()
-	if err := os.MkdirAll(filepath.Join(legacy, ".gentle-ai"), 0o755); err != nil {
+	if err := os.MkdirAll(filepath.Join(legacy, state.StateDirName), 0o755); err != nil {
 		t.Fatal(err)
 	}
 	if err := os.WriteFile(state.Path(legacy), []byte(`{"installed_agents":["opencode"]}`), 0o644); err != nil {

@@ -30,7 +30,7 @@ func releasedSDDRender(t *testing.T, name string) []byte {
 func backupManifestEntries(t *testing.T, home string) map[string]backup.ManifestEntry {
 	t.Helper()
 	entries := map[string]backup.ManifestEntry{}
-	root := filepath.Join(home, ".gentle-ai", "backups")
+	root := filepath.Join(home, state.StateDirName, "backups")
 	err := filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
 		if err != nil || d.IsDir() || d.Name() != backup.ManifestFilename {
 			return err

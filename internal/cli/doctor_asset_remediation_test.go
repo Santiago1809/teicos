@@ -9,6 +9,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/Santiago1809/teicos/internal/state"
 )
 
 func TestRunDoctor_AssetVersionRemediation(t *testing.T) {
@@ -25,7 +27,7 @@ func TestRunDoctor_AssetVersionRemediation(t *testing.T) {
 	})
 
 	home := t.TempDir()
-	statePath := filepath.Join(home, ".gentle-ai", "state.json")
+	statePath := filepath.Join(home, state.StateDirName, "state.json")
 	if err := os.MkdirAll(filepath.Dir(statePath), 0o755); err != nil {
 		t.Fatal(err)
 	}

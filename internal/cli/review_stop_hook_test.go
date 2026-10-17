@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/Santiago1809/teicos/internal/reviewtransaction"
+	"github.com/Santiago1809/teicos/internal/state"
 )
 
 // reviewStopHookTestPayload builds one Stop hook stdin payload. Extra fields
@@ -113,7 +114,7 @@ func decodeReviewStopHookResult(t *testing.T, stdout []byte) reviewStopHookOutpu
 }
 
 func reviewStopHookStateFile(home, sessionID string) string {
-	return filepath.Join(home, ".gentle-ai", "review-stop-hook", "v1", sessionID+".json")
+	return filepath.Join(home, state.StateDirName, "review-stop-hook", "v1", sessionID+".json")
 }
 
 func TestReviewStopHookFailedWriteDoesNotPersistReminder(t *testing.T) {
@@ -307,7 +308,7 @@ func TestReviewStopHookInvalidSessionIDRemindsWithoutPersisting(t *testing.T) {
 	if decodeReviewStopHookResult(t, stdout.Bytes()).Decision != "block" {
 		t.Fatalf("invalid session id should still remind: %s", stdout.String())
 	}
-	dir := filepath.Join(home, ".gentle-ai", "review-stop-hook", "v1")
+	dir := filepath.Join(home, state.StateDirName, "review-stop-hook", "v1")
 	entries, err := os.ReadDir(dir)
 	if err != nil && !os.IsNotExist(err) {
 		t.Fatal(err)

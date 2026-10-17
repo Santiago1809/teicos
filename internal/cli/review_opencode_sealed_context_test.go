@@ -11,6 +11,7 @@ import (
 
 	"github.com/Santiago1809/teicos/internal/model"
 	"github.com/Santiago1809/teicos/internal/reviewtransaction"
+	"github.com/Santiago1809/teicos/internal/state"
 )
 
 // Only OpenCode hosts receive the sealed rctx3 handle (#5136, #4516): their
@@ -252,7 +253,7 @@ func TestNonOpenCodeStatusKeepsTheUnchangedRctx2Digest(t *testing.T) {
 			if err != nil || status.RepositoryContext == nil || status.RepositoryContext.Handle != want || started.RepositoryContext.Handle != want {
 				t.Fatalf("%s handles = START %q / STATUS %#v, want the rctx2 digest %q (%v)", runtime, started.RepositoryContext.Handle, status.RepositoryContext, want, err)
 			}
-			if _, err := os.Stat(filepath.Join(os.Getenv("HOME"), ".gentle-ai", "review-context.key")); !errors.Is(err, os.ErrNotExist) {
+			if _, err := os.Stat(filepath.Join(os.Getenv("HOME"), state.StateDirName, "review-context.key")); !errors.Is(err, os.ErrNotExist) {
 				t.Fatalf("%s lifecycle created the OpenCode sealing key: %v", runtime, err)
 			}
 		})

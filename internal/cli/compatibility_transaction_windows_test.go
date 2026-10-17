@@ -12,6 +12,7 @@ import (
 	"github.com/Santiago1809/teicos/internal/model"
 	"github.com/Santiago1809/teicos/internal/pipeline"
 	"github.com/Santiago1809/teicos/internal/planner"
+	"github.com/Santiago1809/teicos/internal/state"
 	"github.com/Santiago1809/teicos/internal/system"
 )
 
@@ -278,7 +279,7 @@ func TestWindowsCompatibilityTransactionRefusesRootParentAndNestedJunctions(t *t
 			if content, readErr := os.ReadFile(pluginPath); readErr != nil || string(content) != "stale" {
 				t.Fatalf("plugin refresh ran after compatibility refusal: content=%q error=%v", content, readErr)
 			}
-			if _, statErr := os.Stat(filepath.Join(home, ".gentle-ai", "backups")); !os.IsNotExist(statErr) {
+			if _, statErr := os.Stat(filepath.Join(home, state.StateDirName, "backups")); !os.IsNotExist(statErr) {
 				t.Fatalf("backup started after compatibility refusal: %v", statErr)
 			}
 		})

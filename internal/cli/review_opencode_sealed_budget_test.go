@@ -12,6 +12,7 @@ import (
 
 	"github.com/Santiago1809/teicos/internal/model"
 	"github.com/Santiago1809/teicos/internal/reviewtransaction"
+	"github.com/Santiago1809/teicos/internal/state"
 )
 
 // STATUS proves a reviewer slot is fillable before offering it, and the block
@@ -28,7 +29,7 @@ func TestPiDrivenStatusOnAnOpenCodeLineageNeverCreatesTheSealingKey(t *testing.T
 	}
 	home := reviewEnabledHome(t)
 	repo, started, _, _ := openCodeSealedLineage(t, "pi-driven-key")
-	key := filepath.Join(home, ".gentle-ai", "review-context.key")
+	key := filepath.Join(home, state.StateDirName, "review-context.key")
 	if err := os.Remove(key); err != nil {
 		t.Fatalf("the OpenCode START did not create the sealing key: %v", err)
 	}
@@ -174,7 +175,7 @@ func TestOpenCodeStatusWithAnUnsafeSealingKeyRefusesWithItsRepair(t *testing.T) 
 	}
 	home := reviewEnabledHome(t)
 	repo, started, store, _ := openCodeSealedLineage(t, "unsafe-key-status")
-	key := filepath.Join(home, ".gentle-ai", "review-context.key")
+	key := filepath.Join(home, state.StateDirName, "review-context.key")
 	keyBytes, err := os.ReadFile(key)
 	if err != nil {
 		t.Fatal(err)

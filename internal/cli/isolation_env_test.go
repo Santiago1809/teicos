@@ -24,7 +24,7 @@ func TestBackupRootsHonorGentleAIHome(t *testing.T) {
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			home := t.TempDir()
-			want := filepath.Join(home, ".gentle-ai", "backups")
+			want := filepath.Join(home, state.StateDirName, "backups")
 			t.Setenv(state.HomeEnv, "")
 			if tt.override {
 				override := filepath.Join(t.TempDir(), "gentle-ai")
@@ -54,7 +54,7 @@ func TestBackupRootsHonorGentleAIHome(t *testing.T) {
 				t.Fatalf("restore backupRootDir() = %q, want %q", got, want)
 			}
 			if tt.override {
-				if _, err := os.Stat(filepath.Join(home, ".gentle-ai")); !os.IsNotExist(err) {
+				if _, err := os.Stat(filepath.Join(home, state.StateDirName)); !os.IsNotExist(err) {
 					t.Fatalf("~/.gentle-ai created despite %s (stat err = %v)", state.HomeEnv, err)
 				}
 			}

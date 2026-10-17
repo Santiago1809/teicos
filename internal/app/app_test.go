@@ -56,7 +56,7 @@ func TestClaudeNativeReviewAssignmentsPersistThroughAppStateConversion(t *testin
 // newest-first by CreatedAt timestamp, matching the spec "newest first" ordering.
 func TestListBackupsNewestFirst(t *testing.T) {
 	home := t.TempDir()
-	backupRoot := filepath.Join(home, ".gentle-ai", "backups")
+	backupRoot := filepath.Join(home, state.StateDirName, "backups")
 
 	older := backup.Manifest{
 		ID:        "older",
@@ -104,7 +104,7 @@ func TestListBackupsNewestFirst(t *testing.T) {
 // with Source metadata intact, so display labels can use the source field.
 func TestListBackupsWithSourceMetadata(t *testing.T) {
 	home := t.TempDir()
-	backupRoot := filepath.Join(home, ".gentle-ai", "backups")
+	backupRoot := filepath.Join(home, state.StateDirName, "backups")
 
 	m := backup.Manifest{
 		ID:          "test-with-source",
@@ -168,7 +168,7 @@ func TestRunArgsRestoreListIsDispatched(t *testing.T) {
 // through app.RunArgs.
 func TestRunArgsRestoreByIDWithYes(t *testing.T) {
 	home := t.TempDir()
-	backupRoot := filepath.Join(home, ".gentle-ai", "backups")
+	backupRoot := filepath.Join(home, state.StateDirName, "backups")
 
 	// Create a backup with a real file entry so restore can succeed.
 	sourceFile := filepath.Join(home, "config.md")
@@ -461,7 +461,7 @@ func TestRunArgsDispatchesReviewModeBeforePlatformValidation(t *testing.T) {
 func TestListBackupsFallsBackGracefullyForOldManifests(t *testing.T) {
 	_ = fmt.Sprintf // Ensure fmt is used.
 	home := t.TempDir()
-	backupRoot := filepath.Join(home, ".gentle-ai", "backups")
+	backupRoot := filepath.Join(home, state.StateDirName, "backups")
 
 	// Write a manifest with no Source/Description.
 	m := backup.Manifest{
@@ -963,7 +963,7 @@ func TestTuiSyncModelConfigPropagatesAssignmentWriteFailure(t *testing.T) {
 	}
 
 	statePath := state.Path(home)
-	stateTarget := filepath.Join(home, ".gentle-ai", "persisted-state.json")
+	stateTarget := filepath.Join(home, state.StateDirName, "persisted-state.json")
 	if err := os.Rename(statePath, stateTarget); err != nil {
 		t.Fatalf("Rename: %v", err)
 	}
@@ -1443,7 +1443,7 @@ func TestPersistAssignmentsNoOpWhenEmpty(t *testing.T) {
 		t.Fatalf("state.Write: %v", err)
 	}
 
-	statePath := filepath.Join(home, ".gentle-ai", "state.json")
+	statePath := filepath.Join(home, state.StateDirName, "state.json")
 	infoBefore, _ := os.Stat(statePath)
 
 	selection := model.Selection{} // empty assignments
@@ -1798,7 +1798,7 @@ func TestTUIExecuteReturnsStatePersistenceFailure(t *testing.T) {
 		t.Fatalf("pre-install config read error = %v, want absent", err)
 	}
 	statePath := state.Path(home)
-	target := filepath.Join(home, ".gentle-ai", "persisted-state.json")
+	target := filepath.Join(home, state.StateDirName, "persisted-state.json")
 	if err := os.Rename(statePath, target); err != nil {
 		t.Fatal(err)
 	}
@@ -1817,7 +1817,7 @@ func TestTUIExecuteReturnsStatePersistenceFailure(t *testing.T) {
 	if _, readErr := os.ReadFile(configPath); !os.IsNotExist(readErr) {
 		t.Fatalf("config after failed TUI install read error = %v, want absent", readErr)
 	}
-	if _, readErr := os.Stat(filepath.Join(home, ".gentle-ai", "bin", "opencode")); !os.IsNotExist(readErr) {
+	if _, readErr := os.Stat(filepath.Join(home, state.StateDirName, "bin", "opencode")); !os.IsNotExist(readErr) {
 		t.Fatalf("launcher after failed TUI install stat error = %v, want absent", readErr)
 	}
 	finalState, readErr := os.ReadFile(target)
@@ -1851,7 +1851,7 @@ func TestTUIExecuteRollsBackOnMalformedState(t *testing.T) {
 		t.Fatalf("tuiExecute() error = %v, want state read failure", result.Err)
 	}
 
-	if _, err := os.Stat(filepath.Join(home, ".gentle-ai", "bin", "opencode")); !os.IsNotExist(err) {
+	if _, err := os.Stat(filepath.Join(home, state.StateDirName, "bin", "opencode")); !os.IsNotExist(err) {
 		t.Fatalf("launcher after failed TUI install stat error = %v, want absent", err)
 	}
 	if _, err := os.Stat(filepath.Join(home, ".config", "opencode", "opencode.json")); !os.IsNotExist(err) {
@@ -2379,7 +2379,7 @@ func TestRunArgs_PendingSync_ClearWriteFailureIsLogged(t *testing.T) {
 
 	// Keep state readable through a symlink while making atomic replacement refuse it.
 	stateFilePath := state.Path(home)
-	stateTargetPath := filepath.Join(home, ".gentle-ai", "persisted-state.json")
+	stateTargetPath := filepath.Join(home, state.StateDirName, "persisted-state.json")
 	if err := os.Rename(stateFilePath, stateTargetPath); err != nil {
 		t.Fatalf("Rename: %v", err)
 	}

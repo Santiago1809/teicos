@@ -11,6 +11,8 @@ import (
 	"strings"
 	"syscall"
 	"testing"
+
+	"github.com/Santiago1809/teicos/internal/state"
 )
 
 func TestRunSyncPiWarnsWithoutReenablingBuiltinMCP(t *testing.T) {
@@ -116,7 +118,7 @@ func TestRunDoctorPiMCPDiagnosticIsReadOnly(t *testing.T) {
 					t.Fatalf("expected dangling symlink read failure: %v", readErr)
 				}
 			}
-			statePath := filepath.Join(home, ".gentle-ai", "state.json")
+			statePath := filepath.Join(home, state.StateDirName, "state.json")
 			state := `{"installed_agents":["pi"]}`
 			mustWriteFile(t, statePath, []byte(state))
 			oldHome := osUserHomeDirDoctor

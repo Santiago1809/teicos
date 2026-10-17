@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/Santiago1809/teicos/internal/reviewtransaction"
+	"github.com/Santiago1809/teicos/internal/state"
 )
 
 func TestNegotiatedStatusMatchesReviewStartRDDMode(t *testing.T) {
@@ -91,10 +92,10 @@ func TestNegotiatedStatusMatchesReviewStartRDDMode(t *testing.T) {
 func TestNegotiatedStatusFailsWhenEffectiveModeCannotResolve(t *testing.T) {
 	home := reviewModeHome(t)
 	repo := initReviewCLIRepo(t)
-	if err := os.MkdirAll(filepath.Join(home, ".gentle-ai"), 0o755); err != nil {
+	if err := os.MkdirAll(filepath.Join(home, state.StateDirName), 0o755); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.WriteFile(filepath.Join(home, ".gentle-ai", "state.json"), []byte("{\n"), 0o600); err != nil {
+	if err := os.WriteFile(filepath.Join(home, state.StateDirName, "state.json"), []byte("{\n"), 0o600); err != nil {
 		t.Fatal(err)
 	}
 

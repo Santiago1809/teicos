@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/Santiago1809/teicos/internal/backup"
+	"github.com/Santiago1809/teicos/internal/state"
 )
 
 // TestPrepareBackupStep_InstallWritesMetadataToManifest verifies that when
@@ -32,7 +33,7 @@ func TestPrepareBackupStep_InstallWritesMetadataToManifest(t *testing.T) {
 		t.Fatalf("WriteFile config: %v", err)
 	}
 
-	snapshotDir := filepath.Join(home, ".gentle-ai", "backups",
+	snapshotDir := filepath.Join(home, state.StateDirName, "backups",
 		time.Now().UTC().Format("20060102150405.000000000"))
 	state := &runtimeState{}
 
@@ -89,7 +90,7 @@ func TestPrepareBackupStep_SyncWritesMetadataToManifest(t *testing.T) {
 		t.Fatalf("WriteFile config: %v", err)
 	}
 
-	snapshotDir := filepath.Join(home, ".gentle-ai", "backups",
+	snapshotDir := filepath.Join(home, state.StateDirName, "backups",
 		time.Now().UTC().Format("20060102150405.000000001"))
 	state := &runtimeState{}
 
@@ -136,7 +137,7 @@ func TestPrepareBackupStep_NoMetadataWhenSourceEmpty(t *testing.T) {
 		t.Fatalf("WriteFile config: %v", err)
 	}
 
-	snapshotDir := filepath.Join(home, ".gentle-ai", "backups",
+	snapshotDir := filepath.Join(home, state.StateDirName, "backups",
 		time.Now().UTC().Format("20060102150405.000000002"))
 	state := &runtimeState{}
 

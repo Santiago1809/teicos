@@ -12,7 +12,7 @@ func TestPathDefaultsToDotGentleAIUnderHome(t *testing.T) {
 	t.Setenv(state.HomeEnv, "")
 	home := t.TempDir()
 
-	if got, want := Path(home), filepath.Join(home, ".gentle-ai", "telemetry.json"); got != want {
+	if got, want := Path(home), filepath.Join(home, state.StateDirName, "telemetry.json"); got != want {
 		t.Fatalf("Path() = %q, want %q", got, want)
 	}
 }
@@ -31,7 +31,7 @@ func TestHomeEnvRoutesTelemetryStateAndLock(t *testing.T) {
 			t.Fatalf("%s not written under %s: %v", name, state.HomeEnv, err)
 		}
 	}
-	if _, err := os.Stat(filepath.Join(home, ".gentle-ai")); !os.IsNotExist(err) {
+	if _, err := os.Stat(filepath.Join(home, state.StateDirName)); !os.IsNotExist(err) {
 		t.Fatalf("~/.gentle-ai must not be created when %s is set (stat err = %v)", state.HomeEnv, err)
 	}
 }

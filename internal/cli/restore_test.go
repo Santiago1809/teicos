@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/Santiago1809/teicos/internal/backup"
+	"github.com/Santiago1809/teicos/internal/state"
 )
 
 // setupRestoreHome creates a temporary home dir with N backup manifests.
@@ -16,7 +17,7 @@ import (
 func setupRestoreHome(t *testing.T, count int) string {
 	t.Helper()
 	home := t.TempDir()
-	backupRoot := filepath.Join(home, ".gentle-ai", "backups")
+	backupRoot := filepath.Join(home, state.StateDirName, "backups")
 
 	for i := 0; i < count; i++ {
 		id := fmt.Sprintf("backup-%03d", i)

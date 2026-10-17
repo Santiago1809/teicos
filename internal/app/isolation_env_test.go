@@ -55,7 +55,7 @@ func TestBackupRootFollowsGentleAIHome(t *testing.T) {
 
 	t.Setenv(state.HomeEnv, "")
 	applyStateHome()
-	if got, err := backup.BackupRootFn(); err != nil || got != filepath.Join(home, ".gentle-ai", "backups") {
+	if got, err := backup.BackupRootFn(); err != nil || got != filepath.Join(home, state.StateDirName, "backups") {
 		t.Fatalf("default BackupRootFn() = %q, %v", got, err)
 	}
 

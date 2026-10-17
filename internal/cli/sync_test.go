@@ -2023,7 +2023,7 @@ func TestRunSyncRollbackRestoresClaudeEngramMigrationSource(t *testing.T) {
 			}
 		}
 	}
-	backups, err := os.ReadDir(filepath.Join(home, ".gentle-ai", "backups"))
+	backups, err := os.ReadDir(filepath.Join(home, state.StateDirName, "backups"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -2921,7 +2921,7 @@ func TestRunSyncReleasesRetiredPiSDDAgentsFromCodeGraphManifest(t *testing.T) {
 	after := before + "\n<!-- gentle-ai:pi-codegraph-guidance -->\nguidance\n<!-- /gentle-ai:pi-codegraph -->\n"
 	sum := sha256.Sum256([]byte(after))
 	owned := map[string]any{"before": before, "after": after, "afterHash": hex.EncodeToString(sum[:]), "mode": 0o644}
-	manifestPath := filepath.Join(home, ".gentle-ai", "pi-codegraph.json")
+	manifestPath := filepath.Join(home, state.StateDirName, "pi-codegraph.json")
 	var manifest map[string]any
 	if err := json.Unmarshal([]byte(readTextFile(t, manifestPath)), &manifest); err != nil {
 		t.Fatal(err)
@@ -2986,7 +2986,7 @@ func TestRunSyncReportsLegacySelectionMigrationPersistenceFailure(t *testing.T) 
 	opencodeConfig := filepath.Join(home, ".config", "opencode", "opencode.json")
 	piMCP := filepath.Join(home, ".pi", "agent", "mcp.json")
 	statePath := state.Path(home)
-	stateTarget := filepath.Join(home, ".gentle-ai", "persisted-state.json")
+	stateTarget := filepath.Join(home, state.StateDirName, "persisted-state.json")
 	if err := os.Rename(statePath, stateTarget); err != nil {
 		t.Fatal(err)
 	}
@@ -3036,7 +3036,7 @@ func TestRunSyncReportsLegacySelectionMigrationPersistenceFailure(t *testing.T) 
 
 func writeManagedPiCodeGraphManifest(t *testing.T, home string) {
 	t.Helper()
-	manifestPath := filepath.Join(home, ".gentle-ai", "pi-codegraph.json")
+	manifestPath := filepath.Join(home, state.StateDirName, "pi-codegraph.json")
 	mcpPath := filepath.Join(home, ".pi", "agent", "mcp.json")
 	mustWriteFile(t, manifestPath, []byte(`{"mcpPath":`+strconv.Quote(mcpPath)+`,"mcp":{"afterHash":"managed"},"children":{}}`))
 	if err := os.Chmod(manifestPath, 0o600); err != nil {
