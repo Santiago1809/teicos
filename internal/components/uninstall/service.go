@@ -142,7 +142,7 @@ func NewService(homeDir, workspaceDir, appVersion string) (*Service, error) {
 		return nil, fmt.Errorf("create adapter registry: %w", err)
 	}
 
-	backupRoot := filepath.Join(homeDir, ".gentle-ai", "backups")
+	backupRoot := filepath.Join(homeDir, state.StateDirName, "backups")
 	if err := os.MkdirAll(backupRoot, 0o755); err != nil {
 		return nil, fmt.Errorf("create backup root %q: %w", backupRoot, err)
 	}
@@ -1512,7 +1512,7 @@ func retainedOpenCodePluginOperations(adapter agents.Adapter, homeDir string) []
 	// The model-variants cache is shared by the OpenCode family; only an
 	// OpenCode removal clears it, as before Kilocode plugins were removed.
 	if adapter.Agent() == model.AgentOpenCode {
-		for _, path := range modelVariantsCachePaths(filepath.Join(homeDir, ".gentle-ai", "cache")) {
+		for _, path := range modelVariantsCachePaths(filepath.Join(homeDir, state.StateDirName, "cache")) {
 			ops = append(ops, removeFile(path))
 		}
 	}
