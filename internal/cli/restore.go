@@ -247,13 +247,10 @@ func listBackupsFromDir(homeDir string) []backup.Manifest {
 	return manifests
 }
 
-// backupRootDir returns the path to the backup directory under homeDir, or
-// under GENTLE_AI_HOME when set.
+// backupRootDir returns the backup directory of the resolved state folder (see
+// state.Dir), so restore reads from where install and sync wrote.
 func backupRootDir(homeDir string) string {
-	if os.Getenv(state.HomeEnv) != "" {
-		return state.BackupsDir(homeDir)
-	}
-	return homeDir + "/" + state.StateDirName + "/backups"
+	return state.BackupsDir(homeDir)
 }
 
 // defaultRestorer authorizes the current validated Codex root for managed backups.

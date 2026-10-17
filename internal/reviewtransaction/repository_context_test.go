@@ -16,6 +16,8 @@ import (
 	"strings"
 	"sync"
 	"testing"
+
+	"github.com/Santiago1809/teicos/internal/state"
 )
 
 func TestHistoricalRctx1ContextIsReadOnly(t *testing.T) {
@@ -24,7 +26,7 @@ func TestHistoricalRctx1ContextIsReadOnly(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	before, err := os.ReadFile(filepath.Join(os.Getenv("HOME"), ".gentle-ai", "review-contexts", "v1", handle+".json"))
+	before, err := os.ReadFile(filepath.Join(os.Getenv("HOME"), state.StateDirName, "review-contexts", "v1", handle+".json"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -35,7 +37,7 @@ func TestHistoricalRctx1ContextIsReadOnly(t *testing.T) {
 	if _, err := ResolveReviewRepositoryContext(t.Context(), repo, handle, binding); err == nil {
 		t.Fatal("current lifecycle resolver accepted historical rctx1")
 	}
-	after, err := os.ReadFile(filepath.Join(os.Getenv("HOME"), ".gentle-ai", "review-contexts", "v1", handle+".json"))
+	after, err := os.ReadFile(filepath.Join(os.Getenv("HOME"), state.StateDirName, "review-contexts", "v1", handle+".json"))
 	if err != nil || string(after) != string(before) {
 		t.Fatalf("historical rctx1 read changed locator bytes: %v", err)
 	}
@@ -137,7 +139,7 @@ func TestRctx2HandleResolvesAgainstTheCallerRepositoryWithoutMutation(t *testing
 	if err != nil || root != fixture.store.repo || resolved != binding {
 		t.Fatalf("rctx2 resolution after sibling Rn advance = root %q, binding %#v, error %v", root, resolved, err)
 	}
-	if _, err := os.Stat(filepath.Join(os.Getenv("HOME"), ".gentle-ai", "review-contexts")); !errors.Is(err, os.ErrNotExist) {
+	if _, err := os.Stat(filepath.Join(os.Getenv("HOME"), state.StateDirName, "review-contexts")); !errors.Is(err, os.ErrNotExist) {
 		t.Fatalf("rctx2 core created a v1 locator: %v", err)
 	}
 }
@@ -391,7 +393,7 @@ func TestRctx3HandleResolvesFromAnyCallerRepositoryWithoutMutation(t *testing.T)
 	if err != nil || root != fixture.store.repo || resolved != binding {
 		t.Fatalf("rctx3 resolution after sibling Rn advance = root %q, binding %#v, error %v", root, resolved, err)
 	}
-	if _, err := os.Stat(filepath.Join(os.Getenv("HOME"), ".gentle-ai", "review-contexts")); !errors.Is(err, os.ErrNotExist) {
+	if _, err := os.Stat(filepath.Join(os.Getenv("HOME"), state.StateDirName, "review-contexts")); !errors.Is(err, os.ErrNotExist) {
 		t.Fatalf("rctx3 core created a v1 locator: %v", err)
 	}
 }
@@ -692,7 +694,7 @@ func TestReviewRepositoryContextKeyIsCreatedOncePrivatelyByConcurrentDerivers(t 
 			t.Fatalf("concurrent key creator %d = %x, %v; want the winner's key", index, keys[index], errs[index])
 		}
 	}
-	path := filepath.Join(home, ".gentle-ai", reviewRepositoryContextKeyFile)
+	path := filepath.Join(home, state.StateDirName, reviewRepositoryContextKeyFile)
 	info, err := os.Lstat(path)
 	if err != nil || !info.Mode().IsRegular() || info.Size() != reviewRepositoryContextKeyBytes {
 		t.Fatalf("key file = %v, %v", info, err)
@@ -759,7 +761,7 @@ func TestReviewRepositoryContextKeyRefusesUnsafeFiles(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			path := filepath.Join(home, ".gentle-ai", reviewRepositoryContextKeyFile)
+			path := filepath.Join(home, state.StateDirName, reviewRepositoryContextKeyFile)
 			if err := os.Rename(path, path+".original"); err != nil {
 				t.Fatal(err)
 			}

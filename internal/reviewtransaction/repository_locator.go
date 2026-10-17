@@ -15,6 +15,8 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+
+	"github.com/Santiago1809/teicos/internal/state"
 )
 
 const (
@@ -677,7 +679,7 @@ func reviewRepositoryContextPath(handle string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return filepath.Join(home, ".gentle-ai", "review-contexts", "v1", handle+".json"), nil
+	return filepath.Join(state.Dir(home), "review-contexts", "v1", handle+".json"), nil
 }
 
 func reviewRepositoryContextHome() (string, error) {
@@ -689,7 +691,7 @@ func reviewRepositoryContextHome() (string, error) {
 }
 
 func ensureReviewRepositoryContextStorageRoot(home string) (string, error) {
-	root := filepath.Join(home, ".gentle-ai")
+	root := state.Dir(home)
 	if !locatorPathWithin(home, root) {
 		return "", errors.New("review repository context storage root escapes HOME")
 	}

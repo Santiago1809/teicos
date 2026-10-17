@@ -18,6 +18,8 @@ import (
 	"runtime"
 	"strings"
 	"unicode/utf8"
+
+	"github.com/Santiago1809/teicos/internal/state"
 )
 
 // An rctx3 handle seals the canonical repository root it was derived for,
@@ -341,7 +343,7 @@ func loadReviewRepositoryContextKey(create bool) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	dir := filepath.Join(home, ".gentle-ai")
+	dir := state.Dir(home)
 	path := filepath.Join(dir, reviewRepositoryContextKeyFile)
 	key, err := readReviewRepositoryContextKey(path)
 	if err == nil || !create || !errors.Is(err, fs.ErrNotExist) {

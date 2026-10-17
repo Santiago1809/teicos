@@ -175,7 +175,7 @@ func backupRoot() (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("resolve home directory: %w", err)
 	}
-	return filepath.Join(home, state.StateDirName, "backups"), nil
+	return state.BackupsDir(home), nil
 }
 
 // BackupRootFn is the function used to resolve the backup root directory.

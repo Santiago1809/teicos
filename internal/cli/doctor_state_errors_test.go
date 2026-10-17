@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -33,7 +34,7 @@ func TestRunDoctor_StateErrorsPreserveState(t *testing.T) {
 			home := t.TempDir()
 			path := state.Path(home)
 			if tt.payload != "" {
-				if err := os.MkdirAll(home+"/.gentle-ai", 0o755); err != nil {
+				if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 					t.Fatal(err)
 				}
 				if err := os.WriteFile(path, []byte(tt.payload), 0o600); err != nil {

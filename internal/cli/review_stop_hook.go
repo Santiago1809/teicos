@@ -15,6 +15,7 @@ import (
 
 	"github.com/Santiago1809/teicos/internal/components/filemerge"
 	"github.com/Santiago1809/teicos/internal/reviewtransaction"
+	"github.com/Santiago1809/teicos/internal/state"
 )
 
 // reviewStopHookSchema identifies the reminder envelope this hook prints to
@@ -322,7 +323,7 @@ func reviewStopHookReasonText(targetIdentity, root, runtimeAgent, startCommand s
 
 // reviewStopHookRecordPath is the per-session state file path for sessionID.
 func reviewStopHookRecordPath(home, sessionID string) string {
-	return filepath.Join(home, ".gentle-ai", "review-stop-hook", "v1", sessionID+".json")
+	return filepath.Join(state.Dir(home), "review-stop-hook", "v1", sessionID+".json")
 }
 
 // readReviewStopHookRecord reads sessionID's existing record, if any. A

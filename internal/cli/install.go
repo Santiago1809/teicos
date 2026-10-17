@@ -57,7 +57,7 @@ FLAGS
   --help, -h                         Show this help
 
 ISOLATED INSTALLS (absolute paths; all unset by default)
-  GENTLE_AI_HOME=<dir>               Gentle AI state, backups and telemetry state instead of ~/.gentle-ai
+  TEICOS_HOME=<dir>                  Teicos state, backups and telemetry state instead of ~/.teicos (GENTLE_AI_HOME is still read, deprecated)
   GENTLE_AI_PI_CONFIG_DIR=<dir>      gentle-pi config folder for persona.json and background-subagents.json
                                      instead of ~/.pi/gentle-ai (same folder as gentle-pi's GENTLE_PI_CONFIG_HOME)
   GENTLE_AI_ENGRAM_BIN=<file>        Use this Engram executable: no brew, download, go install or PATH change,

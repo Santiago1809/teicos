@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/Santiago1809/teicos/internal/reviewtransaction"
+	"github.com/Santiago1809/teicos/internal/state"
 )
 
 // Issue #4494: the consent answer re-enters negotiated START, which rebuilds
@@ -153,7 +154,7 @@ func reviewConsentStaleMarkerPath(home, repo string) string {
 		}
 	}
 	digest := sha256.Sum256([]byte(filepath.Clean(canonical)))
-	return filepath.Join(home, ".gentle-ai", "review-stop-hook", "v1", "consent-stale", hex.EncodeToString(digest[:])+".json")
+	return filepath.Join(state.Dir(home), "review-stop-hook", "v1", "consent-stale", hex.EncodeToString(digest[:])+".json")
 }
 
 // recordReviewConsentStaleRefusal records that a spent consent answer was

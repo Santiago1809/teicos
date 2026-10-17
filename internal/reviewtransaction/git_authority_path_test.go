@@ -9,6 +9,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/Santiago1809/teicos/internal/state"
 )
 
 func TestCanonicalGitDirectoryRejectsMalformedRecords(t *testing.T) {
@@ -273,7 +275,7 @@ func TestGitCommonDirectoryMismatchFailsBeforeAuthorityMutation(t *testing.T) {
 			if err := operation.run(ctx, repo); err == nil {
 				t.Error("operation accepted an unrelated Git common directory")
 			}
-			for _, path := range []string{filepath.Join(unrelated, "gentle-ai"), filepath.Join(home, ".gentle-ai")} {
+			for _, path := range []string{filepath.Join(unrelated, "gentle-ai"), filepath.Join(home, state.StateDirName)} {
 				if _, err := os.Lstat(path); !os.IsNotExist(err) {
 					t.Errorf("rejected common directory mutated %q: %v", path, err)
 				}

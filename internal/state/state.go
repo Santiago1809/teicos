@@ -15,7 +15,7 @@ import (
 	"github.com/Santiago1809/teicos/internal/model"
 )
 
-const stateDir = ".gentle-ai"
+const stateDir = StateDirName
 const stateFile = "state.json"
 
 // ModelAssignmentState is the JSON-serialisable form of a provider+model pair
