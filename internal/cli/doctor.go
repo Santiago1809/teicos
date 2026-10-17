@@ -819,7 +819,7 @@ func checkEngramHTTP(id doctor.CheckID, baseURL string) CheckResult {
 // checkDiskSpace reports free space on the ~/.gentle-ai filesystem.
 func checkDiskSpace(homeDir string) CheckResult {
 	const id = doctor.CheckDiskSpace
-	dir := filepath.Join(homeDir, ".gentle-ai")
+	dir := filepath.Join(homeDir, state.StateDirName)
 
 	free, err := availableBytesFn(dir)
 	if err != nil {
