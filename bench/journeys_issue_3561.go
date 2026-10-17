@@ -36,7 +36,7 @@ func issue3561DanglingAncestorFixture(sandbox *Sandbox) error {
 	if err := os.MkdirAll(filepath.Join(sandbox.Home, ".claude"), 0o755); err != nil {
 		return err
 	}
-	statePath := filepath.Join(sandbox.Home, ".gentle-ai", "state.json")
+	statePath := filepath.Join(sandbox.Home, ".teicos", "state.json")
 	state := fmt.Sprintf(`{"installed_agents":["opencode","claude-code"],"last_update_check":%q}`, time.Now().UTC().Format(time.RFC3339Nano))
 	if err := sandbox.write(statePath, state); err != nil {
 		return err
@@ -111,7 +111,7 @@ func issue3561VerifyDoctor(sandbox *Sandbox, observation Observation) error {
 	if string(state) != sandbox.Scratch["issue-3561-state-content"] {
 		return fmt.Errorf("doctor changed state.json: got %q, want %q", string(state), sandbox.Scratch["issue-3561-state-content"])
 	}
-	backupPath := filepath.Join(sandbox.Home, ".gentle-ai", "backups")
+	backupPath := filepath.Join(sandbox.Home, ".teicos", "backups")
 	if _, err := os.Lstat(backupPath); err == nil {
 		return fmt.Errorf("doctor unexpectedly created %q", backupPath)
 	} else if !os.IsNotExist(err) {

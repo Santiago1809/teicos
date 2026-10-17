@@ -669,7 +669,7 @@ func nonsenseGlobalMode(sandbox *Sandbox) error {
 	if err := stageProse(sandbox.Repo, "nonsense")(sandbox); err != nil {
 		return err
 	}
-	path := filepath.Join(sandbox.Home, ".gentle-ai", "state.json")
+	path := filepath.Join(sandbox.Home, ".teicos", "state.json")
 	record := globalModeRecord{RDDMode: "sometimes", RDDModeRecorded: "2026-01-01T00:00:00Z"}
 	encoded, err := json.MarshalIndent(record, "", "  ")
 	if err != nil {
