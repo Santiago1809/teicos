@@ -15,7 +15,7 @@ import (
 // stateDir is the default folder name under home. Telemetry state lives next
 // to the rest of Gentle AI's uncommitted user state, in state.Dir, so tests
 // can point both at one temp dir.
-const stateDir = ".gentle-ai"
+const stateDir = state.StateDirName
 const stateFile = "telemetry.json"
 
 // Counters counts activity since the previous successful send. They are
