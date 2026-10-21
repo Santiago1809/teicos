@@ -68,6 +68,11 @@ func assertKiloParityAgents(t *testing.T, agents map[string]any) {
 		}
 	}
 	for name, raw := range agents {
+		if strings.HasPrefix(name, "sdd-") {
+			// SDD agents belong to gentle-ai: they keep their ownership
+			// marker so the two products can share the same agent settings.
+			continue
+		}
 		entry, _ := raw.(map[string]any)
 		if _, marked := entry["__managed_by"]; marked {
 			t.Fatalf("Kilo agent %q still carries __managed_by (#4471): %#v", name, entry)
@@ -160,8 +165,17 @@ func TestKiloUpgradeRetiresOwnedAgents(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			if bytes.Contains(first, []byte(`"__managed_by"`)) {
-				t.Fatalf("legacy marker remains:\n%s", first)
+			// The legacy marker is stripped from the entries Teicos owns. The
+			// sdd-* agents belong to gentle-ai: they keep their marker so the
+			// two products can share the same agent configuration.
+			for name, value := range mustAgents(t, first) {
+				entry, ok := value.(map[string]any)
+				if !ok || strings.HasPrefix(name, "sdd-") {
+					continue
+				}
+				if _, marked := entry["__managed_by"]; marked {
+					t.Errorf("legacy marker remains on %s:\n%s", name, first)
+				}
 			}
 			after, err := filemerge.UnmarshalJSONObject(first)
 			if err != nil {
@@ -171,8 +185,8 @@ func TestKiloUpgradeRetiresOwnedAgents(t *testing.T) {
 			original := before["agent"].(map[string]any)
 			assertKiloParityAgents(t, agents)
 			for name := range agents {
-				if strings.HasPrefix(name, "sdd-") {
-					t.Errorf("retired owned agent %s remains", name)
+				if strings.HasPrefix(name, "sdd-") && agents[name] == nil {
+					t.Errorf("gentle-ai agent %s was removed", name)
 				}
 			}
 			if !reflect.DeepEqual(after["provider"], before["provider"]) {

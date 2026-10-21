@@ -84,6 +84,17 @@ func TestOpenCodeFreshInstallAllowsOrchestratorQuestion(t *testing.T) {
 	}
 }
 
+// mustAgents reads the agent map out of an OpenCode settings document.
+func mustAgents(t *testing.T, body []byte) map[string]any {
+	t.Helper()
+	root, err := filemerge.UnmarshalJSONObject(body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	agents, _ := root["agent"].(map[string]any)
+	return agents
+}
+
 func TestOpenCodeUpgradeRetiresOwnedAgents(t *testing.T) {
 	for _, tc := range []struct {
 		name string
@@ -126,8 +137,17 @@ func TestOpenCodeUpgradeRetiresOwnedAgents(t *testing.T) {
 				if err != nil {
 					t.Fatal(err)
 				}
-				if bytes.Contains(first, []byte(`"__managed_by"`)) {
-					t.Fatal("legacy marker remains")
+				// The legacy marker is stripped from the entries Teicos owns.
+				// The sdd-* agents belong to gentle-ai: they keep their marker
+				// so the two products can share the same agent configuration.
+				for name, value := range mustAgents(t, first) {
+					entry, ok := value.(map[string]any)
+					if !ok || strings.HasPrefix(name, "sdd-") {
+						continue
+					}
+					if _, marked := entry["__managed_by"]; marked {
+						t.Errorf("legacy marker remains on %s", name)
+					}
 				}
 				after, err := filemerge.UnmarshalJSONObject(first)
 				if err != nil {
@@ -135,9 +155,14 @@ func TestOpenCodeUpgradeRetiresOwnedAgents(t *testing.T) {
 				}
 				agents := after["agent"].(map[string]any)
 				original := before["agent"].(map[string]any)
-				for _, key := range []string{"sdd-init", "sdd-apply", "general", "explore"} {
+				for _, key := range []string{"general", "explore"} {
 					if _, ok := agents[key]; ok {
 						t.Errorf("retired owned agent %s remains", key)
+					}
+				}
+				for _, key := range []string{"sdd-init", "sdd-apply"} {
+					if _, ok := agents[key]; !ok {
+						t.Errorf("gentle-ai agent %s was removed", key)
 					}
 				}
 				if !reflect.DeepEqual(after["provider"], before["provider"]) {
