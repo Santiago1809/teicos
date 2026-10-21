@@ -285,12 +285,12 @@ func TestRunSyncWorkspaceScopeUpdatesWorkspaceWithoutGlobalMutation(t *testing.T
 	}
 	foundSkip := false
 	for _, action := range result.ManualActions {
-		if strings.Contains(action, "gga") {
+		if strings.Contains(action, "managed only in the global scope") {
 			foundSkip = true
 		}
 	}
 	if !foundSkip {
-		t.Errorf("workspace sync did not report skipping the global-only gga component; manual actions = %v", result.ManualActions)
+		t.Errorf("workspace sync did not report skipping globally managed content; manual actions = %v", result.ManualActions)
 	}
 
 	// The global tree — state, telemetry, backups, plugins, prompts — must be
@@ -313,7 +313,7 @@ func TestRunSyncWorkspaceScopeUpdatesWorkspaceWithoutGlobalMutation(t *testing.T
 // workspace sync selecting Engram, Context7, Skills, and Permission (the
 // components that resolve a workspace-managed OpenCode settings authority)
 // must write and verify their workspace targets while the global tree — files
-// and directories — stays byte-identical. GGA, ClaudeTheme, and the OpenCode
+// and directories — stays byte-identical. ClaudeTheme and the OpenCode
 // Gentle Logo are deliberately absent: they are global-only and skipped by
 // design, not silently expected to work.
 func TestRunSyncWorkspaceScopeUpdatesOpenCodeManagedComponentsWithoutGlobalMutation(t *testing.T) {

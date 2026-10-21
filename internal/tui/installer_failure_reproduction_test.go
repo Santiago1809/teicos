@@ -44,7 +44,7 @@ func TestInstallerFailureRollbackReturnsControl(t *testing.T) {
 		"community-tool:codegraph", "opencode-plugin:sdd-engram-plugin",
 		"opencode-plugin:sub-agent-statusline", "component:claude-theme",
 		"component:context7", "component:persona", "component:engram",
-		"component:gga", "component:opencode-gentle-logo", "component:permissions",
+		"component:toolx", "component:opencode-gentle-logo", "component:permissions",
 		"component:sdd", "component:skills", "agent-guidance:claude-code",
 		"agent-guidance:codex", "agent-guidance:hermes", "agent-guidance:opencode",
 		"component:compatibility-skills-refresh",

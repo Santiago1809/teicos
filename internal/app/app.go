@@ -551,7 +551,7 @@ func runUpdate(ctx context.Context, currentVersion string, profile system.Platfo
 // runUpgrade handles the `teicos upgrade [--dry-run] [tool...]` command.
 //
 // This command:
-//   - Checks for available updates for managed tools (gentle-ai, engram, gga)
+//   - Checks for available updates for managed tools (teicos, engram)
 //   - Snapshots agent config paths before execution (config preservation by design)
 //   - Executes binary-only upgrades; does NOT invoke install or sync pipelines
 //   - Skips gentle-ai itself when running as a dev build (version="dev")

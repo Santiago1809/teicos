@@ -59,7 +59,7 @@
       "type": "array",
       "items": {
         "type": "string",
-        "enum": ["persona", "sdd", "engram", "context7", "gga", "skills", "permissions", "theme", "claude-theme", "opencode-gentle-logo"]
+        "enum": ["persona", "sdd", "engram", "context7", "skills", "permissions", "theme", "claude-theme", "opencode-gentle-logo"]
       },
       "maxItems": 10
     },

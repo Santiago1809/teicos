@@ -33,7 +33,7 @@
 
 ### Homebrew component installs
 
-When you select Engram or GGA, Gentle AI taps the repository and, if
+When you select Engram, Teicos taps the repository and, if
 `brew help trust` succeeds, runs `brew trust --formula` for only the selected
 component before installing it. This applies to macOS and Homebrew on Linux;
 it does not trust the entire tap. Older Homebrew versions without `trust`

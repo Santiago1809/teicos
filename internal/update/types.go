@@ -24,7 +24,7 @@ const (
 	InstallBinary    InstallMethod = "binary"
 	// InstallScript downloads and executes the project's install.sh via pipe.
 	// Used for tools that distribute via shell scripts rather than pre-built binaries
-	// (e.g., GGA which has no release binary assets).
+	// (e.g., a tool which has no release binary assets).
 	InstallScript InstallMethod = "script"
 )
 

@@ -25,7 +25,6 @@ import (
 	"github.com/Santiago1809/teicos/internal/assets"
 	"github.com/Santiago1809/teicos/internal/backup"
 	"github.com/Santiago1809/teicos/internal/components/agentguidance"
-	"github.com/Santiago1809/teicos/internal/components/gga"
 	"github.com/Santiago1809/teicos/internal/components/legacyassets"
 	"github.com/Santiago1809/teicos/internal/components/opencodedefault"
 	"github.com/Santiago1809/teicos/internal/components/opencoderuntimeplugins"
@@ -334,10 +333,6 @@ func isRealDir(path string) bool {
 func managedGlobalBackupPaths(homeDir string) []string {
 	return []string{
 		state.Path(homeDir),
-		gga.ConfigPath(homeDir),
-		gga.AgentsTemplatePath(homeDir),
-		gga.RuntimePRModePath(homeDir),
-		gga.RuntimePS1Path(homeDir),
 	}
 }
 

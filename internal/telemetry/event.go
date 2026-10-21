@@ -47,7 +47,7 @@ var knownAgents = map[string]bool{
 var knownComponents = map[string]bool{
 	string(model.ComponentEngram): true, string(model.ComponentSDD): true, string(model.ComponentSkills): true,
 	string(model.ComponentContext7): true, string(model.ComponentPersona): true, string(model.ComponentPermission): true,
-	string(model.ComponentGGA): true, string(model.ComponentTheme): true, string(model.ComponentClaudeTheme): true,
+	string(model.ComponentTheme): true, string(model.ComponentClaudeTheme): true,
 	string(model.ComponentOpenCodeGentleLogo): true,
 }
 

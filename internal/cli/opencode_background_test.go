@@ -426,7 +426,7 @@ func TestLegacySDDInstallDoesNotWriteBackgroundPolicy(t *testing.T) {
 func installTestHome(t *testing.T) string {
 	t.Helper()
 	home := t.TempDir()
-	// GGA resolves its Windows config from APPDATA, not osUserHomeDir.
+	// ToolX resolves its Windows config from APPDATA, not osUserHomeDir.
 	t.Setenv("APPDATA", filepath.Join(home, "AppData", "Roaming"))
 	oldHome, oldRun, oldLookPath := osUserHomeDir, runCommand, cmdLookPath
 	oldVersion, oldTarget := runOpenCodeVersion, resolveOpenCodeTarget

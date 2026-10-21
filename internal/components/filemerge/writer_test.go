@@ -217,7 +217,7 @@ func TestWriteFileAtomicModeForcesRequestedPermOnExistingFile(t *testing.T) {
 	}
 }
 
-// TestWriteFileAtomicModeEnforcesPermOnIdenticalContent pins the gga runtime
+// TestWriteFileAtomicModeEnforcesPermOnIdenticalContent pins the toolx runtime
 // case named in gentle-ai#5006(F5): an existing script whose content already
 // matches the embedded asset but whose mode drifted (e.g. 0644) must still be
 // forced to the intended mode (0755) by the forced API. That mode-only repair

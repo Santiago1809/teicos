@@ -100,10 +100,10 @@ func TestModulePathForVersion(t *testing.T) {
 		},
 		{
 			name:    "repo substring inside longer name is not matched as a segment",
-			base:    "github.com/Gentleman-Programming/gentleman-guardian-angel/cmd/gga",
+			base:    "github.com/Gentleman-Programming/gentleman-guardian-angel/cmd/toolx",
 			repo:    "guardian-angel",
 			version: "v2.0.0",
-			want:    "github.com/Gentleman-Programming/gentleman-guardian-angel/cmd/gga/v2",
+			want:    "github.com/Gentleman-Programming/gentleman-guardian-angel/cmd/toolx/v2",
 		},
 	}
 

@@ -65,7 +65,7 @@ func TestMain(m *testing.M) {
 	if err := os.Setenv("USERPROFILE", testHome); err != nil {
 		panic(err)
 	}
-	// GGA resolves Windows config from APPDATA even when a test passes a
+	// ToolX resolves Windows config from APPDATA even when a test passes a
 	// different home. Clear it so each test's explicit home remains the root.
 	if err := os.Unsetenv("APPDATA"); err != nil {
 		panic(err)
@@ -82,6 +82,6 @@ func TestMain(m *testing.M) {
 
 func TestAppTestMainIsolatesWindowsAppData(t *testing.T) {
 	if got := os.Getenv("APPDATA"); got != "" {
-		t.Fatalf("APPDATA = %q, want empty so explicit test homes control GGA paths", got)
+		t.Fatalf("APPDATA = %q, want empty so explicit test homes control ToolX paths", got)
 	}
 }

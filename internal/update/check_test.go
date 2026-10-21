@@ -88,8 +88,8 @@ func TestDetectInstalledVersion(t *testing.T) {
 			wantVersion: "dev",
 		},
 		{
-			name: "gga not installed",
-			tool: ToolInfo{Name: "gga", DetectCmd: []string{"gga", "--version"}},
+			name: "toolx not installed",
+			tool: ToolInfo{Name: "toolx", DetectCmd: []string{"toolx", "--version"}},
 			lookPathFn: func(string) (string, error) {
 				return "", fmt.Errorf("not found")
 			},
@@ -108,12 +108,12 @@ func TestDetectInstalledVersion(t *testing.T) {
 		},
 		{
 			name: "unparseable version output",
-			tool: ToolInfo{Name: "gga", DetectCmd: []string{"gga", "--version"}},
+			tool: ToolInfo{Name: "toolx", DetectCmd: []string{"toolx", "--version"}},
 			lookPathFn: func(string) (string, error) {
-				return "/usr/local/bin/gga", nil
+				return "/usr/local/bin/toolx", nil
 			},
 			execCommandFn: func(name string, args ...string) *exec.Cmd {
-				return mockCmd("echo", "gga - no version info")
+				return mockCmd("echo", "toolx - no version info")
 			},
 			wantVersion: "",
 		},
@@ -1015,16 +1015,12 @@ func TestCheckAll(t *testing.T) {
 	httpClient = server.Client()
 	httpClient.Transport = &testTransport{server: server}
 
-	// Mock: engram is installed at v0.3.2, gga is not installed.
+	// Mock: engram is installed at v0.3.2.
 	lookPath = func(name string) (string, error) {
-		switch name {
-		case "engram":
+		if name == "engram" {
 			return "/usr/local/bin/engram", nil
-		case "gga":
-			return "", fmt.Errorf("not found")
-		default:
-			return "", fmt.Errorf("not found")
 		}
+		return "", fmt.Errorf("not found")
 	}
 	execCommand = func(name string, args ...string) *exec.Cmd {
 		if name == "engram" {
@@ -1038,8 +1034,8 @@ func TestCheckAll(t *testing.T) {
 	profile := system.PlatformProfile{OS: "darwin", PackageManager: "brew", Supported: true}
 	results := CheckAll(context.Background(), "1.5.0", profile)
 
-	if len(results) != 3 {
-		t.Fatalf("len(results) = %d, want 3", len(results))
+	if len(results) != 2 {
+		t.Fatalf("len(results) = %d, want 2", len(results))
 	}
 
 	// gentle-ai: 1.5.0 local == 1.5.0 remote → UpToDate
@@ -1048,8 +1044,6 @@ func TestCheckAll(t *testing.T) {
 	// engram: 0.3.2 local < 0.4.0 remote → UpdateAvailable
 	assertResult(t, results[1], "engram", UpdateAvailable, "0.3.2", "0.4.0")
 
-	// gga: not installed
-	assertResult(t, results[2], "gga", NotInstalled, "", "2.0.0")
 }
 
 func TestCheckSingleTool_EngramUsesBinaryReleaseChannel(t *testing.T) {
@@ -1144,9 +1138,6 @@ func TestCheckAll_NetworkError(t *testing.T) {
 
 	if results[1].Status != CheckFailed {
 		t.Fatalf("engram status = %q, want %q", results[1].Status, CheckFailed)
-	}
-	if results[2].Status != CheckFailed {
-		t.Fatalf("gga status = %q, want %q", results[2].Status, CheckFailed)
 	}
 }
 
@@ -1249,25 +1240,6 @@ func TestUpdateHint(t *testing.T) {
 			tool:    ToolInfo{Name: "engram"},
 			profile: system.PlatformProfile{OS: "windows", PackageManager: "winget"},
 			want:    "teicos upgrade (downloads pre-built binary)",
-		},
-		{
-			name:          "gga macOS brew-owned",
-			tool:          ToolInfo{Name: "gga"},
-			profile:       system.PlatformProfile{OS: "darwin", PackageManager: "brew"},
-			brewInstalled: true,
-			want:          "brew upgrade gga",
-		},
-		{
-			name:    "gga macOS non-brew",
-			tool:    ToolInfo{Name: "gga"},
-			profile: system.PlatformProfile{OS: "darwin", PackageManager: "brew"},
-			want:    "See https://github.com/Gentleman-Programming/gentleman-guardian-angel",
-		},
-		{
-			name:    "gga linux",
-			tool:    ToolInfo{Name: "gga"},
-			profile: system.PlatformProfile{OS: "linux", PackageManager: "apt"},
-			want:    "See https://github.com/Gentleman-Programming/gentleman-guardian-angel",
 		},
 		{
 			name:    "unknown tool",
@@ -1434,7 +1406,7 @@ func TestParseVersionFromOutput(t *testing.T) {
 		want   string
 	}{
 		{name: "engram v0.3.2", output: "engram v0.3.2", want: "0.3.2"},
-		{name: "gga 1.0.0", output: "gga version 1.0.0", want: "1.0.0"},
+		{name: "toolx 1.0.0", output: "toolx version 1.0.0", want: "1.0.0"},
 		{name: "bare version", output: "2.1.0", want: "2.1.0"},
 		{name: "no version", output: "no version info here", want: ""},
 		{name: "empty", output: "", want: ""},
@@ -1452,8 +1424,8 @@ func TestParseVersionFromOutput(t *testing.T) {
 
 // TestRegistryContents verifies the registry has all expected tools.
 func TestRegistryContents(t *testing.T) {
-	if len(Tools) != 3 {
-		t.Fatalf("len(Tools) = %d, want 3", len(Tools))
+	if len(Tools) != 2 {
+		t.Fatalf("len(Tools) = %d, want 2", len(Tools))
 	}
 
 	expected := map[string]struct {
@@ -1462,7 +1434,6 @@ func TestRegistryContents(t *testing.T) {
 	}{
 		"gentle-ai": {owner: "Santiago1809", repo: "teicos"},
 		"engram":    {owner: "Gentleman-Programming", repo: "engram"},
-		"gga":       {owner: "Gentleman-Programming", repo: "gentleman-guardian-angel"},
 	}
 
 	for _, tool := range Tools {
@@ -1483,15 +1454,12 @@ func TestRegistryContents(t *testing.T) {
 		t.Fatalf("gentle-ai DetectCmd should be nil")
 	}
 
-	// engram and gga must have non-nil DetectCmd.
+	// engram must have a non-nil DetectCmd.
 	if Tools[1].DetectCmd == nil {
 		t.Fatalf("engram DetectCmd should not be nil")
 	}
 	if Tools[1].ReleaseTagPattern != `^v[0-9]+\.[0-9]+\.[0-9]+$` {
 		t.Fatalf("engram ReleaseTagPattern = %q, want binary v* channel pattern", Tools[1].ReleaseTagPattern)
-	}
-	if Tools[2].DetectCmd == nil {
-		t.Fatalf("gga DetectCmd should not be nil")
 	}
 }
 
@@ -1659,7 +1627,7 @@ func TestCheckFiltered_UnknownToolIgnored(t *testing.T) {
 //
 // The spec says:
 //   - Dev build MUST be reported as development-build semantic
-//   - gentle-ai self-upgrade is skipped while engram/gga remain eligible
+//   - gentle-ai self-upgrade is skipped while engram/toolx remain eligible
 func TestCheckFiltered_DevBuildSemanticsForGentleAI(t *testing.T) {
 	mockNoHomebrew(t)
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -1823,14 +1791,14 @@ func TestNoUpdatesPath(t *testing.T) {
 	httpClient.Transport = &testTransport{server: server}
 
 	// Absence includes fallback locations, not just PATH. Never let a local
-	// GGA PowerShell shim escape the command fixture and run on the host.
+	// ToolX PowerShell shim escape the command fixture and run on the host.
 	osStat = func(string) (os.FileInfo, error) { return nil, os.ErrNotExist }
 	runPowerShell = func(context.Context, ...string) ([]byte, error) {
 		t.Error("absent-tool detection must not execute PowerShell")
 		return nil, fmt.Errorf("unexpected PowerShell execution")
 	}
 
-	// engram is at v0.3.2 (same as remote), gga is not installed
+	// engram is at v0.3.2 (same as remote)
 	lookPath = func(name string) (string, error) {
 		if name == "engram" {
 			return "/usr/local/bin/engram", nil
@@ -1843,24 +1811,19 @@ func TestNoUpdatesPath(t *testing.T) {
 		}
 		return mockCmd("false")
 	}
-	// Only engram and gga for this test (skip gentle-ai to avoid dev-build behavior)
-	Tools = []ToolInfo{Tools[1], Tools[2]}
+	// Only engram for this test (skip gentle-ai to avoid dev-build behavior)
+	Tools = []ToolInfo{Tools[1]}
 
 	profile := system.PlatformProfile{OS: "darwin", PackageManager: "brew", Supported: true}
 
 	results := CheckFiltered(context.Background(), "1.0.0", profile, nil)
-	if len(results) != 2 {
-		t.Fatalf("len = %d, want 2", len(results))
+	if len(results) != 1 {
+		t.Fatalf("len = %d, want 1", len(results))
 	}
 
 	// engram: up to date
 	if results[0].Status != UpToDate {
 		t.Fatalf("engram status = %q, want UpToDate", results[0].Status)
-	}
-
-	// gga: not installed
-	if results[1].Status != NotInstalled {
-		t.Fatalf("gga status = %q, want NotInstalled", results[1].Status)
 	}
 }
 
@@ -1925,7 +1888,7 @@ func TestInstallMethodFieldsOnRegistry(t *testing.T) {
 }
 
 func TestBuildExecCmd_Ps1UsesPoershellFile(t *testing.T) {
-	ps1Path := `C:\Users\test\bin\gga.ps1`
+	ps1Path := `C:\Users\test\bin\toolx.ps1`
 
 	gotBin, gotArgs := buildExecCmd(ps1Path, []string{"--version"})
 
@@ -1953,7 +1916,7 @@ func TestBuildExecCmd_NonPs1Passthrough(t *testing.T) {
 	}{
 		{"/usr/local/bin/engram", []string{"version"}},
 		{`C:\Users\user\AppData\Local\engram\bin\engram.exe`, []string{"version"}},
-		{"/home/user/.local/bin/gga", []string{"--version"}},
+		{"/home/user/.local/bin/toolx", []string{"--version"}},
 	}
 
 	for _, c := range cases {
@@ -1974,18 +1937,18 @@ func TestBuildExecCmd_NonPs1Passthrough(t *testing.T) {
 }
 
 // TestDetectInstalledVersionPs1FallbackInvokesViaPowershell verifies the full
-// integration path: when LookPath fails for gga, the fallback finds a .ps1
+// integration path: when LookPath fails for toolx, the fallback finds a .ps1
 // file on disk and dispatches it through the central PowerShell resolver.
 func TestDetectInstalledVersionPs1FallbackInvokesViaPowershell(t *testing.T) {
 	tmpDir := t.TempDir()
-	ps1Path := filepath.Join(tmpDir, "gga.ps1")
+	ps1Path := filepath.Join(tmpDir, "toolx.ps1")
 	if err := os.WriteFile(ps1Path, []byte(""), 0o644); err != nil {
 		t.Fatal(err)
 	}
 
 	tool := ToolInfo{
-		Name:      "gga",
-		DetectCmd: []string{"gga", "--version"},
+		Name:      "toolx",
+		DetectCmd: []string{"toolx", "--version"},
 		FallbackPaths: func(homeDir, localAppData string) []string {
 			return []string{ps1Path}
 		},
@@ -2004,7 +1967,7 @@ func TestDetectInstalledVersionPs1FallbackInvokesViaPowershell(t *testing.T) {
 		userHomeDir = origUserHomeDir
 	})
 
-	// Simulate stale PATH: gga not found via LookPath.
+	// Simulate stale PATH: toolx not found via LookPath.
 	lookPath = func(string) (string, error) { return "", fmt.Errorf("not found") }
 	osStat = os.Stat // real stat so the .ps1 file is found
 	userHomeDir = func() (string, error) { return t.TempDir(), nil }
@@ -2015,7 +1978,7 @@ func TestDetectInstalledVersionPs1FallbackInvokesViaPowershell(t *testing.T) {
 	runPowerShell = func(_ context.Context, args ...string) ([]byte, error) {
 		capturedBinary = powerShellCommand
 		capturedArgs = append([]string{}, args...)
-		return []byte("gga 1.2.3"), nil
+		return []byte("toolx 1.2.3"), nil
 	}
 
 	got := detectInstalledVersion(context.Background(), tool, "")

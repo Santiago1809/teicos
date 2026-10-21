@@ -24,7 +24,7 @@ internal/
   backup/                  Config snapshot + restore
   assets/                  Embedded skill files + persona templates
   components/              Per-component install/inject logic
-    engram/  skills/  mcp/  persona/  theme/  permissions/  gga/
+    engram/  skills/  mcp/  persona/  theme/  permissions/
     agentguidance/         Always-installed routing guidance projected into every agent
     agenthooks/            Runtime hook installation independent of optional components
     telemetryruntime/      Native runtime telemetry event adapters and managed hooks

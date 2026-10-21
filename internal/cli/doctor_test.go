@@ -189,19 +189,19 @@ func TestCheckOneTool_WindowsPowerShellShimFallback(t *testing.T) {
 	executableExtsFn = func() []string { return []string{".exe", ".cmd"} }
 
 	dir := t.TempDir()
-	ps1Path := filepath.Join(dir, "gga.ps1")
+	ps1Path := filepath.Join(dir, "toolx.ps1")
 	if err := os.WriteFile(ps1Path, []byte("fake"), 0o755); err != nil {
 		t.Fatal(err)
 	}
 
 	lookPathFn = func(file string) (string, error) {
-		if file == "gga.ps1" {
+		if file == "toolx.ps1" {
 			return ps1Path, nil
 		}
 		return "", errors.New("not found")
 	}
 
-	got := checkOneTool("gga", []string{dir})
+	got := checkOneTool("toolx", []string{dir})
 
 	if got.Status != CheckStatusPass {
 		t.Fatalf("expected pass, got %s: %s", got.Status, got.Detail)
@@ -225,21 +225,21 @@ func TestCheckOneTool_WindowsShimVariantsInSameDirAreNotDuplicates(t *testing.T)
 	executableExtsFn = func() []string { return []string{".cmd"} }
 
 	dir := t.TempDir()
-	cmdPath := filepath.Join(dir, "gga.cmd")
-	for _, path := range []string{cmdPath, filepath.Join(dir, "gga.ps1")} {
+	cmdPath := filepath.Join(dir, "toolx.cmd")
+	for _, path := range []string{cmdPath, filepath.Join(dir, "toolx.ps1")} {
 		if err := os.WriteFile(path, []byte("fake"), 0o755); err != nil {
 			t.Fatal(err)
 		}
 	}
 
 	lookPathFn = func(file string) (string, error) {
-		if file == "gga" {
+		if file == "toolx" {
 			return cmdPath, nil
 		}
 		return "", errors.New("not found")
 	}
 
-	got := checkOneTool("gga", []string{dir})
+	got := checkOneTool("toolx", []string{dir})
 
 	if got.Status != CheckStatusPass {
 		t.Fatalf("expected pass for same-directory shim variants, got %s: %s", got.Status, got.Detail)
@@ -1013,8 +1013,7 @@ func TestRunDoctor_IntegrationAllMocked(t *testing.T) {
 	want := fmt.Sprintf(`teicos doctor — system health check
 =======================================
 
-  [ok]  tool:gentle-ai                 gentle-ai found at /usr/local/bin/gentle-ai; invoked executable: /usr/local/bin/gentle-ai (version dev)
-  [ok]  tool:gga                       gga found at /usr/local/bin/gga
+  [ok]  tool:teicos                    teicos found at /usr/local/bin/teicos
   [ok]  tool:engram                    engram found at /usr/local/bin/engram
   [ok]  tool:claude                    claude found at /usr/local/bin/claude
   [ok]  state:json                     state file OK — 1 agent(s) installed: claude-code
@@ -1022,7 +1021,7 @@ func TestRunDoctor_IntegrationAllMocked(t *testing.T) {
   [ok]  engram:reachable               engram MCP (stdio) answered the initialize handshake for persisted configuration: %s
   [ok]  disk:space                     1024 MB free on %s filesystem
 
-Summary: 8 passed, 0 failed, 0 warnings
+Summary: 7 passed, 0 failed, 0 warnings
 Status:  healthy
 `, configPath, filepath.Join(homeDir, state.StateDirName))
 	if got := buf.String(); got != want {
@@ -1543,19 +1542,19 @@ func TestCheckToolBinaries_AgentNotInState_NotReported(t *testing.T) {
 	}
 
 	// Core tools must still be required.
-	var sawGentleAI, sawEngram, sawPi bool
+	var sawTeicos, sawEngram, sawPi bool
 	for _, r := range results {
 		switch r.Name {
-		case "tool:gentle-ai":
-			sawGentleAI = true
+		case "tool:teicos":
+			sawTeicos = true
 		case "tool:engram":
 			sawEngram = true
 		case "tool:pi":
 			sawPi = true
 		}
 	}
-	if !sawGentleAI || !sawEngram || !sawPi {
-		t.Errorf("expected core+pi checks present; got sawGentleAI=%v sawEngram=%v sawPi=%v", sawGentleAI, sawEngram, sawPi)
+	if !sawTeicos || !sawEngram || !sawPi {
+		t.Errorf("expected core+pi checks present; got sawTeicos=%v sawEngram=%v sawPi=%v", sawTeicos, sawEngram, sawPi)
 	}
 }
 
@@ -1576,7 +1575,7 @@ func TestCheckToolBinaries_StateMissing_ChecksCoreOnly(t *testing.T) {
 	for _, r := range results {
 		required[string(r.Name)] = struct{}{}
 	}
-	for _, core := range []string{"tool:gentle-ai", "tool:gga", "tool:engram"} {
+	for _, core := range []string{"tool:teicos", "tool:engram"} {
 		if _, ok := required[core]; !ok {
 			t.Errorf("expected %s in core-only output, got %+v", core, required)
 		}

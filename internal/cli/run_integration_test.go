@@ -26,7 +26,7 @@ import (
 	"github.com/Santiago1809/teicos/internal/system"
 )
 
-// missingBinaryLookPath simulates all installable binaries (engram, gga) as
+// missingBinaryLookPath simulates all installable binaries (engram) as
 // missing. Go availability is no longer required for engram installation
 // (pre-built binaries are downloaded directly from GitHub Releases).
 func missingBinaryLookPath(name string) (string, error) {
@@ -1575,233 +1575,6 @@ func TestRunInstallEngramDefaultModeAttemptsClaudeSetup(t *testing.T) {
 	}
 }
 
-func TestRunInstallAntigravityInitializesCLISettingsAfterEngramSetup(t *testing.T) {
-	home := t.TempDir()
-	restoreHome := osUserHomeDir
-	restoreCommand := runCommand
-	restoreLookPath := cmdLookPath
-	t.Cleanup(func() {
-		osUserHomeDir = restoreHome
-		runCommand = restoreCommand
-		cmdLookPath = restoreLookPath
-	})
-
-	osUserHomeDir = func() (string, error) { return home, nil }
-	cmdLookPath = func(name string) (string, error) {
-		return "/usr/local/bin/" + name, nil
-	}
-	runCommand = func(name string, args ...string) error {
-		if name == "engram" && len(args) == 2 && args[0] == "setup" && args[1] == "gemini-cli" {
-			settingsPath := filepath.Join(home, ".gemini", "settings.json")
-			if err := os.MkdirAll(filepath.Dir(settingsPath), 0o755); err != nil {
-				return err
-			}
-			return os.WriteFile(settingsPath, []byte("{\"theme\":\"dark\"}\n"), 0o644)
-		}
-		return nil
-	}
-
-	// This test targets antigravity settings initialization after engram
-	// setup, not agent install behavior, so simulate Antigravity as already
-	// installed (its Detect looks for ~/.gemini/antigravity) — otherwise
-	// gentle-ai correctly refuses to proceed for an undetected agent.
-	if err := os.MkdirAll(filepath.Join(home, ".gemini", "antigravity"), 0o755); err != nil {
-		t.Fatalf("MkdirAll(.gemini/antigravity): %v", err)
-	}
-
-	result, err := RunInstall(
-		[]string{"--agent", "antigravity", "--component", "engram", "--component", "context7", "--component", "permissions"},
-		macOSDetectionResult(),
-	)
-	if err != nil {
-		t.Fatalf("RunInstall() error = %v", err)
-	}
-	if !result.Verify.Ready {
-		t.Fatalf("verification ready = false")
-	}
-
-	settingsPath := filepath.Join(home, ".gemini", "antigravity-cli", "settings.json")
-	got, err := os.ReadFile(settingsPath)
-	if err != nil {
-		t.Fatalf("ReadFile(%q) error = %v", settingsPath, err)
-	}
-	if string(got) != "{}\n" {
-		t.Fatalf("antigravity settings = %q, want initialized empty settings", got)
-	}
-}
-
-func TestRunInstallDeduplicatesSharedEngramSetupSlugs(t *testing.T) {
-	home := t.TempDir()
-	restoreHome := osUserHomeDir
-	restoreCommand := runCommand
-	restoreLookPath := cmdLookPath
-	t.Cleanup(func() {
-		osUserHomeDir = restoreHome
-		runCommand = restoreCommand
-		cmdLookPath = restoreLookPath
-	})
-
-	osUserHomeDir = func() (string, error) { return home, nil }
-	cmdLookPath = func(name string) (string, error) {
-		return "/usr/local/bin/" + name, nil
-	}
-
-	recorder := &commandRecorder{}
-	runCommand = func(name string, args ...string) error {
-		if err := recorder.record(name, args...); err != nil {
-			return err
-		}
-		if name == "engram" && len(args) == 2 && args[0] == "setup" && args[1] == "gemini-cli" {
-			settingsPath := filepath.Join(home, ".gemini", "settings.json")
-			if err := os.MkdirAll(filepath.Dir(settingsPath), 0o755); err != nil {
-				return err
-			}
-			return os.WriteFile(settingsPath, []byte("{\"theme\":\"dark\"}\n"), 0o644)
-		}
-		return nil
-	}
-
-	// This test targets shared-slug engram setup dedup, not agent install
-	// behavior, so simulate Antigravity as already installed (its Detect
-	// looks for ~/.gemini/antigravity) — otherwise gentle-ai correctly
-	// refuses to proceed for an undetected agent.
-	if err := os.MkdirAll(filepath.Join(home, ".gemini", "antigravity"), 0o755); err != nil {
-		t.Fatalf("MkdirAll(.gemini/antigravity): %v", err)
-	}
-
-	result, err := RunInstall(
-		[]string{"--agent", "gemini-cli", "--agent", "antigravity", "--component", "engram", "--component", "context7", "--component", "permissions"},
-		macOSDetectionResult(),
-	)
-	if err != nil {
-		t.Fatalf("RunInstall() error = %v", err)
-	}
-	if !result.Verify.Ready {
-		t.Fatalf("verification ready = false")
-	}
-
-	var setupCount int
-	for _, cmd := range recorder.get() {
-		if strings.Contains(cmd, "engram setup gemini-cli") {
-			setupCount++
-		}
-	}
-	if setupCount != 1 {
-		t.Fatalf("engram setup gemini-cli count = %d, want 1", setupCount)
-	}
-}
-
-func TestRunInstallGGASkipsInstallWhenAlreadyOnPath(t *testing.T) {
-	home := t.TempDir()
-	restoreHome := osUserHomeDir
-	restoreCommand := runCommand
-	restoreLookPath := cmdLookPath
-	t.Cleanup(func() {
-		osUserHomeDir = restoreHome
-		runCommand = restoreCommand
-		cmdLookPath = restoreLookPath
-	})
-
-	osUserHomeDir = func() (string, error) { return home, nil }
-	cmdLookPath = func(name string) (string, error) {
-		return "/usr/local/bin/" + name, nil
-	}
-	recorder := &commandRecorder{}
-	runCommand = recorder.record
-
-	detection := macOSDetectionResult()
-	result, err := RunInstall(
-		[]string{"--agent", "opencode", "--component", "gga"},
-		detection,
-	)
-	if err != nil {
-		t.Fatalf("RunInstall() error = %v", err)
-	}
-
-	if !result.Verify.Ready {
-		t.Fatalf("verification ready = false")
-	}
-
-	// No brew/git clone commands for GGA should have been recorded.
-	for _, cmd := range recorder.get() {
-		if strings.Contains(cmd, "gga") || strings.Contains(cmd, "gentleman-guardian-angel") {
-			t.Fatalf("expected gga install to be skipped, but got command: %s", cmd)
-		}
-	}
-
-	prModePath := filepath.Join(home, ".local", "share", "gga", "lib", "pr_mode.sh")
-	content, err := os.ReadFile(prModePath)
-	if err != nil {
-		t.Fatalf("expected gga runtime asset at %q: %v", prModePath, err)
-	}
-	if !strings.Contains(string(content), "detect_base_branch") {
-		t.Fatalf("expected pr_mode.sh to contain detect_base_branch")
-	}
-}
-
-func TestRunInstallGGALinuxIncludesTempCleanupBeforeClone(t *testing.T) {
-	home := t.TempDir()
-	restoreHome := osUserHomeDir
-	restoreCommand := runCommand
-	restoreLookPath := cmdLookPath
-	t.Cleanup(func() {
-		osUserHomeDir = restoreHome
-		runCommand = restoreCommand
-		cmdLookPath = restoreLookPath
-	})
-
-	osUserHomeDir = func() (string, error) { return home, nil }
-	cmdLookPath = func(name string) (string, error) {
-		if name == "gga" {
-			return "", exec.ErrNotFound
-		}
-		return "/usr/local/bin/" + name, nil
-	}
-	recorder := &commandRecorder{}
-	runCommand = recorder.record
-
-	result, err := RunInstall(
-		[]string{"--agent", "opencode", "--component", "gga"},
-		linuxDetectionResult(system.LinuxDistroUbuntu, "apt"),
-	)
-	if err != nil {
-		t.Fatalf("RunInstall() error = %v", err)
-	}
-	if !result.Verify.Ready {
-		t.Fatalf("verification ready = false")
-	}
-
-	commands := recorder.get()
-	cleanupIdx := -1
-	cloneIdx := -1
-	for i, cmd := range commands {
-		if strings.Contains(cmd, "rm -rf /tmp/gentleman-guardian-angel") {
-			cleanupIdx = i
-		}
-		// Match the clone intent (URL + dest) instead of the full literal command,
-		// so the test stays valid when extra flags like --depth/--branch are added.
-		if strings.Contains(cmd, "git") && strings.Contains(cmd, "https://github.com/Gentleman-Programming/gentleman-guardian-angel.git") && strings.Contains(cmd, "/tmp/gentleman-guardian-angel") {
-			cloneIdx = i
-		}
-	}
-
-	for _, cmd := range commands {
-		if strings.Contains(cmd, "gga install") || strings.Contains(cmd, "gga init") {
-			t.Fatalf("expected global gga provisioning only, got repo-level command: %s", cmd)
-		}
-	}
-
-	if cleanupIdx == -1 {
-		t.Fatalf("expected cleanup command before clone, got commands: %v", commands)
-	}
-	if cloneIdx == -1 {
-		t.Fatalf("expected clone command, got commands: %v", commands)
-	}
-	if cleanupIdx >= cloneIdx {
-		t.Fatalf("cleanup should run before clone (cleanup=%d clone=%d)", cleanupIdx, cloneIdx)
-	}
-}
-
 // TestRunInstallEngramLinuxUsesDirectDownloadNoGoRequired verifies that on Linux,
 // engram is now installed via pre-built binary download — Go is NOT required.
 func TestRunInstallEngramLinuxUsesDirectDownloadNoGoRequired(t *testing.T) {
@@ -2497,10 +2270,10 @@ func TestRunInstallCustomPresetExplicitComponentsResolveCorrectly(t *testing.T) 
 			len(result.Resolved.OrderedComponents), result.Resolved.OrderedComponents)
 	}
 
-	// Verify persona, skills, context7, gga are NOT in the plan.
+	// Verify persona, skills and context7 are NOT in the plan.
 	for _, c := range result.Resolved.OrderedComponents {
 		switch c {
-		case model.ComponentPersona, model.ComponentContext7, model.ComponentGGA:
+		case model.ComponentPersona, model.ComponentContext7:
 			t.Fatalf("unexpected component %q in custom preset plan", c)
 		}
 	}
