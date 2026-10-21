@@ -659,7 +659,7 @@ func inspectPiCodeGraph(homeDir, workspaceDir string) (AgentStatusKind, string, 
 	}
 	if len(children) == 0 {
 		if _, err := os.Stat(paths.Manifest); err != nil {
-			return AgentStatusMissing, "no effective Pi children were discovered and no Gentle-AI ownership record exists", nil
+			return AgentStatusMissing, "no effective Pi children were discovered and no Teicos ownership record exists", nil
 		}
 		status, reason := inspectPiCodeGraphCapability(paths.MCPConfig, nil)
 		return status, reason, nil
