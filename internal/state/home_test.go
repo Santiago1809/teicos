@@ -1,26 +1,22 @@
 package state
 
 import (
-	"bytes"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 )
 
-// clearHomeEnv unsets both override variables and captures the warnings Dir
-// writes, so every test starts from a known process-level state.
-func clearHomeEnv(t *testing.T) *bytes.Buffer {
+// legacyHomeEnv is the pre-rename variable. Teicos must ignore it, so every
+// test clears it (and may set it) without the package ever reading it.
+const legacyHomeEnv = "GENTLE_AI_HOME"
+
+// clearHomeEnv unsets both state variables so every test starts from a known
+// process-level state.
+func clearHomeEnv(t *testing.T) {
 	t.Helper()
 	t.Setenv(HomeEnv, "")
-	t.Setenv(HomeEnvLegacy, "")
-	var warnings bytes.Buffer
-	previous := warnOut
-	warnOut = &warnings
-	legacyEnvWarned.Store(false)
-	legacyDirWarned.Store(false)
-	t.Cleanup(func() { warnOut = previous })
-	return &warnings
+	t.Setenv(legacyHomeEnv, "")
 }
 
 func mkdir(t *testing.T, path string) {
@@ -31,7 +27,7 @@ func mkdir(t *testing.T, path string) {
 }
 
 func TestDirDefaultsToDotTeicosUnderHome(t *testing.T) {
-	warnings := clearHomeEnv(t)
+	clearHomeEnv(t)
 	home := t.TempDir()
 
 	if got, want := Dir(home), filepath.Join(home, ".teicos"); got != want {
@@ -46,90 +42,67 @@ func TestDirDefaultsToDotTeicosUnderHome(t *testing.T) {
 	if err := ValidateHomeEnv(); err != nil {
 		t.Fatalf("ValidateHomeEnv() with no override = %v, want nil", err)
 	}
-	if warnings.Len() != 0 {
-		t.Fatalf("a fresh home must not warn, got %q", warnings.String())
-	}
 	if _, err := os.Stat(filepath.Join(home, ".teicos")); !os.IsNotExist(err) {
 		t.Fatalf("Dir() must not create the directory (stat err = %v)", err)
 	}
 }
 
-func TestDirPrecedence(t *testing.T) {
-	newOverride := filepath.Join(t.TempDir(), "teicos-home")
-	legacyOverride := filepath.Join(t.TempDir(), "gentle-home")
-
-	t.Run("TEICOS_HOME wins over everything and does not warn", func(t *testing.T) {
-		warnings := clearHomeEnv(t)
+// Teicos is a separate product: it must never read, adopt or write another
+// tool's state directory, and the pre-rename variable must stay inert.
+func TestDirIgnoresLegacyToolState(t *testing.T) {
+	t.Run("GENTLE_AI_HOME is ignored", func(t *testing.T) {
+		clearHomeEnv(t)
 		home := t.TempDir()
-		mkdir(t, filepath.Join(home, ".teicos"))
-		mkdir(t, filepath.Join(home, ".gentle-ai"))
-		t.Setenv(HomeEnv, newOverride)
-		t.Setenv(HomeEnvLegacy, legacyOverride)
+		t.Setenv(legacyHomeEnv, filepath.Join(t.TempDir(), "gentle-home"))
 
-		if got := Dir(home); got != newOverride {
-			t.Fatalf("Dir() = %q, want %q", got, newOverride)
+		if got, want := Dir(home), filepath.Join(home, ".teicos"); got != want {
+			t.Fatalf("Dir() = %q, want %q", got, want)
 		}
-		if warnings.Len() != 0 {
-			t.Fatalf("unexpected warning %q", warnings.String())
+		if HomeOverrideSet() {
+			t.Fatal("HomeOverrideSet() = true for the legacy variable alone")
 		}
 	})
 
-	t.Run("GENTLE_AI_HOME is honoured with a deprecation warning", func(t *testing.T) {
-		warnings := clearHomeEnv(t)
+	t.Run("an existing ~/.gentle-ai is never adopted", func(t *testing.T) {
+		clearHomeEnv(t)
 		home := t.TempDir()
-		mkdir(t, filepath.Join(home, ".teicos"))
-		t.Setenv(HomeEnvLegacy, legacyOverride)
-
-		if got := Dir(home); got != legacyOverride {
-			t.Fatalf("Dir() = %q, want %q", got, legacyOverride)
-		}
-		for _, want := range []string{HomeEnvLegacy, HomeEnv, "deprecated"} {
-			if !strings.Contains(warnings.String(), want) {
-				t.Fatalf("warning %q does not mention %q", warnings.String(), want)
-			}
-		}
-	})
-
-	t.Run("an existing ~/.teicos wins over ~/.gentle-ai without warning", func(t *testing.T) {
-		warnings := clearHomeEnv(t)
-		home := t.TempDir()
-		mkdir(t, filepath.Join(home, ".teicos"))
 		mkdir(t, filepath.Join(home, ".gentle-ai"))
 
 		if got, want := Dir(home), filepath.Join(home, ".teicos"); got != want {
 			t.Fatalf("Dir() = %q, want %q", got, want)
 		}
-		if warnings.Len() != 0 {
-			t.Fatalf("unexpected warning %q", warnings.String())
-		}
-	})
-
-	t.Run("only ~/.gentle-ai existing is used and suggests a migration", func(t *testing.T) {
-		warnings := clearHomeEnv(t)
-		home := t.TempDir()
-		mkdir(t, filepath.Join(home, ".gentle-ai"))
-
-		if got, want := Dir(home), filepath.Join(home, ".gentle-ai"); got != want {
-			t.Fatalf("Dir() = %q, want %q", got, want)
-		}
-		if !strings.Contains(warnings.String(), "cp -r ~/.gentle-ai ~/.teicos") {
-			t.Fatalf("warning %q does not suggest the migration command", warnings.String())
-		}
 		if _, err := os.Stat(filepath.Join(home, ".teicos")); !os.IsNotExist(err) {
-			t.Fatalf("Dir() must never migrate on its own (stat err = %v)", err)
+			t.Fatalf("Dir() must not create ~/.teicos (stat err = %v)", err)
 		}
 	})
 
-	t.Run("a regular file named .teicos does not count as the state directory", func(t *testing.T) {
+	t.Run("a regular file named .teicos still wins over ~/.gentle-ai", func(t *testing.T) {
 		clearHomeEnv(t)
 		home := t.TempDir()
+		mkdir(t, filepath.Join(home, ".gentle-ai"))
 		if err := os.WriteFile(filepath.Join(home, ".teicos"), []byte("x"), 0o600); err != nil {
 			t.Fatal(err)
 		}
-		mkdir(t, filepath.Join(home, ".gentle-ai"))
 
-		if got, want := Dir(home), filepath.Join(home, ".gentle-ai"); got != want {
+		if got, want := Dir(home), filepath.Join(home, ".teicos"); got != want {
 			t.Fatalf("Dir() = %q, want %q", got, want)
+		}
+	})
+}
+
+func TestDirPrecedence(t *testing.T) {
+	override := filepath.Join(t.TempDir(), "teicos-home")
+
+	t.Run("TEICOS_HOME wins over every directory on disk", func(t *testing.T) {
+		clearHomeEnv(t)
+		home := t.TempDir()
+		mkdir(t, filepath.Join(home, ".teicos"))
+		mkdir(t, filepath.Join(home, ".gentle-ai"))
+		t.Setenv(HomeEnv, override)
+		t.Setenv(legacyHomeEnv, filepath.Join(t.TempDir(), "gentle-home"))
+
+		if got := Dir(home); got != override {
+			t.Fatalf("Dir() = %q, want %q", got, override)
 		}
 	})
 
@@ -137,32 +110,12 @@ func TestDirPrecedence(t *testing.T) {
 		clearHomeEnv(t)
 		home := t.TempDir()
 		t.Setenv(HomeEnv, "relative/teicos")
-		t.Setenv(HomeEnvLegacy, "relative/gentle")
+		t.Setenv(legacyHomeEnv, "relative/gentle")
 
 		if got, want := Dir(home), filepath.Join(home, ".teicos"); got != want {
 			t.Fatalf("Dir() = %q, want %q", got, want)
 		}
 	})
-}
-
-func TestDirWarnsOncePerProcess(t *testing.T) {
-	warnings := clearHomeEnv(t)
-	home := t.TempDir()
-	mkdir(t, filepath.Join(home, ".gentle-ai"))
-
-	Dir(home)
-	Dir(home)
-	if got := strings.Count(warnings.String(), "cp -r"); got != 1 {
-		t.Fatalf("migration warning printed %d times, want 1", got)
-	}
-
-	warnings.Reset()
-	t.Setenv(HomeEnvLegacy, filepath.Join(t.TempDir(), "gentle-home"))
-	Dir(home)
-	Dir(home)
-	if got := strings.Count(warnings.String(), "deprecated"); got != 1 {
-		t.Fatalf("deprecation warning printed %d times, want 1", got)
-	}
 }
 
 func TestHomeEnvRoutesStateAndManifestFiles(t *testing.T) {
@@ -201,19 +154,16 @@ func TestValidateHomeEnvRejectsRelativePath(t *testing.T) {
 	// absolute on Windows, so the accepted-path case must be built per platform.
 	absolute := filepath.Join(os.TempDir(), "teicos-absolute")
 	for _, tt := range []struct {
-		name, key, value, other string
-		wantErr                 string
+		name, value, legacy, wantErr string
 	}{
-		{"new variable", HomeEnv, "relative/teicos", "", HomeEnv},
-		{"legacy variable alone", HomeEnvLegacy, "relative/gentle-ai", "", HomeEnvLegacy},
-		{"new variable wins over a bad legacy one", HomeEnv, absolute, "relative/gentle-ai", ""},
+		{"new variable", "relative/teicos", "", HomeEnv},
+		{"legacy variable alone", "", "relative/gentle-ai", ""},
+		{"new variable wins over a bad legacy one", absolute, "relative/gentle-ai", ""},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			clearHomeEnv(t)
-			t.Setenv(tt.key, tt.value)
-			if tt.other != "" {
-				t.Setenv(HomeEnvLegacy, tt.other)
-			}
+			t.Setenv(HomeEnv, tt.value)
+			t.Setenv(legacyHomeEnv, tt.legacy)
 
 			err := ValidateHomeEnv()
 			if tt.wantErr == "" {
@@ -237,11 +187,6 @@ func TestHomeOverrideSet(t *testing.T) {
 	if HomeOverrideSet() {
 		t.Fatal("HomeOverrideSet() = true with no override")
 	}
-	t.Setenv(HomeEnvLegacy, "/abs/gentle")
-	if !HomeOverrideSet() {
-		t.Fatal("HomeOverrideSet() = false with the legacy variable set")
-	}
-	t.Setenv(HomeEnvLegacy, "")
 	t.Setenv(HomeEnv, "/abs/teicos")
 	if !HomeOverrideSet() {
 		t.Fatal("HomeOverrideSet() = false with the new variable set")

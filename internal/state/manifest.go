@@ -23,9 +23,6 @@ const (
 	journalFileName  = "managed-assets.journal"
 	journalCapBytes  = 1 << 20 // 1 MiB
 	StateDirName     = ".teicos"
-	// LegacyStateDirName is the pre-rename state directory, still read when
-	// StateDirName does not exist. See Dir.
-	LegacyStateDirName = ".gentle-ai"
 )
 
 // Producer is the binary identity that wrote a manifest.

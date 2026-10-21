@@ -402,7 +402,7 @@ A caller that keeps everything in its own folder, such as a bundled Gentle Shell
 
 | Variable | What moves | Path rule |
 | --- | --- | --- |
-| `GENTLE_AI_HOME` | Gentle AI's own state | Replaces `~/.gentle-ai`: `state.json` (and its lock), `managed-assets.manifest.json`, `managed-assets.journal`, `telemetry.json` (and its lock), `backups/`, and `pi-codegraph.json` or `pi-codegraph-<hash>.json`. Install, sync, restore and backup deletion all use it. |
+| `TEICOS_HOME` | Teicos' own state | Replaces `~/.teicos`: `state.json` (and its lock), `managed-assets.manifest.json`, `managed-assets.journal`, `telemetry.json` (and its lock), `backups/`, and `pi-codegraph.json` or `pi-codegraph-<hash>.json`. Install, sync, restore and backup deletion all use it. Teicos never reads another tool's state directory. |
 | `GENTLE_AI_PI_CONFIG_DIR` | gentle-pi's global config folder | The folder itself, the same one gentle-pi reads as `GENTLE_PI_CONFIG_HOME` (default `~/.pi/gentle-ai`). A global install or sync writes `<dir>/persona.json` and `<dir>/background-subagents.json`. It wins over `GENTLE_PI_CONFIG_HOME`, which keeps its current meaning here (`<GENTLE_PI_CONFIG_HOME>/gentle-ai/background-subagents.json`). Workspace installs still write `<workspace>/.pi/gentle-ai/persona.json`. |
 | `GENTLE_AI_ENGRAM_BIN` | The Engram binary | An existing executable file. Install runs `<file> version` before writing anything, then uses that file for `engram setup` and agent configuration: no `brew`, no download, no `go install`, no PATH or registry change. While it is set, dependency detection runs no `git`, `curl`, `node`, `npm`, `brew` or `go` command and no `npm config get prefix`, because those probes only feed warnings and Engram acquisition. |
 

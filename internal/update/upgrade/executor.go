@@ -50,7 +50,7 @@ var snapshotCreator = func(snapshotDir string, paths []string) (backup.Manifest,
 	return backup.NewSnapshotter().Create(snapshotDir, paths)
 }
 
-// AppVersion is the gentle-ai version written into backup manifests created by
+// AppVersion is the teicos version written into backup manifests created by
 // the upgrade executor. Set by app.go before calling Execute so that upgrade
 // backups record the version that created them.
 // Default "dev" matches the ldflags default in app.Version.
@@ -540,7 +540,7 @@ func ExecuteWithOptions(ctx context.Context, results []update.UpdateResult, prof
 	backupWarning := ""
 	if !dryRun && len(executable) > 0 && !options.SkipBackup {
 		sp := NewSpinner(pw, "Creating pre-upgrade backup")
-		snapshotDir := filepath.Join(homeDir, ".gentle-ai", "backups",
+		snapshotDir := filepath.Join(state.BackupsDir(homeDir),
 			fmt.Sprintf("upgrade-%s", time.Now().UTC().Format("20060102T150405Z")))
 		manifest, err := snapshotCreator(snapshotDir, configPathsForBackup(homeDir, options.BackupDiagnostics))
 		if err != nil {
@@ -566,7 +566,7 @@ func ExecuteWithOptions(ctx context.Context, results []update.UpdateResult, prof
 		// snapshot fails due to disk pressure caused by prior accumulated
 		// backups, pruning is the recovery path. Non-fatal: a prune failure
 		// must not prevent the upgrade from completing.
-		backupRoot := filepath.Join(homeDir, ".gentle-ai", "backups")
+		backupRoot := state.BackupsDir(homeDir)
 		if _, pruneErr := backup.Prune(backupRoot, backup.DefaultRetentionCount); pruneErr != nil {
 			log.Printf("backup: prune: %v", pruneErr)
 		}

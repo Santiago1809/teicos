@@ -14,6 +14,7 @@ import (
 	"strings"
 
 	"github.com/Santiago1809/teicos/internal/components/filemerge"
+	"github.com/Santiago1809/teicos/internal/state"
 	"github.com/Santiago1809/teicos/internal/system"
 )
 
@@ -367,8 +368,8 @@ func removeManagedLauncherFile(path string) error {
 	}
 }
 
-// BinDir returns the Gentle-owned launcher directory.
-func BinDir(homeDir string) string { return filepath.Join(homeDir, ".gentle-ai", "bin") }
+// BinDir returns the Teicos-owned launcher directory.
+func BinDir(homeDir string) string { return filepath.Join(state.Dir(homeDir), "bin") }
 
 // POSIXLauncherPath returns the POSIX launcher path.
 func POSIXLauncherPath(homeDir string) string { return filepath.Join(BinDir(homeDir), "opencode") }

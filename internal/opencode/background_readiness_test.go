@@ -153,7 +153,7 @@ func TestActivationReportsShadowedWhenRcFilePrependsRealOpenCode(t *testing.T) {
 // line) makes the launcher win again.
 func TestActivationReadyWhenManagedDirIsPrependedAfterRcShadow(t *testing.T) {
 	fixture := newReadinessFixture(t, "/bin/zsh")
-	writeStartupFile(t, filepath.Join(fixture.home, ".zshrc"), "export PATH="+filepath.Dir(fixture.target)+":$PATH\nexport PATH=\"$HOME/.gentle-ai/bin:$PATH\" # gentle-ai first\n")
+	writeStartupFile(t, filepath.Join(fixture.home, ".zshrc"), "export PATH="+filepath.Dir(fixture.target)+":$PATH\nexport PATH=\""+BinDir(fixture.home)+":$PATH\" # teicos first\n")
 	plan, err := Activate(fixture.home, fixture.options)
 	if err != nil {
 		t.Fatal(err)
