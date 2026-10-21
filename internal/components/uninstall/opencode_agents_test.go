@@ -151,16 +151,23 @@ func TestUninstallLegacyMarkedAgents(t *testing.T) {
 				t.Fatal(err)
 			}
 			agents := root["agent"].(map[string]any)
-			for _, name := range []string{"gentle-orchestrator", "sdd-init", "jd-judge-a", "review-risk", "review-refuter"} {
+			for _, name := range []string{"gentle-orchestrator", "jd-judge-a", "review-risk", "review-refuter"} {
 				if agents[name] != nil {
 					t.Errorf("legacy %s retained: %s", name, body)
 				}
 			}
 			if tc.agent == model.AgentOpenCode {
-				for _, name := range []string{"general", "explore", "review-validator", "sdd-apply"} {
+				for _, name := range []string{"general", "explore", "review-validator"} {
 					if agents[name] != nil {
 						t.Errorf("legacy %s retained: %s", name, body)
 					}
+				}
+			}
+			// SDD agents belong to gentle-ai: Teicos leaves them, and their
+			// ownership marker, alone.
+			for name := range agents {
+				if strings.HasPrefix(name, "sdd-") && agents[name] == nil {
+					t.Errorf("gentle-ai agent %s removed: %s", name, body)
 				}
 			}
 			if agents["user-owned"].(map[string]any)["prompt"] != "My instructions" {
@@ -170,7 +177,7 @@ func TestUninstallLegacyMarkedAgents(t *testing.T) {
 				t.Fatalf("unknown entry lost: %s", body)
 			}
 			for name, value := range agents {
-				if entry, ok := value.(map[string]any); ok && entry["__managed_by"] != nil {
+				if entry, ok := value.(map[string]any); ok && entry["__managed_by"] != nil && !strings.HasPrefix(name, "sdd-") {
 					t.Errorf("marker remains on %s", name)
 				}
 			}

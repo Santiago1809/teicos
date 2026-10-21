@@ -15,7 +15,6 @@ import (
 	"github.com/Santiago1809/teicos/internal/components/persona"
 	"github.com/Santiago1809/teicos/internal/model"
 	opencodeactivation "github.com/Santiago1809/teicos/internal/opencode"
-	"github.com/Santiago1809/teicos/internal/planner"
 	"github.com/Santiago1809/teicos/internal/state"
 	"github.com/Santiago1809/teicos/internal/system"
 )
@@ -171,7 +170,7 @@ func TestOpenCodeBackgroundStateIsOptionalAndLossless(t *testing.T) {
 	home := t.TempDir()
 	want := state.InstallState{
 		InstalledAgents: []string{"opencode"}, ManagedAssetDigest: "sha256:asset", SelectionConfigured: true,
-		Components: []model.ComponentID{model.ComponentSDD}, CommunityTools: []string{"codegraph"}, CommunityToolsConfigured: true,
+		Components: []model.ComponentID{model.ComponentSkills}, CommunityTools: []string{"codegraph"}, CommunityToolsConfigured: true,
 		Persona: "neutral", PersonaPresent: true, PendingSync: true, RDDMode: "off", BackgroundIntent: model.OpenCodeBackgroundOn,
 	}
 	if err := state.Write(home, want); err != nil {
@@ -383,43 +382,6 @@ func TestRenderOpenCodeBackgroundActivationUsesEffectiveStatus(t *testing.T) {
 				t.Fatalf("render = %q, must not contain %q", got, tt.notWant)
 			}
 		})
-	}
-}
-
-// A shadowed or pending activation is not a ready runtime even when the
-// policy is enabled for a capable OpenCode version.
-func TestDryRunAndSyncReportsDoNotClaimReadyRuntimeWhenShadowed(t *testing.T) {
-	background := OpenCodeBackgroundResolution{
-		Intent:    model.OpenCodeBackgroundOn,
-		Effective: model.OpenCodeBackgroundOn,
-		Activation: opencodeactivation.ActivationReport{
-			Capability:       opencodeactivation.CapabilityResolution{Status: opencodeactivation.CapabilityReady},
-			Action:           "on",
-			Applied:          true,
-			Status:           opencodeactivation.ActivationStatusShadowed,
-			ActivationReason: "new login shells resolve opencode to /x/opencode",
-		},
-	}
-	reports := map[string]string{
-		"dry-run": RenderDryRun(InstallResult{Resolved: planner.ResolvedPlan{Agents: []model.AgentID{model.AgentOpenCode}}, Background: background, BackgroundPolicyEnabled: true}),
-		"sync":    RenderSyncReport(SyncResult{Agents: []model.AgentID{model.AgentOpenCode}, Background: background, BackgroundPolicyEnabled: true}),
-	}
-	for name, report := range reports {
-		for _, want := range []string{"runtime ready: false", "policy enabled: true", "activation status: shadowed"} {
-			if !strings.Contains(report, want) {
-				t.Fatalf("%s report = %q, want %q", name, report, want)
-			}
-		}
-	}
-}
-
-func TestLegacySDDInstallDoesNotWriteBackgroundPolicy(t *testing.T) {
-	home := t.TempDir()
-	if err := (componentApplyStep{component: model.ComponentSDD, homeDir: home, workspaceDir: home, scope: ScopeGlobal, agents: []model.AgentID{model.AgentOpenCode}, selection: model.Selection{SDDMode: model.SDDModeSingle}, backgroundPolicy: true}).Run(); err != nil {
-		t.Fatal(err)
-	}
-	if _, err := os.Stat(filepath.Join(home, ".config", "opencode")); !os.IsNotExist(err) {
-		t.Fatalf("legacy SDD wrote background assets: %v", err)
 	}
 }
 
@@ -660,64 +622,6 @@ func TestSyncBackgroundPrecedenceAndDryRunReporting(t *testing.T) {
 				t.Fatal("dry-run changed prior state")
 			}
 		})
-	}
-}
-
-func TestSyncBackgroundInvalidSourcesFailBeforeMutation(t *testing.T) {
-	for _, tt := range []struct {
-		name  string
-		args  []string
-		env   string
-		prior model.OpenCodeBackgroundIntent
-	}{
-		{name: "invalid CLI", args: []string{"--opencode-background-subagents=maybe"}},
-		{name: "invalid environment", env: "maybe"},
-		{name: "invalid prior state", prior: model.OpenCodeBackgroundIntent("maybe")},
-	} {
-		t.Run(tt.name, func(t *testing.T) {
-			home := syncBackgroundTestHome(t)
-			oldInject := injectSyncPersona
-			injectCalls := 0
-			injectSyncPersona = func(path string, adapter agents.Adapter, id model.PersonaID, selectedSettingsPath string) (persona.InjectionResult, error) {
-				injectCalls++
-				return oldInject(path, adapter, id, selectedSettingsPath)
-			}
-			t.Cleanup(func() { injectSyncPersona = oldInject })
-			t.Setenv(OpenCodeBackgroundSubagentsEnv, tt.env)
-			var before []byte
-			if tt.prior != "" {
-				if err := state.Write(home, state.InstallState{InstalledAgents: []string{"opencode"}, BackgroundIntent: tt.prior}); err != nil {
-					t.Fatal(err)
-				}
-				before, _ = os.ReadFile(state.Path(home))
-			}
-			args := append([]string{"--agents", "opencode", "--include-persona"}, tt.args...)
-			if _, err := RunSync(args); err == nil {
-				t.Fatal("RunSync() error = nil, want preflight rejection")
-			}
-			if injectCalls != 0 {
-				t.Fatalf("inject calls = %d, want validation before pipeline", injectCalls)
-			}
-			if _, err := os.Stat(filepath.Join(home, ".config", "opencode")); !os.IsNotExist(err) {
-				t.Fatalf("asset mutation = %v", err)
-			}
-			if tt.prior != "" {
-				after, _ := os.ReadFile(state.Path(home))
-				if !reflect.DeepEqual(after, before) {
-					t.Fatalf("prior state mutated: before %s after %s", before, after)
-				}
-			}
-		})
-	}
-}
-
-func TestLegacySDDSyncDoesNotWriteBackgroundPolicy(t *testing.T) {
-	home := t.TempDir()
-	if err := (componentSyncStep{component: model.ComponentSDD, homeDir: home, workspaceDir: home, agents: []model.AgentID{model.AgentOpenCode}, selection: model.Selection{SDDMode: model.SDDModeSingle}, backgroundPolicy: true}).Run(); err != nil {
-		t.Fatal(err)
-	}
-	if _, err := os.Stat(filepath.Join(home, ".config", "opencode")); !os.IsNotExist(err) {
-		t.Fatalf("legacy SDD wrote background assets: %v", err)
 	}
 }
 

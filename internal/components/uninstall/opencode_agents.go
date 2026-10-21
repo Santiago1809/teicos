@@ -73,8 +73,9 @@ func removeOpenCodeFamilyAgents(path string, agentID model.AgentID) operation {
 			}
 			if entry["__managed_by"] == "gentle-ai/sdd" {
 				if strings.HasPrefix(name, "sdd-") {
-					// Retired SDD agents belong to the settings retirement
-					// (retiredSDDOperation), as in sync.
+					// SDD agents belong to gentle-ai, not to Teicos. Leave
+					// them and their ownership marker untouched so both
+					// products can share the same agent configuration.
 					continue
 				}
 				// Mirror the migration ownership rules without requiring a sync.

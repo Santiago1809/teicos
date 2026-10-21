@@ -223,8 +223,8 @@ func (s *Service) PartialUninstallWithEngramScope(agentIDs []model.AgentID, comp
 // downgrades any that are still shared with an agent this run is not
 // removing (see reconcileSharedComponents), and executes the resulting plan.
 func (s *Service) partialUninstall(agentIDs []model.AgentID, componentIDs []model.ComponentID) (Result, error) {
-	if slices.Contains(componentIDs, model.ComponentSDD) {
-		return Result{}, fmt.Errorf("component %q is retired and cannot be uninstalled; existing files and settings were preserved", model.ComponentSDD)
+	if slices.Contains(componentIDs, model.RetiredSDDComponentID) {
+		return Result{}, fmt.Errorf("component %q is retired and cannot be uninstalled; existing files and settings were preserved", model.RetiredSDDComponentID)
 	}
 	if len(agentIDs) == 0 {
 		return Result{}, fmt.Errorf("partial uninstall requires at least one agent")
@@ -322,8 +322,8 @@ type plan struct {
 }
 
 func (s *Service) buildPlan(agentIDs []model.AgentID, componentIDs []model.ComponentID) (plan, error) {
-	if slices.Contains(componentIDs, model.ComponentSDD) {
-		return plan{}, fmt.Errorf("component %q is retired and cannot be uninstalled; existing files and settings were preserved", model.ComponentSDD)
+	if slices.Contains(componentIDs, model.RetiredSDDComponentID) {
+		return plan{}, fmt.Errorf("component %q is retired and cannot be uninstalled; existing files and settings were preserved", model.RetiredSDDComponentID)
 	}
 	backupTargets := map[string]struct{}{}
 	operationsByKey := map[string]operation{}
@@ -399,21 +399,6 @@ func (s *Service) buildPlan(agentIDs []model.AgentID, componentIDs []model.Compo
 				}
 				operationsByKey[key] = op
 			}
-		}
-	}
-	if removesAllAgentComponents(componentIDs) {
-		for _, agentID := range agentIDs {
-			adapter, _ := s.registry.Get(agentID)
-			op, targets, ok := s.retiredSDDOperation(adapter)
-			if !ok {
-				continue
-			}
-			for _, target := range targets {
-				backupTargets[target] = struct{}{}
-			}
-			// One retirement per runtime: runtimes sharing a config root
-			// still retire their own inventories.
-			operationsByKey["retire-sdd:"+string(agentID)] = op
 		}
 	}
 	if removesAllAgentComponents(componentIDs) {
@@ -1837,7 +1822,7 @@ func stateAgentsToRemove(agentIDs []model.AgentID, componentIDs []model.Componen
 		selected[componentID] = struct{}{}
 	}
 	for _, required := range fullAgentRemovalComponents {
-		if required == model.ComponentSDD {
+		if required == model.RetiredSDDComponentID {
 			continue
 		}
 		if _, ok := selected[required]; !ok {

@@ -48,7 +48,6 @@ import (
 type SyncFlags struct {
 	Agents             []string
 	Skills             []string
-	SDDMode            string
 	StrictTDD          bool
 	IncludePermissions bool
 	IncludeTheme       bool
@@ -61,7 +60,6 @@ type SyncFlags struct {
 	PiBackgroundSubagents    string
 	PiBackgroundSubagentsSet bool
 	skillsSet                bool
-	sddModeSet               bool
 	strictTDDSet             bool
 	permissionsSet           bool
 	themeSet                 bool
@@ -295,8 +293,6 @@ func BuildSyncSelection(flags SyncFlags, agentIDs []model.AgentID) model.Selecti
 		components = append(components, model.ComponentTheme)
 	}
 
-	sddMode := model.SDDModeID(flags.SDDMode)
-
 	var skillIDs []model.SkillID
 	for _, raw := range flags.Skills {
 		skillIDs = append(skillIDs, model.SkillID(raw))
@@ -305,7 +301,6 @@ func BuildSyncSelection(flags SyncFlags, agentIDs []model.AgentID) model.Selecti
 	return model.Selection{
 		Agents:     agentIDs,
 		Components: components,
-		SDDMode:    sddMode,
 		Skills:     skillIDs,
 		// Preset is set to full-gentleman so selectedSkillIDs() returns the
 		// correct default skill set when no explicit skills are provided.
@@ -593,13 +588,6 @@ func (r *syncRuntime) stagePlan() pipeline.StagePlan {
 			apply = append(apply, nativeReviewAgentStep{id: "sync:agent:native-review:" + string(agent), agent: agent, homeDir: r.homeDir, workspaceDir: r.workspaceDir, scope: r.scope, selection: r.selection, changedFiles: &r.changedFiles, state: r.state})
 		}
 	}
-	apply = append(apply, retiredSDDAssetStepList(retiredSDDAssetSteps("sync:agent:retire-sdd-assets:", r.homeDir, r.workspaceDir, r.scope, r.agentIDs, &r.changedFiles, r.state))...)
-	// After the native installer: it rewrites a Gentle-owned v3 Kimi
-	// gentleman.yaml, so the SDD subagents it declared can be retired now.
-	apply = append(apply, retiredSDDAgentSteps("sync:agent:retire-sdd:", r.homeDir, r.scope, r.agentIDs, &r.changedFiles, r.state)...)
-	// Before routing guidance, which rewrites the same settings documents.
-	apply = append(apply, retiredOpenCodeSDDSettingsSteps("sync:agent:retire-sdd-settings:", r.homeDir, r.workspaceDir, r.scope, r.agentIDs, &r.changedFiles, r.state)...)
-
 	// Routing guidance is refreshed per agent and outside the component loop, for
 	// the same reason install schedules it there: a persisted selection without
 	// any optional component must still leave every agent able to choose an
@@ -699,9 +687,6 @@ func syncBackupTargetsScoped(homeDir, workspaceDir string, scope InstallScope, s
 	workspace := scope == ScopeWorkspace
 	paths := map[string]struct{}{}
 	for _, component := range selection.Components {
-		if component == model.ComponentSDD {
-			continue
-		}
 		if workspace && workspaceGlobalOnlyComponent(component) {
 			continue
 		}
@@ -795,17 +780,6 @@ func syncBackupTargetsScoped(homeDir, workspaceDir string, scope InstallScope, s
 	}
 	for _, path := range routingGuidancePaths(homeDir, workspaceDir, scope, guidanceAdapters) {
 		paths[path] = struct{}{}
-	}
-	for _, path := range retiredSDDAssetBackupPaths(homeDir, workspaceDir, scope, selection.Agents) {
-		paths[path] = struct{}{}
-	}
-	for _, path := range retiredSDDAgentBackupPaths(homeDir, scope, adapters) {
-		paths[path] = struct{}{}
-	}
-	for _, adapter := range adapters {
-		for _, path := range retiredOpenCodeSDDBackupPaths(homeDir, workspaceDir, scope, []model.AgentID{adapter.Agent()}) {
-			paths[path] = struct{}{}
-		}
 	}
 	for _, adapter := range guidanceAdapters {
 		// The routing step installs the retained review/telemetry and
@@ -1515,10 +1489,6 @@ func (s componentSyncStep) Run() error {
 		}
 		return nil
 
-	case model.ComponentSDD:
-		// Preserve legacy state parsing without resurrecting retired SDD assets.
-		return nil
-
 	case model.ComponentSkills:
 		skillIDs := selectedSkillIDs(s.selection)
 		if len(skillIDs) == 0 {
@@ -2011,7 +1981,7 @@ func runSyncWithSelectionScope(homeDir string, selection model.Selection, scope 
 	}
 	if len(selection.ModelAssignments) == 0 && len(persistedState.ModelAssignments) > 0 {
 		workspaceDir, _ := os.Getwd()
-		selection.ModelAssignments = restoreOpenCodeModelAssignmentsFromState(homeDir, workspaceDir, persistedState, selection.SDDMode)
+		selection.ModelAssignments = restoreOpenCodeModelAssignmentsFromState(homeDir, workspaceDir, persistedState)
 	}
 
 	// Migrate a persisted legacy alias BEFORE any early return: a no-agent
@@ -2069,7 +2039,6 @@ func runSyncWithSelectionScope(homeDir string, selection model.Selection, scope 
 		return result, fmt.Errorf("execute sync pipeline: %w", result.Execution.Err)
 	}
 	result.ManualActions = append(result.ManualActions, rt.state.nativeReviewActions...)
-	result.ManualActions = append(result.ManualActions, rt.state.retiredSDDActions...)
 	result.ManualActions = append(result.ManualActions, rt.skippedActions...)
 	result.SkippedAgents = append(result.SkippedAgents, rt.skippedParts...)
 	if scope == ScopeGlobal && containsAgent(agentIDs, model.AgentPi) {
@@ -2291,7 +2260,7 @@ func RunSync(args []string) (SyncResult, error) {
 	}
 	if len(selection.ModelAssignments) == 0 && len(persistedState.ModelAssignments) > 0 {
 		workspaceDir, _ := os.Getwd()
-		selection.ModelAssignments = restoreOpenCodeModelAssignmentsFromState(homeDir, workspaceDir, persistedState, selection.SDDMode)
+		selection.ModelAssignments = restoreOpenCodeModelAssignmentsFromState(homeDir, workspaceDir, persistedState)
 	}
 	if selection.CodexOrchestratorAssignment == nil && persistedState.CodexOrchestratorAssignment != nil {
 		selection.CodexOrchestratorAssignment = codexOrchestratorFromState(persistedState.CodexOrchestratorAssignment)
@@ -2407,7 +2376,7 @@ func RunSync(args []string) (SyncResult, error) {
 
 // restoreOpenCodeModelAssignmentsFromState reads current assignments from the
 // settings file OpenCode loads, whatever the install scope (#1825).
-func restoreOpenCodeModelAssignmentsFromState(homeDir, workspaceDir string, persistedState state.InstallState, sddMode model.SDDModeID) map[string]model.ModelAssignment {
+func restoreOpenCodeModelAssignmentsFromState(homeDir, workspaceDir string, persistedState state.InstallState) map[string]model.ModelAssignment {
 	if len(persistedState.ModelAssignments) == 0 {
 		return nil
 	}
@@ -2425,10 +2394,7 @@ func restoreOpenCodeModelAssignmentsFromState(homeDir, workspaceDir string, pers
 	assignments := make(map[string]model.ModelAssignment, len(persistedState.ModelAssignments))
 	for k, v := range persistedState.ModelAssignments {
 		if current, exists := presence[k]; exists && current.Present {
-			// Single mode intentionally generates managed agents without model fields,
-			// so their absence is not evidence of a user clear. Multi mode writes
-			// assignments into managed agents, making an absent/empty value explicit.
-			if current.Cleared && !(sddMode == model.SDDModeSingle && current.Managed) {
+			if current.Cleared {
 				continue
 			}
 			if current.Assignment.ProviderID != "" || current.Assignment.ModelID != "" {
@@ -2668,10 +2634,6 @@ func runPostSyncVerificationScoped(homeDir, workspaceDir string, scope InstallSc
 	adapters := resolveAdapters(selection.Agents)
 
 	for _, component := range selection.Components {
-		if component == model.ComponentSDD {
-			// Legacy state remains readable, but retired assets are not installed.
-			continue
-		}
 		if workspace && workspaceGlobalOnlyComponent(component) {
 			continue
 		}

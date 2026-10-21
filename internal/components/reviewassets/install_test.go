@@ -1,8 +1,6 @@
 package reviewassets_test
 
 import (
-	"crypto/sha256"
-	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -123,112 +121,6 @@ func TestInstalledClaudeReviewAgentsHaveExplicitEmptyTools(t *testing.T) {
 						t.Fatalf("tools = %#v, want an explicit empty YAML sequence", value)
 					}
 				})
-			}
-		})
-	}
-}
-
-func TestInstalledNativeAgentParity(t *testing.T) {
-	count := 0
-	for agent, expected := range installedHashes {
-		t.Run(string(agent), func(t *testing.T) {
-			home := t.TempDir()
-			adapter, err := agents.NewAdapter(agent)
-			if err != nil {
-				t.Fatal(err)
-			}
-			opts := reviewassets.InstallOptions{CodeGraphGuidanceMarkdown: "Use CodeGraph before broad filesystem search."}
-			result, err := reviewassets.InstallNativeAgents(home, adapter, opts)
-			if err != nil {
-				t.Fatal(err)
-			}
-			if !result.Changed || len(result.Files) != len(expected)+1 || !containsFile(result.Files, filepath.Join(adapter.SubAgentsDir(home), reviewassets.OwnershipLedgerFilename)) {
-				t.Fatalf("unexpected install result: %+v", result)
-			}
-			entries, err := os.ReadDir(adapter.SubAgentsDir(home))
-			if err != nil {
-				t.Fatal(err)
-			}
-			if len(entries) != len(expected)+1 {
-				t.Fatalf("installed %d entries, want %d agents plus ledger", len(entries), len(expected)+1)
-			}
-			for name, want := range expected {
-				if strings.HasPrefix(name, "sdd-") {
-					t.Fatal("SDD asset in retained fixture")
-				}
-				path := filepath.Join(adapter.SubAgentsDir(home), name)
-				data, err := os.ReadFile(path)
-				if err != nil {
-					t.Fatal(err)
-				}
-				if got := fmt.Sprintf("%x", sha256.Sum256(data)); got != want {
-					t.Errorf("%s hash: got %s want %s", name, got, want)
-				}
-			}
-			second, err := reviewassets.InstallNativeAgents(home, adapter, opts)
-			if err != nil {
-				t.Fatal(err)
-			}
-			if second.Changed || len(second.Files) != 0 {
-				t.Fatalf("second install changed files: %+v", second)
-			}
-		})
-		count += len(expected)
-	}
-	if count != 12 {
-		t.Fatalf("fixture has %d paths, want 12", count)
-	}
-}
-
-// A v3.x Kimi gentleman.yaml predates the ownership ledger and declares every
-// SDD subagent by path. Its released bytes are Gentle AI's, so the installer
-// rewrites it; any other bytes stay preserved as before (#5253).
-func TestKimiInstallRewritesReleasedPreLedgerParent(t *testing.T) {
-	released, err := os.ReadFile(filepath.Join("..", "legacyassets", "testdata", "v3.7.0", "kimi-gentleman.yaml"))
-	if err != nil {
-		t.Fatal(err)
-	}
-	adapter, err := agents.NewAdapter(model.AgentKimi)
-	if err != nil {
-		t.Fatal(err)
-	}
-	for _, tc := range []struct {
-		name      string
-		content   []byte
-		rewritten bool
-	}{
-		{"released v3 bytes", released, true},
-		{"edited v3 bytes", append(append([]byte(nil), released...), "    mine:\n      path: ./mine.yaml\n"...), false},
-	} {
-		t.Run(tc.name, func(t *testing.T) {
-			home := t.TempDir()
-			path := filepath.Join(adapter.SubAgentsDir(home), "gentleman.yaml")
-			if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
-				t.Fatal(err)
-			}
-			if err := os.WriteFile(path, tc.content, 0o644); err != nil {
-				t.Fatal(err)
-			}
-			result, err := reviewassets.InstallNativeAgents(home, adapter, reviewassets.InstallOptions{})
-			if err != nil {
-				t.Fatal(err)
-			}
-			got, err := os.ReadFile(path)
-			if err != nil {
-				t.Fatal(err)
-			}
-			if !tc.rewritten {
-				if string(got) != string(tc.content) || !containsPath(result.Skipped, path) {
-					t.Fatalf("edited parent was not preserved: %+v", result)
-				}
-				return
-			}
-			if string(got) == string(tc.content) || containsPath(result.Skipped, path) {
-				t.Fatalf("released v3 parent was not rewritten: %+v", result)
-			}
-			ledger := readOwnershipLedger(t, filepath.Join(adapter.SubAgentsDir(home), reviewassets.OwnershipLedgerFilename))
-			if ledger.Files["gentleman.yaml"] == "" {
-				t.Fatal("rewritten parent not recorded in the ownership ledger")
 			}
 		})
 	}

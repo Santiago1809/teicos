@@ -81,7 +81,7 @@ type ModelPickerState struct {
 	Providers           map[string]opencode.Provider
 	ConfiguredProviders map[string]opencode.Provider
 	AvailableIDs        []string                    // provider IDs with tool_call-capable models
-	SDDModels           map[string][]opencode.Model // provider ID -> SDD-capable models
+	ManagedModels       map[string][]opencode.Model // provider ID -> SDD-capable models
 	ConfigWarning       string
 	CatalogStatus       RuntimeCatalogStatus
 	// CatalogError retains the typed discovery failure from the last runtime
@@ -129,7 +129,7 @@ type ModelPickerState struct {
 // runtime catalog discoverer, starting in the loading phase and seeding the
 // custom native agent list from the project's opencode.json.
 func NewRuntimeModelPickerStateWithDiscoverer(settingsPath string, discover RuntimeCatalogDiscoverer) ModelPickerState {
-	state := ModelPickerState{Providers: map[string]opencode.Provider{}, SDDModels: map[string][]opencode.Model{}, CatalogStatus: RuntimeCatalogLoading, Mode: ModePhaseList, catalogDiscover: discover}
+	state := ModelPickerState{Providers: map[string]opencode.Provider{}, ManagedModels: map[string][]opencode.Model{}, CatalogStatus: RuntimeCatalogLoading, Mode: ModePhaseList, catalogDiscover: discover}
 	if agents, err := opencodedefault.DiscoverCustomAgents(settingsPath); err != nil {
 		state.ConfigWarning = fmt.Sprintf("Could not discover custom agents from opencode.json: %v", err)
 	} else {
@@ -198,14 +198,14 @@ func (state ModelPickerState) hasSelectableConfiguredModels() bool {
 // capable models.
 func (state *ModelPickerState) refreshRuntimeModels() {
 	state.AvailableIDs = state.AvailableIDs[:0]
-	state.SDDModels = make(map[string][]opencode.Model, len(state.Providers))
+	state.ManagedModels = make(map[string][]opencode.Model, len(state.Providers))
 	for id, provider := range state.Providers {
 		models := opencode.FilterModelsForSDD(provider)
 		if len(models) == 0 {
 			continue
 		}
 		state.AvailableIDs = append(state.AvailableIDs, id)
-		state.SDDModels[id] = models
+		state.ManagedModels[id] = models
 	}
 	sort.Strings(state.AvailableIDs)
 }
@@ -310,7 +310,7 @@ func ProviderEntries(state ModelPickerState) []ProviderEntry {
 		if p, ok := state.Providers[id]; ok && p.Name != "" {
 			name = p.Name
 		}
-		count := len(state.SDDModels[id])
+		count := len(state.ManagedModels[id])
 		entries = append(entries, ProviderEntry{ID: id, Name: name, ModelCount: count})
 	}
 	sort.Slice(entries, func(i, j int) bool {
@@ -486,7 +486,7 @@ func isModelSearchInput(key string) bool {
 var modelVersionPattern = regexp.MustCompile(`\d+(?:[._-]\d+)*`)
 
 func FilteredModelEntries(state ModelPickerState) []opencode.Model {
-	models := sortedModelsNewestFirst(state.SDDModels[state.SelectedProvider])
+	models := sortedModelsNewestFirst(state.ManagedModels[state.SelectedProvider])
 	query := strings.ToLower(strings.TrimSpace(state.ModelSearch))
 	if query == "" {
 		return models

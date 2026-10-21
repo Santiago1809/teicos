@@ -13,7 +13,6 @@ import (
 	"github.com/Santiago1809/teicos/internal/assets"
 	"github.com/Santiago1809/teicos/internal/components/agentguidance"
 	"github.com/Santiago1809/teicos/internal/components/filemerge"
-	"github.com/Santiago1809/teicos/internal/components/legacyassets"
 	"github.com/Santiago1809/teicos/internal/components/mutationjournal"
 	"github.com/Santiago1809/teicos/internal/model"
 )
@@ -78,9 +77,8 @@ type claudeModelResolver interface {
 }
 
 // InstallNativeAgents installs only retained review, Judgment Day, and Kimi native agents.
-// It never removes legacy SDD files or user-owned agents; it removes only the
-// retired review agents Gentle AI owns (see RetiredNativeAgentManifest).
-// legacyassets.RetireSDDAgents retires SDD agents after this runs.
+// It never removes user-owned agents; it removes only the retired review
+// agents Teicos owns (see RetiredNativeAgentManifest).
 func InstallNativeAgents(home string, adapter agents.Adapter, opts InstallOptions) (InstallResult, error) {
 	if !NativeAgentsSupported(adapter.Agent()) {
 		return InstallResult{}, fmt.Errorf("unsupported native agent runtime: %s", adapter.Agent())
@@ -147,10 +145,7 @@ func InstallNativeAgents(home string, adapter agents.Adapter, opts InstallOption
 			return result, err
 		}
 		expected, known := ledger.Files[name]
-		// A file a release shipped before the ledger existed (v3 Kimi
-		// gentleman.yaml, which declares every SDD subagent) is owned by
-		// those exact bytes, so retiring SDD can rewrite it (#5253).
-		owned := exists && ((known && installedHash(data) == expected) || legacyassets.OwnsPreLedgerNativeAgent(adapter.Agent(), name, data))
+		owned := exists && known && installedHash(data) == expected
 		if exists && !owned {
 			result.Skipped = append(result.Skipped, path)
 		}

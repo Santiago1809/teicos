@@ -19,7 +19,6 @@ import (
 
 	piagent "github.com/Santiago1809/teicos/internal/agents/pi"
 	"github.com/Santiago1809/teicos/internal/components/filemerge"
-	"github.com/Santiago1809/teicos/internal/components/legacyassets"
 	"github.com/Santiago1809/teicos/internal/system"
 )
 
@@ -193,9 +192,6 @@ func ReconcilePiCodeGraph(options PiCodeGraphOptions) (result PiCodeGraphResult,
 	}
 	manifest.MCPPath = paths.MCPConfig
 	for _, discovered := range children {
-		if legacyassets.IsRetiredPiAgentPath(paths.AgentDir, discovered.Target) {
-			continue
-		}
 		if safeErr := journal.validate(discovered.Source); safeErr != nil {
 			return result, safeErr
 		}
@@ -666,9 +662,6 @@ func inspectPiCodeGraph(homeDir, workspaceDir string) (AgentStatusKind, string, 
 	}
 	reports := make([]PiCodeGraphChild, 0, len(children))
 	for _, child := range children {
-		if legacyassets.IsRetiredPiAgentPath(paths.AgentDir, child.Target) {
-			continue
-		}
 		body, err := os.ReadFile(child.Target)
 		if err != nil {
 			return AgentStatusMissing, fmt.Sprintf("cannot read Pi child %q: %v", child.Name, err), reports
@@ -897,13 +890,6 @@ func releaseStalePiChildren(agentDir string, children map[string]piCodeGraphOwne
 			continue
 		} else if err != nil {
 			return err
-		}
-		if !legacyassets.IsRetiredPiAgentPath(agentDir, path) {
-			continue
-		}
-		delete(children, path)
-		if owned.Before == nil || journal.validate(path) != nil {
-			continue
 		}
 		body, err := os.ReadFile(path)
 		if err != nil {

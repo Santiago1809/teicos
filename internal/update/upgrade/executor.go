@@ -25,7 +25,6 @@ import (
 	"github.com/Santiago1809/teicos/internal/assets"
 	"github.com/Santiago1809/teicos/internal/backup"
 	"github.com/Santiago1809/teicos/internal/components/agentguidance"
-	"github.com/Santiago1809/teicos/internal/components/legacyassets"
 	"github.com/Santiago1809/teicos/internal/components/opencodedefault"
 	"github.com/Santiago1809/teicos/internal/components/opencoderuntimeplugins"
 	"github.com/Santiago1809/teicos/internal/components/skills"
@@ -233,7 +232,6 @@ func managedAgentBackupPaths(homeDir string, adapter agents.Adapter, diagnostics
 	}
 
 	if adapter.SupportsSlashCommands() {
-		add(presentPaths(legacyassets.SlashCommandPaths(adapter.Agent(), adapter.CommandsDir(homeDir)))...)
 		commands, err := skills.AllSkillCommandPaths(homeDir, adapter)
 		if err != nil {
 			writeBackupDiagnostic(diagnostics, "backup: skipping skill commands for %s: %v", adapter.Agent(), err)
@@ -245,24 +243,10 @@ func managedAgentBackupPaths(homeDir string, adapter agents.Adapter, diagnostics
 		for _, name := range embeddedFileNames(adapter.EmbeddedSubAgentsDir(), diagnostics) {
 			add(filepath.Join(adapter.SubAgentsDir(homeDir), name))
 		}
-		// The upgraded binary's sync retires native SDD agents (#5157).
-		add(presentPaths(legacyassets.RetiredSDDAgentPaths(adapter.Agent(), adapter.SubAgentsDir(homeDir)))...)
 	}
 
 	if adapter.SupportsSkills() {
 		add(managedSkillBackupPaths(homeDir, adapter, diagnostics)...)
-		// The upgraded binary's sync retires SDD skills (#5157).
-		add(legacyassets.PresentRetiredSDDAssetPaths(adapter.Agent(), legacyassets.SDDAssetDirs{Skills: adapter.SkillsDir(homeDir)})...)
-	}
-
-	// It also retires Codex's SDD profiles and the SDD block of its lowercase
-	// agents.md, and Kimi's SDD module and its legacy include (#5157).
-	runtimeFiles := legacyassets.RetiredSDDRuntimeFiles(adapter.Agent(), homeDir)
-	add(legacyassets.PresentRetiredSDDAssetPaths(adapter.Agent(), runtimeFiles.Dirs)...)
-	for _, prompt := range [][2]string{{runtimeFiles.Dirs.CodexHome, runtimeFiles.Prompt}, {runtimeFiles.Dirs.KimiHome, runtimeFiles.Hub}} {
-		if prompt[1] != "" && legacyassets.RetirablePromptFile(prompt[0], prompt[1]) {
-			add(prompt[1])
-		}
 	}
 
 	// The managed plugin install resolves the config directory through the
@@ -298,15 +282,6 @@ func managedAgentBackupPaths(homeDir string, adapter agents.Adapter, diagnostics
 			filepath.Join(homeDir, ".config", "opencode", "tui-plugins", "gentle-logo.tsx"),
 			filepath.Join(homeDir, ".config", "opencode", "tui.json"),
 		)
-		// Retirement never enters a prompts directory that is not a real
-		// directory, and removes only prompts that exist.
-		if dir := legacyassets.SharedPromptDir(homeDir); isRealDir(dir) {
-			var prompts []string
-			for _, phase := range legacyassets.SharedPromptPhases() {
-				prompts = append(prompts, filepath.Join(dir, phase+".md"))
-			}
-			add(presentPaths(prompts)...)
-		}
 	}
 
 	return paths

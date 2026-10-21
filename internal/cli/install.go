@@ -13,7 +13,6 @@ type InstallFlags struct {
 	Skills     []string
 	Persona    string
 	Preset     string
-	SDDMode    string
 	Scope      string
 	Channel    string
 	DryRun     bool

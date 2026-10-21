@@ -25,14 +25,12 @@ import (
 	"github.com/Santiago1809/teicos/internal/agents/kimi"
 	opencodeagent "github.com/Santiago1809/teicos/internal/agents/opencode"
 	piagent "github.com/Santiago1809/teicos/internal/agents/pi"
-	"github.com/Santiago1809/teicos/internal/assets"
 	"github.com/Santiago1809/teicos/internal/backup"
 	"github.com/Santiago1809/teicos/internal/components/agentguidance"
 	"github.com/Santiago1809/teicos/internal/components/agenthooks"
 	"github.com/Santiago1809/teicos/internal/components/communitytool"
 	"github.com/Santiago1809/teicos/internal/components/engram"
 	"github.com/Santiago1809/teicos/internal/components/filemerge"
-	"github.com/Santiago1809/teicos/internal/components/legacyassets"
 	"github.com/Santiago1809/teicos/internal/components/mcp"
 	"github.com/Santiago1809/teicos/internal/components/opencodeagents"
 	"github.com/Santiago1809/teicos/internal/components/opencodedefault"
@@ -295,7 +293,6 @@ func RunPreparedInstall(prepared PreparedInstall, detection system.DetectionResu
 	}
 	result.PiCodeGraph = runtime.state.piCodeGraph
 	result.ManualActions = append(result.ManualActions, runtime.state.nativeReviewActions...)
-	result.ManualActions = append(result.ManualActions, runtime.state.retiredSDDActions...)
 	result.Verify = runPostApplyVerification(postApplyVerificationInput{
 		HomeDir:      homeDir,
 		WorkspaceDir: runtime.workspaceDir,
@@ -413,7 +410,7 @@ func mergeFullInstallState(existing, fresh state.InstallState) state.InstallStat
 	merged := existing
 	merged.InstalledAgents = fresh.InstalledAgents
 	merged.SelectionConfigured, merged.Components, merged.Skills = fresh.SelectionConfigured, fresh.Components, fresh.Skills
-	merged.Preset, merged.SDDMode, merged.StrictTDD = fresh.Preset, fresh.SDDMode, false
+	merged.Preset, merged.StrictTDD = fresh.Preset, false
 	merged.CommunityTools, merged.CommunityToolsConfigured = fresh.CommunityTools, fresh.CommunityToolsConfigured
 	merged.ClaudeModelAssignments, merged.ClaudePhaseAssignments = fresh.ClaudeModelAssignments, fresh.ClaudePhaseAssignments
 	merged.KiroModelAssignments, merged.CodexModelAssignments = fresh.KiroModelAssignments, fresh.CodexModelAssignments
@@ -481,7 +478,7 @@ func mergeExplicitAgentInstallState(homeDir string, newState state.InstallState,
 		// A metadata-only or legacy state has no selection to preserve.
 		merged.SelectionConfigured = true
 		merged.Components, merged.Skills = newState.Components, newState.Skills
-		merged.Preset, merged.SDDMode = newState.Preset, newState.SDDMode
+		merged.Preset = newState.Preset
 	} else if merged.SelectionConfigured {
 		if len(flags.Components) > 0 {
 			merged.Components = newState.Components
@@ -491,9 +488,6 @@ func mergeExplicitAgentInstallState(homeDir string, newState state.InstallState,
 		}
 		if flags.Preset != "" {
 			merged.Preset = newState.Preset
-		}
-		if flags.SDDMode != "" {
-			merged.SDDMode = newState.SDDMode
 		}
 	}
 	if flags.Persona != "" || merged.Persona == "" {
@@ -776,7 +770,6 @@ type runtimeState struct {
 	rollbackSnapshotDir      string
 	piCodeGraph              *communitytool.PiCodeGraphResult
 	nativeReviewActions      []string
-	retiredSDDActions        []string
 	compatibilityTransaction compatibilityRefreshTransaction
 
 	// engramVersionResolved, engramVersion, and engramVersionErr cache the
@@ -929,9 +922,6 @@ func (r *installRuntime) stagePlan() pipeline.StagePlan {
 	}
 
 	for _, component := range r.resolved.OrderedComponents {
-		if component == model.ComponentSDD {
-			continue
-		}
 		step := componentApplyStep{
 			id:           "component:" + string(component),
 			component:    component,
@@ -952,11 +942,8 @@ func (r *installRuntime) stagePlan() pipeline.StagePlan {
 			apply = append(apply, nativeReviewAgentStep{id: "agent:native-review:" + string(agent), agent: agent, homeDir: r.homeDir, workspaceDir: r.workspaceDir, scope: r.scope, selection: r.selection, state: r.state})
 		}
 	}
-	apply = append(apply, retiredSDDAssetStepList(retiredSDDAssetSteps("agent:retire-sdd-assets:", r.homeDir, r.workspaceDir, r.scope, r.resolved.Agents, nil, r.state))...)
 	// After the native installer: it rewrites a Gentle-owned v3 Kimi
 	// gentleman.yaml, so the SDD subagents it declared can be retired now.
-	apply = append(apply, retiredSDDAgentSteps("agent:retire-sdd:", r.homeDir, r.scope, r.resolved.Agents, nil, r.state)...)
-	apply = append(apply, retiredOpenCodeSDDSettingsSteps("agent:retire-sdd-settings:", r.homeDir, r.workspaceDir, r.scope, r.resolved.Agents, nil, r.state)...)
 
 	// Routing guidance is scheduled per agent and outside the component loop:
 	// an agent that cannot choose between direct and delegated work is unusable,
@@ -1041,254 +1028,6 @@ func (s nativeReviewAgentStep) Run() error {
 		for _, path := range res.Skipped {
 			s.state.nativeReviewActions = append(s.state.nativeReviewActions, nativeReviewPreservedAction(path))
 		}
-	}
-	return nil
-}
-
-// retiredSDDAssetsStep removes the SDD skills, slash commands, workflow,
-// Codex profiles, Kimi module, and Claude Code preflight hook earlier
-// releases installed for one runtime, and the SDD text they left in prompt
-// files routing guidance does not migrate. It reports what it cannot prove it
-// wrote (#5157). The pipeline snapshot captures the same inventory first
-// (retiredSDDAssetBackupPaths).
-type retiredSDDAssetsStep struct {
-	id           string
-	inventory    legacyassets.SDDInventory
-	changedFiles *[]string
-	state        *runtimeState
-}
-
-func (s retiredSDDAssetsStep) ID() string { return s.id }
-
-func (s retiredSDDAssetsStep) Run() error {
-	res, err := s.inventory.Retire()
-	if s.changedFiles != nil {
-		*s.changedFiles = append(*s.changedFiles, res.Removed...)
-		*s.changedFiles = append(*s.changedFiles, res.Rewritten...)
-	}
-	if err != nil {
-		return err
-	}
-	if s.state != nil {
-		s.state.retiredSDDActions = append(s.state.retiredSDDActions, res.ManualActions...)
-	}
-	return nil
-}
-
-// retiredSDDAssetSteps resolves where releases installed retired SDD files
-// for the selected runtimes in this scope: the legacyassets inventory under
-// the scoped config root, the Windsurf workflow only in a workspace-scoped
-// run (releases wrote it into the project), and the shared ~/.agents/skills
-// root only in a global run on platforms where the generic snapshot owns it.
-// Pi has no inventory: gentle-pi owns its home (#5219).
-func retiredSDDAssetSteps(prefix, homeDir, workspaceDir string, scope InstallScope, agentIDs []model.AgentID, changedFiles *[]string, state *runtimeState) []retiredSDDAssetsStep {
-	var steps []retiredSDDAssetsStep
-	for _, adapter := range resolveAdapters(agentIDs) {
-		if adapter.Agent() == model.AgentPi {
-			continue
-		}
-		// A workspace-scoped install wrote these under the workspace too.
-		root := componentInjectionDirScoped(homeDir, workspaceDir, scope, adapter)
-		inventory := legacyassets.RetiredSDDInventory(adapter, root)
-		if flows, ok := adapter.(interface{ WorkflowsDir(string) string }); ok && scope == ScopeWorkspace {
-			inventory.Dirs.Workflows = flows.WorkflowsDir(workspaceDir)
-		}
-		// A workspace sync delivers no routing guidance to these runtimes, so
-		// nothing migrates the v3.7.0 SDD block of their project prompt.
-		if scope == ScopeWorkspace && workspaceRoutingGuidanceGlobalOnly(adapter.Agent()) &&
-			!agentguidance.DeliversThroughOrchestratorPrompt(adapter.Agent()) && adapter.SupportsSystemPrompt() {
-			prompt := adapter.SystemPromptFile(root)
-			inventory.Blocks = append(inventory.Blocks, legacyassets.SDDPromptFile{Root: filepath.Dir(prompt), Path: prompt})
-		}
-		steps = append(steps, retiredSDDAssetsStep{id: prefix + string(adapter.Agent()), inventory: inventory, changedFiles: changedFiles, state: state})
-	}
-	if scope != ScopeWorkspace && !usesAnchoredCompatibilityTransaction() {
-		if dir, ok, err := compatibilitySkillsDir(homeDir); err == nil && ok {
-			steps = append(steps, retiredSDDAssetsStep{id: prefix + "compatibility-skills", inventory: legacyassets.SDDInventory{Dirs: legacyassets.SDDAssetDirs{Skills: dir}}, changedFiles: changedFiles, state: state})
-		}
-	}
-	return steps
-}
-
-func retiredSDDAssetStepList(steps []retiredSDDAssetsStep) []pipeline.Step {
-	list := make([]pipeline.Step, 0, len(steps))
-	for _, step := range steps {
-		list = append(list, step)
-	}
-	return list
-}
-
-// retiredSDDAssetBackupPaths is the snapshot half of retiredSDDAssetSteps.
-// Retirement only removes files that exist, so only present inventory files
-// enter the snapshot; retired SDD paths never become install targets.
-func retiredSDDAssetBackupPaths(homeDir, workspaceDir string, scope InstallScope, agentIDs []model.AgentID) []string {
-	var paths []string
-	for _, step := range retiredSDDAssetSteps("", homeDir, workspaceDir, scope, agentIDs, nil, nil) {
-		paths = append(paths, step.inventory.BackupPaths()...)
-	}
-	return paths
-}
-
-// retiredSDDAgentsStep removes the native SDD sub-agents earlier releases
-// rendered and reports the ones whose ownership cannot be proven (#5157,
-// #5253). The pipeline snapshot captures every inventory path first.
-type retiredSDDAgentsStep struct {
-	id, homeDir  string
-	agent        model.AgentID
-	changedFiles *[]string
-	state        *runtimeState
-}
-
-func (s retiredSDDAgentsStep) ID() string { return s.id }
-
-func (s retiredSDDAgentsStep) Run() error {
-	adapter := resolveAdapters([]model.AgentID{s.agent})[0]
-	res, err := legacyassets.RetireSDDAgents(s.agent, adapter.SubAgentsDir(s.homeDir))
-	if s.changedFiles != nil {
-		*s.changedFiles = append(*s.changedFiles, res.Removed...)
-	}
-	if err != nil {
-		return fmt.Errorf("retire SDD agents for %q: %w", s.agent, err)
-	}
-	if s.state != nil {
-		s.state.retiredSDDActions = append(s.state.retiredSDDActions, res.ManualActions()...)
-	}
-	return nil
-}
-
-// retiredSDDAgentSteps schedules retirement for every selected runtime that
-// received native SDD agents. Releases installed them in the home directory,
-// so a workspace-scoped run never touches them (#1074).
-func retiredSDDAgentSteps(prefix, homeDir string, scope InstallScope, agentIDs []model.AgentID, changedFiles *[]string, state *runtimeState) []pipeline.Step {
-	if scope == ScopeWorkspace {
-		return nil
-	}
-	var steps []pipeline.Step
-	for _, agent := range agentIDs {
-		if len(legacyassets.RetiredSDDAgentFiles(agent)) > 0 {
-			steps = append(steps, retiredSDDAgentsStep{id: prefix + string(agent), homeDir: homeDir, agent: agent, changedFiles: changedFiles, state: state})
-		}
-	}
-	return steps
-}
-
-// retiredSDDAgentBackupPaths is the snapshot half of retiredSDDAgentSteps.
-func retiredSDDAgentBackupPaths(homeDir string, scope InstallScope, adapters []agents.Adapter) []string {
-	if scope == ScopeWorkspace {
-		return nil
-	}
-	var paths []string
-	for _, adapter := range adapters {
-		paths = append(paths, legacyassets.RetiredSDDAgentPaths(adapter.Agent(), adapter.SubAgentsDir(homeDir))...)
-	}
-	return paths
-}
-
-// retiredOpenCodeSDDTarget is one OpenCode-family settings file that may hold
-// retired SDD agents, with the shared prompt directory retired beside it.
-type retiredOpenCodeSDDTarget struct {
-	agent    model.AgentID
-	settings string
-	prompts  string
-	// agentDirs are markdown agent directories the runtime also loads,
-	// beyond the ones beside settings; they hold the `sdd-*` allow.
-	agentDirs []string
-}
-
-// retiredOpenCodeSDDTargets resolves where releases wrote the OpenCode
-// family's SDD agents: OpenCode's selected settings document in either scope
-// and, in the global scope only, Kilocode's settings and the shared prompt
-// directory, so a workspace-scoped run never reaches the global config.
-func retiredOpenCodeSDDTargets(homeDir, workspaceDir string, scope InstallScope, agentIDs []model.AgentID) []retiredOpenCodeSDDTarget {
-	var targets []retiredOpenCodeSDDTarget
-	for _, agent := range agentIDs {
-		switch {
-		case agent == model.AgentOpenCode:
-			// The selected settings may be a project file; OpenCode still loads
-			// the global markdown agents beside it.
-			config := opencodeagent.ConfigPath(homeDir)
-			target := retiredOpenCodeSDDTarget{
-				agent: agent, settings: syncOpenCodeSettingsPath(homeDir, workspaceDir, scope, opencodeagent.NewAdapter()),
-				agentDirs: []string{filepath.Join(config, "agent"), filepath.Join(config, "agents")},
-			}
-			if scope != ScopeWorkspace {
-				target.prompts = legacyassets.SharedPromptDir(homeDir)
-			}
-			targets = append(targets, target)
-		case agent == model.AgentKilocode && scope != ScopeWorkspace:
-			targets = append(targets, retiredOpenCodeSDDTarget{agent: agent, settings: resolveAdapters([]model.AgentID{agent})[0].SettingsPath(homeDir)})
-		}
-	}
-	return targets
-}
-
-// retiredOpenCodeSDDSettingsSteps schedules the settings retirement for every
-// selected OpenCode-family runtime, before routing guidance writes settings.
-func retiredOpenCodeSDDSettingsSteps(prefix, homeDir, workspaceDir string, scope InstallScope, agentIDs []model.AgentID, changedFiles *[]string, state *runtimeState) []pipeline.Step {
-	var steps []pipeline.Step
-	for _, target := range retiredOpenCodeSDDTargets(homeDir, workspaceDir, scope, agentIDs) {
-		steps = append(steps, retiredOpenCodeSDDSettingsStep{id: prefix + string(target.agent), target: target, changedFiles: changedFiles, state: state})
-	}
-	return steps
-}
-
-// retiredOpenCodeSDDBackupPaths is the snapshot half of
-// retiredOpenCodeSDDSettingsSteps.
-func retiredOpenCodeSDDBackupPaths(homeDir, workspaceDir string, scope InstallScope, agentIDs []model.AgentID) []string {
-	var paths []string
-	for _, target := range retiredOpenCodeSDDTargets(homeDir, workspaceDir, scope, agentIDs) {
-		paths = append(paths, target.settings)
-		if target.prompts == "" {
-			continue
-		}
-		// Retirement never enters a prompts directory that is not a real
-		// directory (e.g. a symlink), so the snapshot must not declare paths
-		// through it either; a link outside the home would make rollback
-		// refuse paths it never needed to restore.
-		if info, err := os.Lstat(target.prompts); err == nil && !info.IsDir() {
-			continue
-		}
-		for _, phase := range legacyassets.SharedPromptPhases() {
-			paths = append(paths, filepath.Join(target.prompts, phase+".md"))
-		}
-	}
-	return paths
-}
-
-// retiredOpenCodeSDDSettingsStep removes the retired SDD agents Gentle AI
-// wrote to an OpenCode-family settings file, in the V1 and native shapes, and
-// the shared prompts it rendered for them (#5157, #5182). Entries and prompts
-// whose ownership cannot be proven are preserved and reported.
-type retiredOpenCodeSDDSettingsStep struct {
-	id           string
-	target       retiredOpenCodeSDDTarget
-	changedFiles *[]string
-	state        *runtimeState
-}
-
-func (s retiredOpenCodeSDDSettingsStep) ID() string { return s.id }
-
-func (s retiredOpenCodeSDDSettingsStep) Run() error {
-	settings, err := legacyassets.RetireOpenCodeSDDSettings(s.target.settings, s.target.agentDirs...)
-	if settings.Changed && s.changedFiles != nil {
-		*s.changedFiles = append(*s.changedFiles, s.target.settings)
-	}
-	if err != nil {
-		return fmt.Errorf("retire SDD agents in %q settings: %w", s.target.agent, err)
-	}
-	actions := settings.ManualActions()
-	if s.target.prompts != "" {
-		prompts, err := legacyassets.RetireOpenCodeSDDPrompts(s.target.prompts)
-		if s.changedFiles != nil {
-			*s.changedFiles = append(*s.changedFiles, prompts.Removed...)
-		}
-		if err != nil {
-			return fmt.Errorf("retire SDD prompts for %q: %w", s.target.agent, err)
-		}
-		actions = append(actions, prompts.ManualActions()...)
-	}
-	if s.state != nil {
-		s.state.retiredSDDActions = append(s.state.retiredSDDActions, actions...)
 	}
 	return nil
 }
@@ -3331,9 +3070,6 @@ func (s componentApplyStep) Run() error {
 			}
 		}
 		return nil
-	case model.ComponentSDD:
-		// Legacy persisted selections are readable, but their retired assets are not reinstalled.
-		return nil
 	case model.ComponentSkills:
 		skillIDs := selectedSkillIDs(s.selection)
 		if len(skillIDs) == 0 {
@@ -3469,7 +3205,6 @@ func executeTUIInstall(homeDir string, selection model.Selection, resolved plann
 		result.ManualActions = append(result.ManualActions, runtime.state.piCodeGraph.ManualActions...)
 	}
 	result.ManualActions = append(result.ManualActions, runtime.state.nativeReviewActions...)
-	result.ManualActions = append(result.ManualActions, runtime.state.retiredSDDActions...)
 	return result, orchestrator, runtime.state.codexServiceTier
 }
 
@@ -3708,9 +3443,6 @@ func installBackupTargets(homeDir, workspaceDir string, scope InstallScope, sele
 	}
 
 	for _, component := range resolved.OrderedComponents {
-		if component == model.ComponentSDD {
-			continue
-		}
 		for _, path := range componentPathsWithWorkspaceScoped(homeDir, workspaceDir, scope, selection, adapters, component) {
 			paths[path] = struct{}{}
 		}
@@ -3759,9 +3491,6 @@ func installBackupTargets(homeDir, workspaceDir string, scope InstallScope, sele
 	for _, path := range routingGuidancePathsWithClaudeModules(homeDir, workspaceDir, scope, adapters, claudeModules) {
 		paths[path] = struct{}{}
 	}
-	for _, path := range retiredSDDAssetBackupPaths(homeDir, workspaceDir, scope, resolved.Agents) {
-		paths[path] = struct{}{}
-	}
 	for _, adapter := range adapters {
 		if path := agentguidance.StrictTDDPath(routingGuidanceDir(homeDir, workspaceDir, scope, adapter), adapter.Agent()); path != "" {
 			paths[path] = struct{}{}
@@ -3770,12 +3499,6 @@ func installBackupTargets(homeDir, workspaceDir string, scope InstallScope, sele
 	for _, adapter := range adapters {
 		if adapter.Agent() == model.AgentCodex {
 			paths[filepath.Join(adapter.GlobalConfigDir(homeDir), "hooks.json")] = struct{}{}
-		}
-		for _, path := range retiredSDDAgentBackupPaths(homeDir, scope, []agents.Adapter{adapter}) {
-			paths[path] = struct{}{}
-		}
-		for _, path := range retiredOpenCodeSDDBackupPaths(homeDir, workspaceDir, scope, []model.AgentID{adapter.Agent()}) {
-			paths[path] = struct{}{}
 		}
 		// Retained Claude hooks are installed independently of optional
 		// components. Snapshot the same scoped settings their writer uses.
@@ -4009,45 +3732,8 @@ func componentPathsWithWorkspaceScoped(homeDir, workspaceDir string, scope Insta
 			if adapter.SystemPromptStrategy() == model.StrategyMarkdownSections {
 				paths = append(paths, adapter.SystemPromptFile(targetDir))
 			}
-		case model.ComponentSDD:
-			// Jinja modular hubs (e.g. Kimi KIMI.md) are appended once below so SDD+Persona
-			// do not duplicate the same system prompt path. OpenCode-compatible adapters
-			// write the SDD orchestrator to their settings file instead (#3975).
-			if adapter.SupportsSystemPrompt() &&
-				!opencoderuntimeplugins.AgentReceivesManagedOpenCodePlugins(adapter.Agent()) &&
-				adapter.SystemPromptStrategy() != model.StrategyJinjaModules {
-				paths = append(paths, adapter.SystemPromptFile(targetDir))
-			}
-			if adapter.SupportsSlashCommands() {
-				paths = append(paths, legacyassets.SlashCommandPaths(adapter.Agent(), adapter.CommandsDir(targetDir))...)
-			}
-			if adapter.Agent() == model.AgentOpenCode {
-				// The retired SDD step writes no OpenCode settings; the routing
-				// guidance owner declares the default-agent ownership file (#5025).
-				paths = append(paths, openCodeSDDPluginPaths(adapter, targetDir)...)
-				// Shared prompt files in the selected OpenCode config scope — back these up
-				// so a sync does not silently overwrite user-customized prompt content.
-				// These files are only written for multi-mode (SDDModeMulti), so we only
-				// include them in the path list when that mode is active. This prevents
-				// false-negative verification failures in single/empty mode syncs.
-				if selection.SDDMode == model.SDDModeMulti {
-					promptDir := legacyassets.SharedPromptDir(targetDir)
-					for _, phase := range legacyassets.SharedPromptPhases() {
-						paths = append(paths, filepath.Join(promptDir, phase+".md"))
-					}
-				}
-			}
-			paths = append(paths, sddSubAgentPaths(targetDir, adapter)...)
-			if adapter.Agent() == model.AgentCodex {
-				// SDD installs the Codex skill-registry hook outside the skills
-				// directory, so it must share the component's backup contract.
-				paths = append(paths, filepath.Join(adapter.GlobalConfigDir(homeDir), "hooks.json"))
-			}
 		case model.ComponentSkills:
 			for _, skillID := range selectedSkillIDs(selection) {
-				if skills.IsSDDSkill(skillID) {
-					continue
-				}
 				path := skills.SkillPathForAgent(targetDir, adapter, skillID)
 				if path != "" {
 					paths = append(paths, path)
@@ -4294,32 +3980,11 @@ func componentPathDir(homeDir, workspaceDir string, adapter agents.Adapter, comp
 
 func componentPathDirScoped(homeDir, workspaceDir string, scope InstallScope, adapter agents.Adapter, component model.ComponentID) string {
 	switch component {
-	case model.ComponentEngram, model.ComponentSDD, model.ComponentPersona, model.ComponentSkills, model.ComponentContext7:
+	case model.ComponentEngram, model.ComponentPersona, model.ComponentSkills, model.ComponentContext7:
 		return componentInjectionDirScoped(homeDir, workspaceDir, scope, adapter)
 	default:
 		return homeDir
 	}
-}
-
-func sddSubAgentPaths(homeDir string, adapter agents.Adapter) []string {
-	if !adapter.SupportsSubAgents() {
-		return nil
-	}
-
-	entries, err := assets.FS.ReadDir(adapter.EmbeddedSubAgentsDir())
-	if err != nil {
-		return nil
-	}
-
-	paths := make([]string, 0, len(entries))
-	for _, entry := range entries {
-		if entry.IsDir() {
-			continue
-		}
-		paths = append(paths, filepath.Join(adapter.SubAgentsDir(homeDir), entry.Name()))
-	}
-
-	return paths
 }
 
 func openCodeSDDPluginPaths(adapter agents.Adapter, targetDir string) []string {
@@ -4487,7 +4152,7 @@ func openCodeConfigChecks(homeDir, workspaceDir string, agentIDs []model.AgentID
 // isRetiredManagedPath reports whether path names a managed file that install
 // and sync remove instead of write, so verification checks its absence.
 func isRetiredManagedPath(path string) bool {
-	return isLegacyOpenCodeBackgroundAgentsPlugin(path) || legacyassets.IsLegacyClaudeCommandPath(path)
+	return isLegacyOpenCodeBackgroundAgentsPlugin(path)
 }
 
 func isLegacyOpenCodeBackgroundAgentsPlugin(path string) bool {

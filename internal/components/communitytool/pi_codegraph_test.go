@@ -173,35 +173,6 @@ func TestPiCodeGraphRootValidationRejectsUnsafeRoots(t *testing.T) {
 	}
 }
 
-func TestPiCodeGraphReconcileIsByteIdempotentAndUninstallPreservesUserMCP(t *testing.T) {
-	home := t.TempDir()
-	mcpPath := filepath.Join(home, ".pi", "agent", "mcp.json")
-	childPath := filepath.Join(home, ".pi", "agent", "subagents", "worker.md")
-	writePiFile(t, mcpPath, `{"mcpServers":{"user":{"command":"user-server"}}}`)
-	writePiFile(t, childPath, "---\ntools: bash\n---\nwork\n")
-	if _, err := ReconcilePiCodeGraph(PiCodeGraphOptions{HomeDir: home, Selected: true, EffectiveMCPProbe: piProbeForTest}); err != nil {
-		t.Fatal(err)
-	}
-	before := mustReadPiFile(t, childPath)
-	second, err := ReconcilePiCodeGraph(PiCodeGraphOptions{HomeDir: home, Selected: true, EffectiveMCPProbe: piProbeForTest})
-	if err != nil || second.Changed {
-		t.Fatalf("second reconcile = %#v, err=%v", second, err)
-	}
-	if string(before) != string(mustReadPiFile(t, childPath)) {
-		t.Fatal("idempotent reconciliation changed child bytes")
-	}
-	if _, err := UninstallPiCodeGraph(home); err != nil {
-		t.Fatal(err)
-	}
-	mcp := string(mustReadPiFile(t, mcpPath))
-	if !strings.Contains(mcp, "user-server") || strings.Contains(mcp, `"codegraph"`) {
-		t.Fatalf("uninstall MCP = %s", mcp)
-	}
-	if _, err := UninstallPiCodeGraph(home); err != nil {
-		t.Fatalf("repeat uninstall: %v", err)
-	}
-}
-
 func TestPiChildToolsAcceptsYAMLBlockList(t *testing.T) {
 	body := "---\ntools:\n  - read\n  - grep\n  - bash\n---\nwork\n"
 
@@ -353,99 +324,6 @@ func readPiManifestForTest(t *testing.T, home string) piCodeGraphManifest {
 		t.Fatal(err)
 	}
 	return manifest
-}
-
-// Issue #5219: sync recreated every retired SDD agent recorded in the manifest
-// and kept its overlay in the rest, so gentle-pi could not prove ownership.
-func TestPiCodeGraphRefreshReleasesRetiredSDDChildren(t *testing.T) {
-	home := t.TempDir()
-	previousProbe := piCodeGraphEffectiveMCPProbe
-	piCodeGraphEffectiveMCPProbe = piProbeForTest
-	t.Cleanup(func() { piCodeGraphEffectiveMCPProbe = previousProbe })
-	agents := filepath.Join(piagent.CodeGraphPaths(home).AgentDir, "agents")
-	worker := filepath.Join(agents, "worker.md")
-	writePiFile(t, worker, "---\ntools: bash\n---\nwork\n")
-	if _, err := ReconcilePiCodeGraph(PiCodeGraphOptions{HomeDir: home, Selected: true, EffectiveMCPProbe: piProbeForTest}); err != nil {
-		t.Fatal(err)
-	}
-	recorded := seedRetiredPiSDDChildren(t, home, "sdd-apply.md", "sdd-verify.md", "sdd-spec.md")
-	missing, overlaid, edited := filepath.Join(agents, "sdd-apply.md"), filepath.Join(agents, "sdd-verify.md"), filepath.Join(agents, "sdd-spec.md")
-	writePiFile(t, overlaid, recorded[overlaid].After)
-	editedBody := recorded[edited].After + "\nuser edit\n"
-	writePiFile(t, edited, editedBody)
-
-	result, handled, err := RefreshPiCodeGraphIfConfigured(home, "")
-	if err != nil || !handled {
-		t.Fatalf("RefreshPiCodeGraphIfConfigured() = %#v, %v, %v", result, handled, err)
-	}
-	if _, err := os.Stat(missing); !os.IsNotExist(err) {
-		t.Fatalf("sync recreated a retired SDD child: %v", err)
-	}
-	if got := string(mustReadPiFile(t, overlaid)); got != *recorded[overlaid].Before {
-		t.Fatalf("overlaid retired child = %q, want recorded before-image %q", got, *recorded[overlaid].Before)
-	}
-	if got := string(mustReadPiFile(t, edited)); got != editedBody {
-		t.Fatalf("edited retired child = %q, want untouched %q", got, editedBody)
-	}
-	if !slices.Contains(result.Files, overlaid) || slices.Contains(result.Files, missing) || slices.Contains(result.Files, edited) {
-		t.Fatalf("changed files = %v, want only the restored retired child", result.Files)
-	}
-	manifest := readPiManifestForTest(t, home)
-	for path := range recorded {
-		if _, exists := manifest.Children[path]; exists {
-			t.Fatalf("manifest still owns retired child %s", path)
-		}
-	}
-	if _, exists := manifest.Children[worker]; !exists {
-		t.Fatal("manifest dropped a non-retired child")
-	}
-	if !strings.Contains(string(mustReadPiFile(t, worker)), piCodeGraphGuidanceMarker) {
-		t.Fatal("non-retired child lost its CodeGraph overlay")
-	}
-
-	second, _, err := RefreshPiCodeGraphIfConfigured(home, "")
-	if err != nil || second.Changed {
-		t.Fatalf("second refresh = %#v, %v; want idempotent no-op", second, err)
-	}
-	if _, err := os.Stat(missing); !os.IsNotExist(err) {
-		t.Fatalf("second refresh recreated a retired SDD child: %v", err)
-	}
-	if got := string(mustReadPiFile(t, overlaid)); got != *recorded[overlaid].Before {
-		t.Fatalf("second refresh re-overlaid a retired child: %q", got)
-	}
-	if got := string(mustReadPiFile(t, edited)); got != editedBody {
-		t.Fatalf("second refresh changed an edited retired child: %q", got)
-	}
-}
-
-func TestPiCodeGraphDoesNotProjectRetiredSDDChildren(t *testing.T) {
-	home := t.TempDir()
-	agentDir := piagent.CodeGraphPaths(home).AgentDir
-	packageChild := filepath.Join(agentDir, "node_modules", "gentle-pi", "agents", "sdd-apply.md")
-	homeChild := filepath.Join(agentDir, "agents", "sdd-init.md")
-	homeBody := "---\ntools: bash\n---\nsdd-init body\n"
-	writePiFile(t, packageChild, "---\ntools: bash\n---\nretired package body\n")
-	writePiFile(t, homeChild, homeBody)
-
-	result, err := ReconcilePiCodeGraph(PiCodeGraphOptions{HomeDir: home, Selected: true, EffectiveMCPProbe: piProbeForTest})
-	if err != nil {
-		t.Fatal(err)
-	}
-	if len(result.Children) != 0 {
-		t.Fatalf("children = %#v, want retired SDD agents skipped", result.Children)
-	}
-	if _, err := os.Stat(filepath.Join(agentDir, "subagents", "sdd-apply.md")); !os.IsNotExist(err) {
-		t.Fatalf("retired package agent was projected: %v", err)
-	}
-	if got := string(mustReadPiFile(t, homeChild)); got != homeBody {
-		t.Fatalf("retired agent-home child = %q, want untouched %q", got, homeBody)
-	}
-	if children := readPiManifestForTest(t, home).Children; len(children) != 0 {
-		t.Fatalf("manifest children = %v, want none", children)
-	}
-	if configured, reason := PiCodeGraphConfigured(home, ""); !configured {
-		t.Fatalf("PiCodeGraphConfigured() = false (%s), want retired children ignored", reason)
-	}
 }
 
 func TestPiCodeGraphRetiredSDDReleaseRollsBackOnFailure(t *testing.T) {

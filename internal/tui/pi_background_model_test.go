@@ -137,7 +137,7 @@ func TestOpenCodeBackgroundPromptChainsIntoPiBackground(t *testing.T) {
 	t.Setenv(cli.PiBackgroundSubagentsEnv, "")
 	m := piSDDReviewModel("")
 	m.Selection.Agents = []model.AgentID{model.AgentOpenCode, model.AgentPi}
-	m.Selection.Components = []model.ComponentID{model.ComponentSDD}
+	m.Selection.Components = []model.ComponentID{model.ComponentSkills}
 
 	updated, _ := m.Update(tea.KeyMsg{Type: tea.KeyEnter})
 	state := updated.(Model)

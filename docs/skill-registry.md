@@ -125,8 +125,8 @@ Compact rules were cheaper per delegation but could distort skills. The index-fi
 
 ## Excluded Skills
 
-The registry never indexes `_shared`, `skill-registry`, or any `sdd-*` skill.
-The first two are internal plumbing; the `sdd-*` prefix stays reserved
+The registry never indexes `_shared` or `skill-registry`.
+Both are internal plumbing
 because it belonged to the retired SDD workflow. This exclusion is intentional and
 silent, so a user skill whose name collides with these prefixes is dropped
 without a warning.

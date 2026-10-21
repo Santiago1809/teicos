@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	"github.com/Santiago1809/teicos/internal/components/filemerge"
-	"github.com/Santiago1809/teicos/internal/components/legacyassets"
 	"github.com/Santiago1809/teicos/internal/components/opencodedefault"
 	"github.com/Santiago1809/teicos/internal/model"
 )
@@ -51,10 +50,6 @@ func TestOpenCodeFamilySettingsWritersPreservePrivateMode(t *testing.T) {
 			}{
 				{"strip legacy trigger rules", func() (bool, error) {
 					result, err := stripLegacyTriggerRulesFromOrchestrator(settingsPath)
-					return result.Changed, err
-				}},
-				{"retire SDD settings", func() (bool, error) {
-					result, err := legacyassets.RetireOpenCodeSDDSettings(settingsPath)
 					return result.Changed, err
 				}},
 				{"migrate legacy agents", func() (bool, error) {

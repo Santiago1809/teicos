@@ -16,7 +16,7 @@ import (
 func pickerTestState(index int) *ModelPickerState {
 	return &ModelPickerState{
 		Mode: ModeModelSelect, SelectedPhaseIdx: index, SelectedProvider: "test-provider",
-		SDDModels: map[string][]opencode.Model{"test-provider": {
+		ManagedModels: map[string][]opencode.Model{"test-provider": {
 			{ID: "model-alpha", Name: "Alpha Model", ToolCall: true},
 			{ID: "model-beta", Name: "Beta Model", ToolCall: true},
 		}},
@@ -118,7 +118,7 @@ func TestModelPickerCustomAgentLabelCannotChangeRowIdentity(t *testing.T) {
 
 func TestModelPickerReasoningEffortAndNoVariantFallback(t *testing.T) {
 	state := pickerTestState(0)
-	state.SDDModels["test-provider"][0].Variants = []string{"low", "high"}
+	state.ManagedModels["test-provider"][0].Variants = []string{"low", "high"}
 	_, got := HandleModelPickerNav("enter", state, nil)
 	if state.Mode != ModeEffortSelect || len(got) != 0 {
 		t.Fatalf("reasoning variant not deferred: mode=%d assignments=%v", state.Mode, got)
@@ -129,7 +129,7 @@ func TestModelPickerReasoningEffortAndNoVariantFallback(t *testing.T) {
 		t.Fatalf("effort selection lost: mode=%d assignments=%v", state.Mode, got)
 	}
 	state = pickerTestState(0)
-	state.SDDModels["test-provider"][0].Reasoning = true
+	state.ManagedModels["test-provider"][0].Reasoning = true
 	_, got = HandleModelPickerNav("enter", state, got)
 	if got[SDDOrchestratorPhase].Effort != "high" {
 		t.Fatalf("same reasoning model without variants lost saved effort: %v", got)
@@ -142,7 +142,7 @@ func TestModelPickerReasoningEffortAndNoVariantFallback(t *testing.T) {
 }
 
 func TestFilteredModelEntriesSearchAndVersionOrder(t *testing.T) {
-	state := ModelPickerState{SelectedProvider: "openai", SDDModels: map[string][]opencode.Model{"openai": {
+	state := ModelPickerState{SelectedProvider: "openai", ManagedModels: map[string][]opencode.Model{"openai": {
 		{ID: "gemini-2.5-pro-exp-03-25", Name: "Gemini 2.5 Pro Experimental"},
 		{ID: "gemini-3-pro", Name: "Gemini 3 Pro"},
 	}}}
@@ -182,7 +182,7 @@ func TestModelPickerProviderAndModelNavigation(t *testing.T) {
 
 func TestModelPickerEffortEscapeAndDefault(t *testing.T) {
 	state := pickerTestState(0)
-	state.SDDModels["test-provider"][0].Variants = []string{"low", "high"}
+	state.ManagedModels["test-provider"][0].Variants = []string{"low", "high"}
 	_, _ = HandleModelPickerNav("enter", state, nil)
 	if state.Mode != ModeEffortSelect {
 		t.Fatalf("variant did not open effort picker: %+v", state)
@@ -201,7 +201,7 @@ func TestModelPickerEffortEscapeAndDefault(t *testing.T) {
 func TestModelPickerCustomBulkEffortAndIndividualIsolation(t *testing.T) {
 	state := pickerTestState(0)
 	state.CustomAgents = []string{"custom-a", "custom-b"}
-	state.SDDModels["test-provider"][0].Variants = []string{"low", "high"}
+	state.ManagedModels["test-provider"][0].Variants = []string{"low", "high"}
 	for i, row := range ModelPickerRowsForStateWithIdentity(*state) {
 		if row.Kind == ModelPickerRowKindSetAllCustom {
 			state.SelectedPhaseIdx = i
@@ -313,7 +313,7 @@ func TestModeEffortSelectConstantValue(t *testing.T) {
 }
 
 func TestFilteredModelEntriesSortsNewestFirst(t *testing.T) {
-	state := ModelPickerState{SelectedProvider: "anthropic", SDDModels: map[string][]opencode.Model{"anthropic": {
+	state := ModelPickerState{SelectedProvider: "anthropic", ManagedModels: map[string][]opencode.Model{"anthropic": {
 		{ID: "claude-3-5-sonnet", Name: "Claude 3.5 Sonnet"},
 		{ID: "claude-opus-4-6", Name: "Claude Opus 4.6"},
 		{ID: "claude-sonnet-4-5", Name: "Claude Sonnet 4.5"},
@@ -328,7 +328,7 @@ func TestFilteredModelEntriesSortsNewestFirst(t *testing.T) {
 }
 
 func TestFilteredModelEntriesPrefersSemanticVersionOverReleaseDate(t *testing.T) {
-	state := ModelPickerState{SelectedProvider: "anthropic", SDDModels: map[string][]opencode.Model{"anthropic": {
+	state := ModelPickerState{SelectedProvider: "anthropic", ManagedModels: map[string][]opencode.Model{"anthropic": {
 		{ID: "claude-3-5-sonnet-20241022", Name: "Claude 3.5 Sonnet 20241022"},
 		{ID: "claude-sonnet-4-5", Name: "Claude Sonnet 4.5"},
 	}}}
@@ -338,7 +338,7 @@ func TestFilteredModelEntriesPrefersSemanticVersionOverReleaseDate(t *testing.T)
 }
 
 func TestFilteredModelEntriesIgnoresShortDateSuffix(t *testing.T) {
-	state := ModelPickerState{SelectedProvider: "google", SDDModels: map[string][]opencode.Model{"google": {
+	state := ModelPickerState{SelectedProvider: "google", ManagedModels: map[string][]opencode.Model{"google": {
 		{ID: "gemini-2.5-pro-exp-03-25", Name: "Gemini 2.5 Pro Experimental 03-25"},
 		{ID: "gemini-3-pro", Name: "Gemini 3 Pro"},
 	}}}
@@ -348,7 +348,7 @@ func TestFilteredModelEntriesIgnoresShortDateSuffix(t *testing.T) {
 }
 
 func TestFilteredModelEntriesSearchMatchesNameAndID(t *testing.T) {
-	state := ModelPickerState{SelectedProvider: "openai", ModelSearch: "mini", SDDModels: map[string][]opencode.Model{"openai": {
+	state := ModelPickerState{SelectedProvider: "openai", ModelSearch: "mini", ManagedModels: map[string][]opencode.Model{"openai": {
 		{ID: "gpt-5", Name: "GPT-5"}, {ID: "gpt-5-mini", Name: "GPT-5 Mini"},
 	}}}
 	if got := FilteredModelEntries(state); len(got) != 1 || got[0].ID != "gpt-5-mini" {
@@ -359,8 +359,8 @@ func TestFilteredModelEntriesSearchMatchesNameAndID(t *testing.T) {
 func TestRenderModelSelectShowsSearchInput(t *testing.T) {
 	state := ModelPickerState{
 		SelectedProvider: "openai", ModelSearch: "mini",
-		Providers: map[string]opencode.Provider{"openai": {Name: "OpenAI"}},
-		SDDModels: map[string][]opencode.Model{"openai": {{ID: "gpt-5-mini", Name: "GPT-5 Mini"}}},
+		Providers:     map[string]opencode.Provider{"openai": {Name: "OpenAI"}},
+		ManagedModels: map[string][]opencode.Model{"openai": {{ID: "gpt-5-mini", Name: "GPT-5 Mini"}}},
 	}
 	if got := renderModelSelect(state); !strings.Contains(got, "Search: mini_") {
 		t.Fatalf("search input not visible: %s", got)
@@ -412,8 +412,8 @@ func TestModelPickerModelNavigationClampsAtBounds(t *testing.T) {
 
 func TestModelPickerReasoningVariantsDeferAssignment(t *testing.T) {
 	state := pickerTestState(0)
-	state.SDDModels["test-provider"][0].Reasoning = true
-	state.SDDModels["test-provider"][0].Variants = []string{"high", "low", "medium"}
+	state.ManagedModels["test-provider"][0].Reasoning = true
+	state.ManagedModels["test-provider"][0].Variants = []string{"high", "low", "medium"}
 	handled, assignments := HandleModelPickerNav("enter", state, nil)
 	if !handled || state.Mode != ModeEffortSelect || len(assignments) != 0 {
 		t.Fatalf("variant picker: handled=%t mode=%d assignments=%v", handled, state.Mode, assignments)
@@ -433,7 +433,7 @@ func TestModelPickerNonReasoningModelSkipsEffortPicker(t *testing.T) {
 
 func TestModelPickerReasoningWithoutVariantsSkipsEffortPicker(t *testing.T) {
 	state := pickerTestState(0)
-	state.SDDModels["test-provider"][0].Reasoning = true
+	state.ManagedModels["test-provider"][0].Reasoning = true
 	_, got := HandleModelPickerNav("enter", state, nil)
 	if state.Mode != ModePhaseList || got[SDDOrchestratorPhase].ModelID != "model-alpha" {
 		t.Fatalf("reasoning model without variants: mode=%d assignment=%v", state.Mode, got)
@@ -442,7 +442,7 @@ func TestModelPickerReasoningWithoutVariantsSkipsEffortPicker(t *testing.T) {
 
 func TestModelPickerReasoningWithoutVariantsPreservesMatchingEffort(t *testing.T) {
 	state := pickerTestState(0)
-	state.SDDModels["test-provider"][0].Reasoning = true
+	state.ManagedModels["test-provider"][0].Reasoning = true
 	existing := model.ModelAssignment{ProviderID: "test-provider", ModelID: "model-alpha", Effort: "high"}
 	_, got := HandleModelPickerNav("enter", state, map[string]model.ModelAssignment{SDDOrchestratorPhase: existing})
 	if got[SDDOrchestratorPhase] != existing {
@@ -452,7 +452,7 @@ func TestModelPickerReasoningWithoutVariantsPreservesMatchingEffort(t *testing.T
 
 func TestModelPickerReasoningWithoutVariantsClearsNonMatchingEffort(t *testing.T) {
 	state := pickerTestState(0)
-	state.SDDModels["test-provider"][0].Reasoning = true
+	state.ManagedModels["test-provider"][0].Reasoning = true
 	existing := model.ModelAssignment{ProviderID: "test-provider", ModelID: "model-beta", Effort: "medium"}
 	_, got := HandleModelPickerNav("enter", state, map[string]model.ModelAssignment{SDDOrchestratorPhase: existing})
 	if got[SDDOrchestratorPhase].ModelID != "model-alpha" || got[SDDOrchestratorPhase].Effort != "" {
@@ -471,7 +471,7 @@ func TestModelPickerNonReasoningClearsMatchingStaleEffort(t *testing.T) {
 
 func TestModelPickerEffortSelectionAppliesAndClearsPending(t *testing.T) {
 	state := pickerTestState(0)
-	state.SDDModels["test-provider"][0].Variants = []string{"low", "medium", "high"}
+	state.ManagedModels["test-provider"][0].Variants = []string{"low", "medium", "high"}
 	HandleModelPickerNav("enter", state, nil)
 	state.EffortCursor = 2
 	_, got := HandleModelPickerNav("enter", state, nil)
@@ -485,7 +485,7 @@ func TestModelPickerEffortSelectionAppliesAndClearsPending(t *testing.T) {
 
 func TestModelPickerEffortDefaultMeansProviderDefault(t *testing.T) {
 	state := pickerTestState(0)
-	state.SDDModels["test-provider"][0].Variants = []string{"low", "high"}
+	state.ManagedModels["test-provider"][0].Variants = []string{"low", "high"}
 	HandleModelPickerNav("enter", state, nil)
 	_, got := HandleModelPickerNav("enter", state, nil)
 	if got[SDDOrchestratorPhase].ModelID != "model-alpha" || got[SDDOrchestratorPhase].Effort != "" {
@@ -495,7 +495,7 @@ func TestModelPickerEffortDefaultMeansProviderDefault(t *testing.T) {
 
 func TestModelPickerEffortEscapeRestoresModelSelection(t *testing.T) {
 	state := pickerTestState(0)
-	state.SDDModels["test-provider"][0].Variants = []string{"low", "high"}
+	state.ManagedModels["test-provider"][0].Variants = []string{"low", "high"}
 	HandleModelPickerNav("enter", state, nil)
 	HandleModelPickerNav("esc", state, nil)
 	if state.Mode != ModeModelSelect || state.PendingAssignment != (model.ModelAssignment{}) || state.SelectedModelEffortLevels != nil {
@@ -505,7 +505,7 @@ func TestModelPickerEffortEscapeRestoresModelSelection(t *testing.T) {
 
 func TestModelPickerEffortCursorNavigation(t *testing.T) {
 	state := pickerTestState(0)
-	state.SDDModels["test-provider"][0].Variants = []string{"low", "high"}
+	state.ManagedModels["test-provider"][0].Variants = []string{"low", "high"}
 	HandleModelPickerNav("enter", state, nil)
 	HandleModelPickerNav("j", state, nil)
 	if state.EffortCursor != 1 {
@@ -669,7 +669,7 @@ func TestModelPickerCustomBulkLabelCollisionPreservesEffortPath(t *testing.T) {
 	state := pickerTestState(0)
 	state.CustomAgents = []string{"Set all custom agents", "other-custom-agent"}
 	state.SelectedPhaseIdx = pickerRowIndex(t, *state, "Set all custom agents")
-	state.SDDModels["test-provider"][0].Variants = []string{"low", "high"}
+	state.ManagedModels["test-provider"][0].Variants = []string{"low", "high"}
 	old := model.ModelAssignment{ProviderID: "old", ModelID: "saved"}
 	assignments := map[string]model.ModelAssignment{"other-custom-agent": old}
 	_, assignments = HandleModelPickerNav("enter", state, assignments)
@@ -693,8 +693,8 @@ func TestRuntimeCatalogDiscoveryUsesActiveProject(t *testing.T) {
 	if project != "active-project" || state.CatalogStatus != RuntimeCatalogReady || !reflect.DeepEqual(state.AvailableIDs, []string{"custom"}) {
 		t.Fatalf("active project %q, picker status=%d ids=%v", project, state.CatalogStatus, state.AvailableIDs)
 	}
-	if len(state.SDDModels["custom"]) != 1 || state.SDDModels["custom"][0].ID != "qwen" {
-		t.Fatalf("tool-capable model missing: %v", state.SDDModels)
+	if len(state.ManagedModels["custom"]) != 1 || state.ManagedModels["custom"][0].ID != "qwen" {
+		t.Fatalf("tool-capable model missing: %v", state.ManagedModels)
 	}
 }
 
@@ -719,8 +719,8 @@ func TestRuntimeCatalogDiscoveryExcludesNonToolModels(t *testing.T) {
 		"available": {ID: "available", Models: map[string]opencode.Model{"tool": {ID: "tool", ToolCall: true}}},
 		"no-tools":  {ID: "no-tools", Models: map[string]opencode.Model{"plain": {ID: "plain"}}},
 	}})
-	if !reflect.DeepEqual(state.AvailableIDs, []string{"available"}) || len(state.SDDModels["no-tools"]) != 0 {
-		t.Fatalf("non-tool model offered: ids=%v models=%v", state.AvailableIDs, state.SDDModels)
+	if !reflect.DeepEqual(state.AvailableIDs, []string{"available"}) || len(state.ManagedModels["no-tools"]) != 0 {
+		t.Fatalf("non-tool model offered: ids=%v models=%v", state.AvailableIDs, state.ManagedModels)
 	}
 }
 
@@ -747,7 +747,7 @@ func TestRuntimeCatalogDiscoveryFailureKeepsConfiguredProvider(t *testing.T) {
 	if state.CatalogStatus != RuntimeCatalogReady || !reflect.DeepEqual(state.AvailableIDs, []string{"configured"}) {
 		t.Fatalf("configured model unavailable after discovery failure: %+v", state)
 	}
-	if got := state.SDDModels["configured"]; len(got) != 1 || got[0].ID != "configured/model" {
+	if got := state.ManagedModels["configured"]; len(got) != 1 || got[0].ID != "configured/model" {
 		t.Fatalf("configured model = %+v", got)
 	}
 }
@@ -772,9 +772,9 @@ func TestRuntimeCatalogFailureShowsFallbackWithoutPrivateFixtures(t *testing.T) 
 
 func TestProviderEntriesSortedByNameWithModelCounts(t *testing.T) {
 	state := ModelPickerState{
-		AvailableIDs: []string{"zeta", "alpha"},
-		Providers:    map[string]opencode.Provider{"zeta": {Name: "Zeta"}, "alpha": {Name: "Alpha"}},
-		SDDModels:    map[string][]opencode.Model{"zeta": {{ID: "one"}}, "alpha": {{ID: "one"}, {ID: "two"}}},
+		AvailableIDs:  []string{"zeta", "alpha"},
+		Providers:     map[string]opencode.Provider{"zeta": {Name: "Zeta"}, "alpha": {Name: "Alpha"}},
+		ManagedModels: map[string][]opencode.Model{"zeta": {{ID: "one"}}, "alpha": {{ID: "one"}, {ID: "two"}}},
 	}
 	got := ProviderEntries(state)
 	if len(got) != 2 || got[0].Name != "Alpha" || got[0].ModelCount != 2 || got[1].Name != "Zeta" || got[1].ModelCount != 1 {

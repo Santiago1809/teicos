@@ -11,8 +11,6 @@ import (
 	"strconv"
 	"strings"
 	"testing"
-
-	"github.com/Santiago1809/teicos/internal/model"
 )
 
 // retiredWorkflowText matches SDD and OpenSpec, both retired in v4.0.0.
@@ -22,7 +20,7 @@ var retiredWorkflowText = regexp.MustCompile(`(?i)sdd|openspec`)
 // reads: none of it may offer SDD or OpenSpec as a current feature.
 func TestCLIHelpShowsNoRetiredWorkflowText(t *testing.T) {
 	outputs := map[string]string{
-		"dry-run": RenderDryRun(InstallResult{Selection: model.Selection{SDDMode: model.SDDModeMulti}}),
+		"dry-run": RenderDryRun(InstallResult{}),
 	}
 	for name, run := range map[string]func(*bytes.Buffer) error{
 		"telemetry --help":          func(out *bytes.Buffer) error { return RunTelemetry([]string{"--help"}, out) },
@@ -48,22 +46,8 @@ func TestCLIHelpShowsNoRetiredWorkflowText(t *testing.T) {
 // entry must still match, so the list can only shrink.
 var retiredWorkflowLiteralAllowlist = map[string]map[string]string{
 	"internal/cli/run.go": {
-		"agent:retire-sdd-assets:":             "retirement step ID",
-		"agent:retire-sdd:":                    "retirement step ID",
-		"agent:retire-sdd-settings:":           "retirement step ID",
-		"retire SDD agents for %q: %w":         "retirement failure naming legacy agents",
-		"retire SDD agents in %q settings: %w": "retirement failure naming legacy settings",
-		"retire SDD prompts for %q: %w":        "retirement failure naming legacy prompts",
-		"gentle-ai/sdd":                        "legacy OpenCode ownership marker",
-		"sdd-":                                 "legacy OpenCode agent prefix",
-	},
-	"internal/cli/sync.go": {
-		"sync:agent:retire-sdd-assets:":   "retirement step ID",
-		"sync:agent:retire-sdd:":          "retirement step ID",
-		"sync:agent:retire-sdd-settings:": "retirement step ID",
-	},
-	"internal/cli/validate.go": {
-		"unsupported sdd-mode %q (valid: single, multi)": "unreachable validation of an install flag field nothing assigns",
+		"gentle-ai/sdd": "legacy OpenCode ownership marker",
+		"sdd-":          "legacy OpenCode agent prefix",
 	},
 	"internal/tui/model.go": {
 		"sdd-orchestrator": "legacy OpenCode coordinator key",

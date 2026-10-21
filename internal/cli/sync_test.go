@@ -504,9 +504,6 @@ func TestParseSyncFlagsDefaults(t *testing.T) {
 	if flags.IncludeTheme {
 		t.Errorf("IncludeTheme = true, want false")
 	}
-	if flags.SDDMode != "" {
-		t.Errorf("SDDMode = %q, want empty", flags.SDDMode)
-	}
 }
 
 func TestParseSyncFlagsAgentsCSV(t *testing.T) {
@@ -551,49 +548,6 @@ func TestRunSyncRejectsUnsupportedAgent(t *testing.T) {
 	}
 	if !strings.Contains(err.Error(), "cluade") {
 		t.Fatalf("error = %q, want it to name the offending value %q", err.Error(), "cluade")
-	}
-}
-
-func TestParseSyncFlagsSDDMode(t *testing.T) {
-	tests := []struct {
-		name    string
-		args    []string
-		want    string
-		wantErr bool
-	}{
-		{
-			name: "absent defaults to empty",
-			args: []string{},
-			want: "",
-		},
-		{
-			name:    "single",
-			args:    []string{"--sdd-mode", "single"},
-			wantErr: true,
-		},
-		{
-			name:    "multi",
-			args:    []string{"--sdd-mode", "multi"},
-			wantErr: true,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			flags, err := ParseSyncFlags(tt.args)
-			if (err != nil) != tt.wantErr {
-				t.Fatalf("ParseSyncFlags() error = %v, wantErr %v", err, tt.wantErr)
-			}
-			if tt.wantErr {
-				if !strings.Contains(err.Error(), "sdd-mode") {
-					t.Fatalf("error = %q, want retired flag named", err)
-				}
-				return
-			}
-			if flags.SDDMode != tt.want {
-				t.Errorf("SDDMode = %q, want %q", flags.SDDMode, tt.want)
-			}
-		})
 	}
 }
 
@@ -722,7 +676,7 @@ func TestBuildSyncSelectionDefaultScopeIncludesManagedComponents(t *testing.T) {
 		model.ComponentPersona,
 	}
 
-	if sel.HasComponent(model.ComponentSDD) {
+	if sel.HasComponent(model.RetiredSDDComponentID) {
 		t.Fatalf("default sync selected legacy SDD: %v", sel.Components)
 	}
 	for _, want := range mandatoryComponents {
@@ -792,17 +746,6 @@ func TestBuildSyncSelectionIncludeThemeWhenFlagSet(t *testing.T) {
 	}
 	if !found {
 		t.Errorf("BuildSyncSelection() expected ComponentTheme when --include-theme is set")
-	}
-}
-
-func TestBuildSyncSelectionSDDModeForwarded(t *testing.T) {
-	agents := []model.AgentID{model.AgentOpenCode}
-	flags := SyncFlags{SDDMode: "multi"}
-
-	sel := BuildSyncSelection(flags, agents)
-
-	if sel.SDDMode != model.SDDModeMulti {
-		t.Errorf("SDDMode = %q, want %q", sel.SDDMode, model.SDDModeMulti)
 	}
 }
 
@@ -968,7 +911,7 @@ func TestComponentSyncStepSkipsEngramBinaryInstall(t *testing.T) {
 		component: model.ComponentEngram,
 		homeDir:   home,
 		agents:    []model.AgentID{model.AgentOpenCode},
-		selection: model.Selection{SDDMode: model.SDDModeSingle},
+		selection: model.Selection{},
 	}
 
 	if err := step.Run(); err != nil {
@@ -1402,7 +1345,7 @@ func TestRestoreOpenCodeModelAssignmentsDoesNotRestoreExplicitClearOnGeneratedAg
 				t.Fatalf("state.Read() error = %v", err)
 			}
 
-			restored := restoreOpenCodeModelAssignmentsFromState(home, "", persisted, model.SDDModeMulti)
+			restored := restoreOpenCodeModelAssignmentsFromState(home, "", persisted)
 			if assignment, restoredStale := restored["sdd-apply"]; restoredStale {
 				t.Fatalf("explicitly cleared generated assignment was restored from stale state: %#v", assignment)
 			}
@@ -1410,7 +1353,7 @@ func TestRestoreOpenCodeModelAssignmentsDoesNotRestoreExplicitClearOnGeneratedAg
 	}
 }
 
-func TestRestoreOpenCodeModelAssignmentsSkipsClearedAssignmentInSingleMode(t *testing.T) {
+func TestRestoreOpenCodeModelAssignmentsSkipsClearedAssignment(t *testing.T) {
 	home, err := filepath.EvalSymlinks(t.TempDir())
 	if err != nil {
 		t.Fatalf("EvalSymlinks(temp home) error = %v", err)
@@ -1425,7 +1368,7 @@ func TestRestoreOpenCodeModelAssignmentsSkipsClearedAssignmentInSingleMode(t *te
 		"sdd-apply": {ProviderID: "openai", ModelID: "gpt-stale", Effort: "low"},
 	}}
 
-	restored := restoreOpenCodeModelAssignmentsFromState(home, "", persisted, model.SDDModeSingle)
+	restored := restoreOpenCodeModelAssignmentsFromState(home, "", persisted)
 	if _, exists := restored["sdd-apply"]; exists {
 		t.Fatalf("single-mode cleared assignment restored stale state: %#v", restored)
 	}
@@ -1446,7 +1389,7 @@ func TestRestoreOpenCodeModelAssignmentsRestoresMalformedAssignmentSpec(t *testi
 		"sdd-apply": {ProviderID: "openai", ModelID: "gpt-stale", Effort: "low"},
 	}}
 
-	restored := restoreOpenCodeModelAssignmentsFromState(home, "", persisted, model.SDDModeMulti)
+	restored := restoreOpenCodeModelAssignmentsFromState(home, "", persisted)
 	if got := restored["sdd-apply"]; got.ProviderID != "openai" || got.ModelID != "gpt-stale" || got.Effort != "low" {
 		t.Fatalf("malformed assignment spec was not restored from state: %#v", restored)
 	}
@@ -1466,7 +1409,7 @@ func TestRestoreOpenCodeModelAssignmentsReadsLoadedSettingsForWorkspace(t *testi
 		"sdd-apply": {ProviderID: "openai", ModelID: "gpt-stale", Effort: "low"},
 	}}
 
-	restored := restoreOpenCodeModelAssignmentsFromState(home, workspace, persisted, model.SDDModeMulti)
+	restored := restoreOpenCodeModelAssignmentsFromState(home, workspace, persisted)
 	if assignment, exists := restored["sdd-apply"]; exists {
 		t.Fatalf("stale state overrode the loaded settings assignment: %#v", assignment)
 	}
@@ -1500,8 +1443,7 @@ func TestSyncRollbackRestoresOpenCodeSettingsAfterManagedToolsCleanup(t *testing
 
 	selection := model.Selection{
 		Agents:     []model.AgentID{model.AgentOpenCode},
-		Components: []model.ComponentID{model.ComponentSDD, model.ComponentID("later-failure")},
-		SDDMode:    model.SDDModeSingle,
+		Components: []model.ComponentID{model.ComponentSkills, model.ComponentID("later-failure")},
 	}
 	targets, err := syncBackupTargetsScoped(home, "", ScopeGlobal, selection, resolveAdapters(selection.Agents))
 	if err != nil {
@@ -2074,7 +2016,7 @@ func TestSyncRollbackRestoresLegacyOpenCodePluginAndRemovesReplacement(t *testin
 
 	selection := model.Selection{
 		Agents:     []model.AgentID{model.AgentOpenCode},
-		Components: []model.ComponentID{model.ComponentSDD},
+		Components: []model.ComponentID{model.ComponentSkills},
 	}
 	runtime, err := newSyncRuntimeWithScope(home, selection, ScopeGlobal)
 	if err != nil {
@@ -3844,7 +3786,7 @@ func TestRunSyncWithSelection_NoAgentsIsNoOp(t *testing.T) {
 
 	sel := model.Selection{
 		Agents:     nil,
-		Components: []model.ComponentID{model.ComponentSDD, model.ComponentEngram},
+		Components: []model.ComponentID{model.ComponentSkills, model.ComponentEngram},
 	}
 
 	result, err := RunSyncWithSelection(home, sel)
@@ -4373,155 +4315,6 @@ func TestParseSyncFlagsProfilePhaseUnknownPhaseReturnsError(t *testing.T) {
 // ─── Issue #3430: persisted component selection must not drop explicit SDD
 // profile/model-assignment work ───────────────────────────────────────────
 
-// TestRunSyncProfilePersistsWhenSDDComponentMissingFromState reproduces
-// https://github.com/Gentleman-Programming/gentle-ai/issues/3430: a machine
-// that installed without the SDD component (state.json's persisted
-// Components list omits "sdd") never gets its OpenCode SDD profile written
-// by `teicos sync --profile ...`, even though the sync reports success.
-//
-// RestorePersistedSelection replaces selection.Components wholesale with the
-// persisted list, dropping ComponentSDD, so the componentSyncStep that writes
-// profiles into opencode.json never runs — but the sync still exits 0.
-func TestRunSyncProfilePersistsWhenSDDComponentMissingFromState(t *testing.T) {
-	home := t.TempDir()
-	restoreHome := osUserHomeDir
-	restoreBackupHome := backup.UserHomeDirFn
-	restoreCommand := runCommand
-	restoreLookPath := cmdLookPath
-	t.Cleanup(func() {
-		osUserHomeDir = restoreHome
-		backup.UserHomeDirFn = restoreBackupHome
-		runCommand = restoreCommand
-		cmdLookPath = restoreLookPath
-	})
-
-	osUserHomeDir = func() (string, error) { return home, nil }
-	backup.UserHomeDirFn = func() (string, error) { return home, nil }
-	runCommand = func(string, ...string) error { return nil }
-	cmdLookPath = func(name string) (string, error) { return "/usr/local/bin/" + name, nil }
-
-	if err := os.MkdirAll(filepath.Join(home, ".config", "opencode"), 0o755); err != nil {
-		t.Fatalf("MkdirAll: %v", err)
-	}
-	settingsPath := filepath.Join(home, ".config", "opencode", "opencode.json")
-	if err := os.WriteFile(settingsPath, []byte(`{"$schema":"https://opencode.ai/config.json"}`), 0o644); err != nil {
-		t.Fatal(err)
-	}
-
-	// Persisted state shape from an install that never selected the SDD
-	// component — the normal shape for anyone who installed without it.
-	if err := state.Write(home, state.InstallState{
-		InstalledAgents:     []string{"opencode"},
-		SelectionConfigured: true,
-		Components:          []model.ComponentID{model.ComponentEngram},
-		SDDMode:             model.SDDModeSingle,
-	}); err != nil {
-		t.Fatalf("state.Write: %v", err)
-	}
-
-	result, err := RunSync([]string{"--agents", "opencode"})
-	if err != nil {
-		t.Fatalf("RunSync() error = %v", err)
-	}
-
-	if result.Selection.HasComponent(model.ComponentSDD) {
-		t.Fatalf("Selection.Components = %v, want legacy SDD absent", result.Selection.Components)
-	}
-
-	settingsData, err := os.ReadFile(settingsPath)
-	if err != nil {
-		t.Fatalf("ReadFile(%q): %v", settingsPath, err)
-	}
-	if bytes.Contains(settingsData, []byte("sdd-orchestrator-demo")) {
-		t.Fatalf("sync recreated retired profile: %s", settingsData)
-	}
-}
-
-// TestRunSyncPlainSyncHonoursPersistedComponentsWithoutProfile verifies that a
-// plain sync (no --profile / --profile-phase flags) still honours a persisted
-// component selection that omits "sdd" — the fix for #3430 must only re-add
-// ComponentSDD when the caller explicitly asked for profile or model
-// assignment work, not on every sync.
-func TestRunSyncLegacySDDStateKeepsRetainedOwners(t *testing.T) {
-	home := t.TempDir()
-	previousHome := osUserHomeDir
-	previousBackup := backup.UserHomeDirFn
-	t.Cleanup(func() { osUserHomeDir = previousHome; backup.UserHomeDirFn = previousBackup })
-	osUserHomeDir = func() (string, error) { return home, nil }
-	backup.UserHomeDirFn = osUserHomeDir
-	if err := state.Write(home, state.InstallState{
-		InstalledAgents: []string{"claude-code"}, SelectionConfigured: true,
-		Components: []model.ComponentID{model.ComponentSDD, model.ComponentSkills},
-	}); err != nil {
-		t.Fatal(err)
-	}
-	result, err := RunSync([]string{"--agents", "claude-code"})
-	if err != nil {
-		t.Fatal(err)
-	}
-	if result.Selection.HasComponent(model.ComponentSDD) {
-		t.Fatal("legacy SDD component entered active sync selection")
-	}
-	root := filepath.Join(home, ".claude")
-	for _, path := range []string{"agents/review-risk.md", "settings.json", "CLAUDE.md"} {
-		if _, err := os.Stat(filepath.Join(root, path)); err != nil {
-			t.Errorf("retained owner %s: %v", path, err)
-		}
-	}
-	if _, err := os.Stat(filepath.Join(root, "agents/sdd-apply.md")); !os.IsNotExist(err) {
-		t.Errorf("retired SDD agent recreated: %v", err)
-	}
-}
-
-func TestRunSyncPlainSyncHonoursPersistedComponentsWithoutProfile(t *testing.T) {
-	home := t.TempDir()
-	restoreHome := osUserHomeDir
-	restoreBackupHome := backup.UserHomeDirFn
-	restoreCommand := runCommand
-	restoreLookPath := cmdLookPath
-	t.Cleanup(func() {
-		osUserHomeDir = restoreHome
-		backup.UserHomeDirFn = restoreBackupHome
-		runCommand = restoreCommand
-		cmdLookPath = restoreLookPath
-	})
-
-	osUserHomeDir = func() (string, error) { return home, nil }
-	backup.UserHomeDirFn = func() (string, error) { return home, nil }
-	runCommand = func(string, ...string) error { return nil }
-	cmdLookPath = func(name string) (string, error) { return "/usr/local/bin/" + name, nil }
-
-	if err := state.Write(home, state.InstallState{
-		InstalledAgents:     []string{"opencode"},
-		SelectionConfigured: true,
-		Components:          []model.ComponentID{model.ComponentEngram},
-		SDDMode:             model.SDDModeSingle,
-	}); err != nil {
-		t.Fatalf("state.Write: %v", err)
-	}
-
-	result, err := RunSync([]string{"--agents", "opencode"})
-	if err != nil {
-		t.Fatalf("RunSync() error = %v", err)
-	}
-
-	if result.Selection.HasComponent(model.ComponentSDD) {
-		t.Fatalf("Selection.Components = %v, want ComponentSDD absent — a plain sync with no explicit profile/model-assignment request must honour the persisted component list", result.Selection.Components)
-	}
-}
-
-func TestRestorePersistedSelectionDoesNotActivateLegacySDDForAssignments(t *testing.T) {
-	selection := model.Selection{Components: []model.ComponentID{model.ComponentSDD}, ModelAssignments: map[string]model.ModelAssignment{"explore": {ProviderID: "openai", ModelID: "gpt-5"}}}
-	persisted := state.InstallState{SelectionConfigured: true, Components: []model.ComponentID{model.ComponentSkills, model.ComponentSDD}, SDDMode: model.SDDModeMulti, StrictTDD: true}
-	RestorePersistedSelection(&selection, persisted, SyncFlags{})
-	if selection.HasComponent(model.ComponentSDD) || selection.SDDMode != "" {
-		t.Fatalf("retired SDD activated: %+v", selection)
-	}
-	if selection.StrictTDD || selection.ModelAssignments["explore"].ModelID != "gpt-5" || !selection.HasComponent(model.ComponentSkills) {
-		t.Fatalf("retained sync options lost: %+v", selection)
-	}
-}
-
 // ─── Persist model assignments across sync runs ─────────────────────────────
 
 // TestRunSyncLoadsPersistedModelAssignments verifies that when state.json
@@ -4701,7 +4494,7 @@ func TestSyncBackupManifestIncludesCodexHooksJSON(t *testing.T) {
 	mustWriteFile(t, hooksPath, []byte("{\"hooks\":{\"SessionStart\":[]}}\n"))
 	selection := model.Selection{
 		Agents:     []model.AgentID{model.AgentCodex},
-		Components: []model.ComponentID{model.ComponentSDD},
+		Components: []model.ComponentID{model.ComponentSkills},
 	}
 	targets, err := syncBackupTargetsScoped(home, "", ScopeGlobal, selection, resolveAdapters(selection.Agents))
 	if err != nil {
@@ -4730,7 +4523,7 @@ func TestSyncCodexGentlemanConvergesWithHooksJSON(t *testing.T) {
 	home := t.TempDir()
 	selection := BuildSyncSelection(SyncFlags{}, []model.AgentID{model.AgentCodex, model.AgentClaudeCode})
 	selection.Persona = model.PersonaGentleman
-	if selection.HasComponent(model.ComponentSDD) {
+	if selection.HasComponent(model.ComponentSkills) {
 		t.Fatal("default sync selected legacy SDD")
 	}
 	run := func() (int, []string) {
@@ -5868,7 +5661,7 @@ func TestRenderSyncReportIncludesChangedFilePaths(t *testing.T) {
 			"~/.config/opencode/sdd-overlay-single.json",
 		},
 		Selection: model.Selection{
-			Components: []model.ComponentID{model.ComponentSDD},
+			Components: []model.ComponentID{model.ComponentSkills},
 		},
 		Verify: verify.Report{Ready: true},
 	}
@@ -6299,109 +6092,6 @@ func TestRunSyncPreservesCompletePersistedState(t *testing.T) {
 	}
 }
 
-// TestRunSync_RestoresCodexEffortAssignments verifies that RunSync reads
-// persisted CodexModelAssignments into ODD routing without reviving SDD profiles.
-func TestRunSync_RestoresCodexEffortAssignments(t *testing.T) {
-	efforts := map[string]string{
-		"sdd-propose": "xhigh", "sdd-design": "xhigh", "sdd-verify": "xhigh",
-		"jd-judge-a": "xhigh", "jd-judge-b": "xhigh", "default": "xhigh",
-		"sdd-apply": "high", "jd-fix-agent": "high",
-		"sdd-explore": "low", "sdd-spec": "low", "sdd-tasks": "low",
-		"sdd-archive": "low", "sdd-onboard": "low",
-		"odd-explorer": "low", "odd-worker": "xhigh", "odd-verify": "high",
-	}
-	home := setupCodexSyncHome(t, nil, efforts)
-
-	restoreHome := osUserHomeDir
-	restoreCommand := runCommand
-	restoreLookPath := cmdLookPath
-	t.Cleanup(func() {
-		osUserHomeDir = restoreHome
-		runCommand = restoreCommand
-		cmdLookPath = restoreLookPath
-	})
-
-	osUserHomeDir = func() (string, error) { return home, nil }
-	runCommand = func(string, ...string) error { return nil }
-	cmdLookPath = func(name string) (string, error) { return "/usr/local/bin/" + name, nil }
-
-	_, err := RunSync([]string{"--agents", "codex"})
-	if err != nil {
-		t.Fatalf("RunSync() error = %v", err)
-	}
-
-	content := readTextFile(t, filepath.Join(home, ".codex", "AGENTS.md"))
-	for _, row := range []string{
-		"| `odd-explorer` | `gpt-6.1-luna` | `low` |",
-		"| `odd-worker` | `gpt-6.1-luna` | `xhigh` |",
-		"| `odd-verify` | `gpt-6.1-sol` | `high` |",
-	} {
-		if !strings.Contains(content, row) {
-			t.Errorf("persisted ODD effort missing %q", row)
-		}
-	}
-	for _, name := range []string{"sdd-strong.config.toml", "sdd-mid.config.toml", "sdd-cheap.config.toml"} {
-		if _, err := os.Stat(filepath.Join(home, ".codex", name)); !os.IsNotExist(err) {
-			t.Errorf("retired profile %s unexpectedly generated: %v", name, err)
-		}
-	}
-}
-
-// TestRunSync_DefaultPreservesReviewWithoutSDDPhaseModels verifies that legacy
-// profile assignments do not force SDD agents into an ordinary sync.
-func TestRunSync_DefaultPreservesReviewWithoutSDDPhaseModels(t *testing.T) {
-	efforts := map[string]string{
-		"sdd-propose": "xhigh", "sdd-design": "xhigh", "sdd-verify": "xhigh",
-		"jd-judge-a": "xhigh", "jd-judge-b": "xhigh", "default": "xhigh",
-		"sdd-apply": "high", "jd-fix-agent": "high",
-		"sdd-explore": "low", "sdd-spec": "low", "sdd-tasks": "low",
-		"sdd-archive": "low", "sdd-onboard": "low",
-	}
-	phaseModels := map[string]string{
-		"default":     "gpt-5.4-mini",
-		"sdd-propose": "gpt-5.5",
-		"sdd-apply":   "o3",
-	}
-	home := setupCodexSyncHomeWithPhaseModels(t, nil, efforts, phaseModels)
-
-	restoreHome := osUserHomeDir
-	restoreCommand := runCommand
-	restoreLookPath := cmdLookPath
-	t.Cleanup(func() {
-		osUserHomeDir = restoreHome
-		runCommand = restoreCommand
-		cmdLookPath = restoreLookPath
-	})
-
-	osUserHomeDir = func() (string, error) { return home, nil }
-	runCommand = func(string, ...string) error { return nil }
-	cmdLookPath = func(name string) (string, error) { return "/usr/local/bin/" + name, nil }
-
-	result, err := RunSync([]string{"--agents", "codex"})
-	if err != nil {
-		t.Fatalf("RunSync() error = %v", err)
-	}
-	if result.Selection.HasComponent(model.ComponentSDD) {
-		t.Fatal("default sync reselected SDD for legacy phase models")
-	}
-	if got := readTextFile(t, filepath.Join(home, ".codex", "hooks.json")); !strings.Contains(got, "telemetry") || !strings.Contains(got, "skill") {
-		t.Fatal("retained Codex telemetry or skill hook missing")
-	}
-
-	agentsMD := filepath.Join(home, ".codex", "AGENTS.md")
-	content, readErr := os.ReadFile(agentsMD)
-	if readErr != nil {
-		t.Fatalf("ReadFile(%q) error = %v", agentsMD, readErr)
-	}
-	text := string(content)
-	if !strings.Contains(text, "Organic Driven Development") {
-		t.Fatal("AGENTS.md missing ODD routing")
-	}
-	if strings.Contains(text, "| `sdd-propose` |") || strings.Contains(text, "| `sdd-apply` |") {
-		t.Fatal("ordinary routing advertised legacy SDD phase models")
-	}
-}
-
 // ─── Organic routing guidance is refreshed for every configured agent ──────
 //
 // Sync must reach the same unconditional guarantee install does: a persisted
@@ -6774,8 +6464,7 @@ func TestSyncBackupTargetsContainNoDuplicatePaths(t *testing.T) {
 	home := t.TempDir()
 	selection := model.Selection{
 		Agents:     []model.AgentID{model.AgentClaudeCode, model.AgentOpenCode, model.AgentKimi, model.AgentCodex},
-		Components: []model.ComponentID{model.ComponentSDD, model.ComponentEngram, model.ComponentPersona},
-		SDDMode:    model.SDDModeSingle,
+		Components: []model.ComponentID{model.ComponentSkills, model.ComponentEngram, model.ComponentPersona},
 	}
 
 	targets, err := syncBackupTargetsScoped(home, "", ScopeGlobal, selection, resolveAdapters(selection.Agents))

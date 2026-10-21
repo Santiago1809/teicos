@@ -35,7 +35,6 @@ internal/
     opencodeplugin/        OpenCode TUI plugin registration/local plugin helpers
     opencoderuntimeplugins/  Names and eligibility of managed OpenCode runtime plugins
     uninstall/             Managed uninstall cleanup service
-    legacyassets/          Retired managed paths for snapshots and rollback
     mutationjournal/       Before-images of mutated files for atomic rollback
     filemerge/             Marker-based file merging (inject without clobbering)
   skillregistry/           .atl skill registry refresh/list support

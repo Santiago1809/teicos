@@ -49,7 +49,7 @@ func TestRunSyncPreservesUserEditedLegacyClaudeCommandWithoutReinstallingSDD(t *
 	if err := state.Write(home, state.InstallState{
 		InstalledAgents:     []string{string(model.AgentClaudeCode)},
 		SelectionConfigured: true,
-		Components:          []model.ComponentID{model.ComponentSDD},
+		Components:          []model.ComponentID{model.ComponentSkills},
 		Persona:             "neutral",
 	}); err != nil {
 		t.Fatalf("state.Write() error = %v", err)

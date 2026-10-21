@@ -136,8 +136,8 @@ func TestInstallNavigationRoundTrips(t *testing.T) {
 		{"full Cursor", model.AgentCursor, model.PresetFullGentleman, nil, []Screen{ScreenDependencyTree}, []Screen{ScreenPreset}},
 		{"minimal OpenCode", model.AgentOpenCode, model.PresetMinimal, nil, []Screen{ScreenDependencyTree}, []Screen{ScreenPreset}},
 		{"full OpenCode", model.AgentOpenCode, model.PresetFullGentleman, nil, []Screen{ScreenDependencyTree}, []Screen{ScreenPreset}},
-		{"custom Cursor Skills", model.AgentCursor, model.PresetCustom, []model.ComponentID{model.ComponentSDD, model.ComponentSkills}, []Screen{ScreenSkillPicker}, []Screen{ScreenDependencyTree}},
-		{"custom OpenCode Skills", model.AgentOpenCode, model.PresetCustom, []model.ComponentID{model.ComponentSDD, model.ComponentSkills}, []Screen{ScreenSkillPicker}, []Screen{ScreenDependencyTree}},
+		{"custom Cursor Skills", model.AgentCursor, model.PresetCustom, []model.ComponentID{model.ComponentSkills, model.ComponentSkills}, []Screen{ScreenSkillPicker}, []Screen{ScreenDependencyTree}},
+		{"custom OpenCode Skills", model.AgentOpenCode, model.PresetCustom, []model.ComponentID{model.ComponentSkills, model.ComponentSkills}, []Screen{ScreenSkillPicker}, []Screen{ScreenDependencyTree}},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			m := NewModel(system.DetectionResult{}, "dev")

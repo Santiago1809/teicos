@@ -2257,7 +2257,7 @@ func (m Model) confirmSelection() (tea.Model, tea.Cmd) {
 					// their catalog since the user last synced). Without this, a stale
 					// effort would be preserved in the picker and re-injected on the
 					// next sync even if the model no longer supports that effort level.
-					m.Selection.ModelAssignments = sanitizeKnownModelEfforts(current, m.ModelPicker.SDDModels)
+					m.Selection.ModelAssignments = sanitizeKnownModelEfforts(current, m.ModelPicker.ManagedModels)
 				}
 			}
 			m.setScreen(ScreenModelPicker)
@@ -2405,8 +2405,7 @@ func (m Model) confirmSelection() (tea.Model, tea.Cmd) {
 				m.ModelConfigMode = false
 				m.PendingSyncOverrides = &model.SyncOverrides{
 					TargetAgents:     []model.AgentID{model.AgentOpenCode},
-					ModelAssignments: sanitizeKnownModelEfforts(m.Selection.ModelAssignments, m.ModelPicker.SDDModels),
-					SDDMode:          model.SDDModeMulti,
+					ModelAssignments: sanitizeKnownModelEfforts(m.Selection.ModelAssignments, m.ModelPicker.ManagedModels),
 				}
 				m = m.withResetSyncState()
 				m.setScreen(ScreenSync)
