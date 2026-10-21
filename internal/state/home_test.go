@@ -197,13 +197,16 @@ func TestHomeEnvRoutesStateAndManifestFiles(t *testing.T) {
 }
 
 func TestValidateHomeEnvRejectsRelativePath(t *testing.T) {
+	// filepath.IsAbs is platform-specific: a POSIX-style "/abs/teicos" is not
+	// absolute on Windows, so the accepted-path case must be built per platform.
+	absolute := filepath.Join(os.TempDir(), "teicos-absolute")
 	for _, tt := range []struct {
 		name, key, value, other string
 		wantErr                 string
 	}{
 		{"new variable", HomeEnv, "relative/teicos", "", HomeEnv},
 		{"legacy variable alone", HomeEnvLegacy, "relative/gentle-ai", "", HomeEnvLegacy},
-		{"new variable wins over a bad legacy one", HomeEnv, "/abs/teicos", "relative/gentle-ai", ""},
+		{"new variable wins over a bad legacy one", HomeEnv, absolute, "relative/gentle-ai", ""},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			clearHomeEnv(t)
