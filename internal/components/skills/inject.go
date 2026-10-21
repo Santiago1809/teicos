@@ -5,19 +5,12 @@ import (
 	"io/fs"
 	"log"
 	"path/filepath"
-	"strings"
 
 	"github.com/Santiago1809/teicos/internal/agents"
 	"github.com/Santiago1809/teicos/internal/assets"
 	"github.com/Santiago1809/teicos/internal/components/filemerge"
 	"github.com/Santiago1809/teicos/internal/model"
 )
-
-// IsSDDSkill identifies retired SDD skill IDs retained for compatibility.
-// They are never installed, regardless of the requested capability.
-func IsSDDSkill(id model.SkillID) bool {
-	return strings.HasPrefix(string(id), "sdd-")
-}
 
 type InjectionResult struct {
 	Changed bool
@@ -70,9 +63,6 @@ func directoryAssets(skillDir string, skillIDs []model.SkillID, capability strin
 	var result []directoryAsset
 	var skipped []model.SkillID
 	for _, id := range skillIDs {
-		if IsSDDSkill(id) {
-			continue
-		}
 		embedDir := "skills/" + string(id)
 		entries, err := fs.ReadDir(assets.FS, embedDir)
 		if err != nil {

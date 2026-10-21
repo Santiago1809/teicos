@@ -919,18 +919,8 @@ func applyOverrides(selection *model.Selection, overrides *model.SyncOverrides) 
 	if overrides.CodexPhaseModelAssignments != nil {
 		selection.CodexPhaseModelAssignments = overrides.CodexPhaseModelAssignments
 	}
-	if overrides.SDDMode != "" {
-		selection.SDDMode = overrides.SDDMode
-	}
 	if overrides.StrictTDD != nil {
 		selection.StrictTDD = *overrides.StrictTDD
-	}
-	// A persisted component selection loaded earlier via loadPersistedAssignments
-	// may omit the SDD component. When the caller explicitly asked for model
-	// assignment work through this override, that request must not be silently
-	// dropped — see issue #3430.
-	if model.CarriesSDDWork(overrides.ModelAssignments) {
-		selection.EnsureComponent(model.ComponentSDD)
 	}
 }
 

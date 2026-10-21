@@ -10,8 +10,7 @@ import (
 
 func TestTopologicalSortOrdersDependenciesFirst(t *testing.T) {
 	deps := map[model.ComponentID][]model.ComponentID{
-		model.ComponentSkills:   {model.ComponentSDD},
-		model.ComponentSDD:      {model.ComponentEngram},
+		model.ComponentSkills:   {model.ComponentEngram},
 		model.ComponentEngram:   nil,
 		model.ComponentPersona:  nil,
 		model.ComponentContext7: nil,
@@ -26,7 +25,6 @@ func TestTopologicalSortOrdersDependenciesFirst(t *testing.T) {
 		model.ComponentContext7,
 		model.ComponentEngram,
 		model.ComponentPersona,
-		model.ComponentSDD,
 		model.ComponentSkills,
 	}) {
 		t.Fatalf("TopologicalSort() order = %v", ordered)
@@ -38,7 +36,7 @@ func TestApplySoftOrderingReordersWithoutAddingDependencies(t *testing.T) {
 		model.ComponentContext7,
 		model.ComponentEngram,
 		model.ComponentPersona,
-		model.ComponentSDD,
+		model.ComponentSkills,
 	}
 
 	result := applySoftOrdering(ordered, [][2]model.ComponentID{{model.ComponentPersona, model.ComponentEngram}})
@@ -47,7 +45,7 @@ func TestApplySoftOrderingReordersWithoutAddingDependencies(t *testing.T) {
 		model.ComponentContext7,
 		model.ComponentPersona,
 		model.ComponentEngram,
-		model.ComponentSDD,
+		model.ComponentSkills,
 	}) {
 		t.Fatalf("applySoftOrdering() = %v", result)
 	}
@@ -69,8 +67,8 @@ func TestApplySoftOrderingEdgeCases(t *testing.T) {
 	}
 
 	// Both absent — no-op
-	result = applySoftOrdering([]model.ComponentID{model.ComponentSDD}, pair)
-	if !reflect.DeepEqual(result, []model.ComponentID{model.ComponentSDD}) {
+	result = applySoftOrdering([]model.ComponentID{model.ComponentSkills}, pair)
+	if !reflect.DeepEqual(result, []model.ComponentID{model.ComponentSkills}) {
 		t.Fatalf("both absent: expected [sdd], got %v", result)
 	}
 
@@ -96,7 +94,7 @@ func TestApplySoftOrderingBothMVPPairsWithFullSelection(t *testing.T) {
 		model.ComponentContext7,
 		model.ComponentEngram,
 		model.ComponentPersona,
-		model.ComponentSDD,
+		model.ComponentSkills,
 		model.ComponentSkills,
 	}
 
@@ -110,7 +108,7 @@ func TestApplySoftOrderingBothMVPPairsWithFullSelection(t *testing.T) {
 			personaIdx = i
 		case model.ComponentEngram:
 			engramIdx = i
-		case model.ComponentSDD:
+		case model.ComponentSkills:
 			sddIdx = i
 		}
 	}
@@ -136,8 +134,8 @@ func TestApplySoftOrderingBothMVPPairsWithFullSelection(t *testing.T) {
 
 func TestTopologicalSortDetectsCycles(t *testing.T) {
 	deps := map[model.ComponentID][]model.ComponentID{
-		model.ComponentEngram: {model.ComponentSDD},
-		model.ComponentSDD:    {model.ComponentEngram},
+		model.ComponentEngram: {model.ComponentSkills},
+		model.ComponentSkills: {model.ComponentEngram},
 	}
 
 	_, err := TopologicalSort(deps)

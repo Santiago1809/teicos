@@ -318,7 +318,7 @@ func runSDKFullApplyIntegration(t *testing.T, home, config, log string, realSDK 
 	if err != nil {
 		t.Fatal(err)
 	}
-	if strings.Join(persisted.InstalledAgents, ",") != "opencode" || !persisted.SelectionConfigured || !persisted.CommunityToolsConfigured || len(persisted.Components) != 0 || len(persisted.CommunityTools) != 0 || len(persisted.Skills) != 0 || persisted.Preset != m.Selection.Preset || persisted.SDDMode != m.Selection.SDDMode {
+	if strings.Join(persisted.InstalledAgents, ",") != "opencode" || !persisted.SelectionConfigured || !persisted.CommunityToolsConfigured || len(persisted.Components) != 0 || len(persisted.CommunityTools) != 0 || len(persisted.Skills) != 0 || persisted.Preset != m.Selection.Preset {
 		t.Fatalf("installed selection was not persisted: %+v", persisted)
 	}
 	if reviewCalls != 0 || persisted.RDDMode != "" || persisted.RDDModeRecordedAt != nil || m.InstallReviewModePersisting || m.InstallReviewModePersistErr != nil {

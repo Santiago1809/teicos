@@ -87,9 +87,13 @@ const (
 
 type ComponentID string
 
+// RetiredSDDComponentID is the persisted identifier of the retired SDD
+// component. It is decoded from a legacy state file and rejected by the
+// commands that no longer support it.
+const RetiredSDDComponentID ComponentID = "sdd"
+
 const (
 	ComponentEngram             ComponentID = "engram"
-	ComponentSDD                ComponentID = "sdd"
 	ComponentSkills             ComponentID = "skills"
 	ComponentContext7           ComponentID = "context7"
 	ComponentPersona            ComponentID = "persona"
@@ -118,17 +122,6 @@ const (
 type SkillID string
 
 const (
-	SkillSDDInit             SkillID = "sdd-init"
-	SkillSDDApply            SkillID = "sdd-apply"
-	SkillSDDVerify           SkillID = "sdd-verify"
-	SkillSDDExplore          SkillID = "sdd-explore"
-	SkillSDDResearch         SkillID = "sdd-research"
-	SkillSDDPropose          SkillID = "sdd-propose"
-	SkillSDDSpec             SkillID = "sdd-spec"
-	SkillSDDDesign           SkillID = "sdd-design"
-	SkillSDDTasks            SkillID = "sdd-tasks"
-	SkillSDDArchive          SkillID = "sdd-archive"
-	SkillSDDOnboard          SkillID = "sdd-onboard"
 	SkillGoTesting           SkillID = "go-testing"
 	SkillCreator             SkillID = "skill-creator"
 	SkillImprover            SkillID = "skill-improver"
@@ -220,13 +213,6 @@ const (
 	PresetEcosystemOnly PresetID = "ecosystem-only"
 	PresetMinimal       PresetID = "minimal"
 	PresetCustom        PresetID = "custom"
-)
-
-type SDDModeID string
-
-const (
-	SDDModeSingle SDDModeID = "single"
-	SDDModeMulti  SDDModeID = "multi"
 )
 
 type OpenCodeCommunityPluginID string

@@ -143,33 +143,6 @@ func TestInjectCopiesNonSDDSkillReferences(t *testing.T) {
 	}
 }
 
-func TestInjectSkipsSddSkills(t *testing.T) {
-	home := t.TempDir()
-
-	// Retired SDD IDs must not install even when explicitly requested.
-	result, err := Inject(home, claudeAdapter(), []model.SkillID{
-		model.SkillSDDInit,
-		model.SkillSDDApply,
-		model.SkillCreator,
-	})
-	if err != nil {
-		t.Fatalf("Inject() error = %v", err)
-	}
-
-	// Only the non-SDD skill (skill-creator) should be written, including its local references.
-	if len(skillFiles(result.Files)) != 2 {
-		t.Fatalf("Inject() files len = %d, want 2 (skill-creator plus local reference)", len(skillFiles(result.Files)))
-	}
-
-	// No retired skill files may be created.
-	for _, id := range []model.SkillID{model.SkillSDDInit, model.SkillSDDApply} {
-		path := filepath.Join(home, ".claude", "skills", string(id), "SKILL.md")
-		if _, statErr := os.Stat(path); statErr == nil {
-			t.Fatalf("skills component must not write retired skill %q", id)
-		}
-	}
-}
-
 func TestInjectSkipsUnknownSkillGracefully(t *testing.T) {
 	home := t.TempDir()
 
@@ -423,36 +396,6 @@ func assertNonEmptyFile(t *testing.T, path string) {
 	}
 	if info.Size() == 0 {
 		t.Fatalf("expected file %q to be non-empty", path)
-	}
-}
-
-func TestInjectWithCapabilitySkipsRetiredSDDSkills(t *testing.T) {
-	for _, capability := range []string{"", "capable", "small"} {
-		t.Run(capability, func(t *testing.T) {
-			home := t.TempDir()
-			skillDir := opencodeAdapter().SkillsDir(home)
-			ids := []model.SkillID{model.SkillSDDApply, model.SkillJudgmentDay}
-			paths, err := DirectoryPaths(skillDir, ids, capability)
-			if err != nil {
-				t.Fatalf("DirectoryPaths() error = %v", err)
-			}
-			for _, path := range paths {
-				if strings.Contains(path, "sdd-apply") {
-					t.Fatalf("DirectoryPaths() includes retired skill: %q", path)
-				}
-			}
-			result, err := InjectWithCapability(home, opencodeAdapter(), ids, capability)
-			if err != nil {
-				t.Fatalf("InjectWithCapability() error = %v", err)
-			}
-			if len(result.Skipped) != 0 || len(result.Files) == 0 {
-				t.Fatalf("InjectWithCapability() = %+v, want retained skill only", result)
-			}
-			assertNonEmptyFile(t, filepath.Join(skillDir, "judgment-day", "SKILL.md"))
-			if _, err := os.Stat(filepath.Join(skillDir, "sdd-apply", "SKILL.md")); !os.IsNotExist(err) {
-				t.Fatalf("retired skill unexpectedly installed: %v", err)
-			}
-		})
 	}
 }
 

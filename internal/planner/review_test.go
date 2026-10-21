@@ -170,56 +170,6 @@ func TestBuildReviewPayloadSkillsNilWhenNotSelected(t *testing.T) {
 
 // ─── Issue #149: ReviewPayload must include StrictTDD and HasSDD ─────────────
 
-// TestBuildReviewPayloadIncludesStrictTDD verifies that BuildReviewPayload sets
-// StrictTDD from selection.StrictTDD and HasSDD when SDD component is present.
-//
-// Closes #149.
-func TestBuildReviewPayloadIncludesStrictTDD(t *testing.T) {
-	selection := model.Selection{
-		Persona:   model.PersonaGentleman,
-		Preset:    model.PresetFullGentleman,
-		StrictTDD: true,
-	}
-	resolved := ResolvedPlan{
-		Agents:            []model.AgentID{model.AgentClaudeCode},
-		OrderedComponents: []model.ComponentID{model.ComponentEngram, model.ComponentSDD},
-	}
-
-	payload := BuildReviewPayload(selection, resolved)
-
-	if !payload.StrictTDD {
-		t.Errorf("StrictTDD = false, want true (selection.StrictTDD=true)")
-	}
-	if !payload.HasSDD {
-		t.Errorf("HasSDD = false, want true (SDD component is in resolved plan)")
-	}
-}
-
-// TestBuildReviewPayloadStrictTDDFalseWhenDisabled verifies that StrictTDD=false
-// is correctly propagated.
-//
-// Closes #149.
-func TestBuildReviewPayloadStrictTDDFalseWhenDisabled(t *testing.T) {
-	selection := model.Selection{
-		Persona:   model.PersonaGentleman,
-		Preset:    model.PresetFullGentleman,
-		StrictTDD: false,
-	}
-	resolved := ResolvedPlan{
-		Agents:            []model.AgentID{model.AgentClaudeCode},
-		OrderedComponents: []model.ComponentID{model.ComponentEngram, model.ComponentSDD},
-	}
-
-	payload := BuildReviewPayload(selection, resolved)
-
-	if payload.StrictTDD {
-		t.Errorf("StrictTDD = true, want false (selection.StrictTDD=false)")
-	}
-	if !payload.HasSDD {
-		t.Errorf("HasSDD = false, want true (SDD component is in resolved plan)")
-	}
-}
-
 // TestBuildReviewPayloadHasSDDFalseWithoutSDDComponent verifies that HasSDD=false
 // when SDD is not in the resolved plan components.
 //

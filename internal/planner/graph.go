@@ -36,11 +36,8 @@ func (g Graph) DependenciesOf(component model.ComponentID) []model.ComponentID {
 func MVPGraph() Graph {
 	return NewGraph(map[model.ComponentID][]model.ComponentID{
 		model.ComponentEngram: nil,
-		model.ComponentSDD:    {model.ComponentEngram},
-		// Skills has no hard dependency on SDD: standalone skill files (e.g.
-		// go-testing, judgment-day) install fine without it. The SDD-authored
-		// skills (sdd-*) are written by the SDD component itself — see
-		// internal/components/skills.IsSDDSkill and internal/components/sdd.
+		// Skills has no hard dependency on anything else: standalone skill
+		// files (e.g. go-testing, judgment-day) install fine on their own.
 		model.ComponentSkills:             nil,
 		model.ComponentContext7:           nil,
 		model.ComponentPersona:            nil,
@@ -57,13 +54,10 @@ func MVPGraph() Graph {
 //
 // This exists because StrategyFileReplace agents (OpenCode, Cursor, Gemini,
 // Codex) have Persona write the base file and SDD/Engram append to it. If
-// SDD ran before Persona, Persona would overwrite the SDD sections.
-//
 // INVARIANT: the `first` element in every pair must have nil deps in MVPGraph.
 // See applySoftOrdering() safety contract in order.go.
 var softOrderingPairs = [][2]model.ComponentID{
 	{model.ComponentPersona, model.ComponentEngram},
-	{model.ComponentPersona, model.ComponentSDD},
 }
 
 // SoftOrderingConstraints returns the static soft-ordering pairs.

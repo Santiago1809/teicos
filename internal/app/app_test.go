@@ -751,8 +751,8 @@ func TestTuiInstallOnThenSyncRefreshesCanonicalAndRefusesTamperedOpenCodeActivat
 	binDir := writeFakeOpenCodeRuntime(t)
 	t.Setenv("PATH", binDir+string(os.PathListSeparator)+os.Getenv("PATH"))
 
-	selection := model.Selection{Agents: []model.AgentID{model.AgentOpenCode}, Components: []model.ComponentID{model.ComponentPersona, model.ComponentSDD}, SDDMode: model.SDDModeSingle}
-	resolved := planner.ResolvedPlan{Agents: []model.AgentID{model.AgentOpenCode}, OrderedComponents: []model.ComponentID{model.ComponentPersona, model.ComponentSDD}}
+	selection := model.Selection{Agents: []model.AgentID{model.AgentOpenCode}, Components: []model.ComponentID{model.ComponentPersona, model.ComponentSkills}}
+	resolved := planner.ResolvedPlan{Agents: []model.AgentID{model.AgentOpenCode}, OrderedComponents: []model.ComponentID{model.ComponentPersona, model.ComponentSkills}}
 	installResult := tuiExecuteWithBackground(selection, resolved, system.DetectionResult{}, model.OpenCodeBackgroundOn, model.OpenCodeBackgroundOn, "", "", nil)
 	if installResult.Err != nil {
 		t.Fatalf("TUI install error = %v", installResult.Err)

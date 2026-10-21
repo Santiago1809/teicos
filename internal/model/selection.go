@@ -6,7 +6,6 @@ type Selection struct {
 	Skills                           []SkillID
 	Persona                          PersonaID
 	Preset                           PresetID
-	SDDMode                          SDDModeID
 	StrictTDD                        bool
 	CodexMultiAgent                  bool                             // deprecated: Codex now always writes features.multi_agent = true; retained for state/back-compat
 	ModelAssignments                 map[string]ModelAssignment       // key = sub-agent name (e.g., "sdd-init")
@@ -52,35 +51,6 @@ func (s Selection) HasComponent(component ComponentID) bool {
 	return false
 }
 
-// EnsureComponent appends component to s.Components when it is not already
-// present. Used to re-enable a component that a persisted selection would
-// otherwise drop, once the caller has explicitly requested work that only
-// that component's sync stage can perform.
-func (s *Selection) EnsureComponent(component ComponentID) {
-	if s.HasComponent(component) {
-		return
-	}
-	s.Components = append(s.Components, component)
-}
-
-// CarriesSDDWork reports whether the caller explicitly asked for OpenCode
-// per-agent model assignment work: a model assignment override (including a
-// non-nil empty map, which means "reset to defaults" and still requires a
-// write).
-//
-// This is the shared rule used by both the CLI (RestorePersistedSelection)
-// and the TUI (applyOverrides) sync entry points: a persisted component
-// selection that omits "sdd" must not silently swallow that explicit
-// request. See https://github.com/Gentleman-Programming/gentle-ai/issues/3430 —
-// both entry points restore Components from state.json, dropping ComponentSDD
-// whenever the persisted selection predates that component being chosen; the
-// componentSyncStep that writes model assignments into
-// ~/.config/opencode/opencode.json then never runs, yet the sync still
-// reports success.
-func CarriesSDDWork(modelAssignments map[string]ModelAssignment) bool {
-	return modelAssignments != nil
-}
-
 // SyncOverrides holds optional overrides applied to the sync selection.
 // Used when the TUI "Configure Models" flow needs to persist model assignments
 // without re-running the full install pipeline.
@@ -102,6 +72,5 @@ type SyncOverrides struct {
 	CodexServiceTier                 *string                          // nil = no override; "" = standard; otherwise the selected service tier
 	CodexCarrilModelAssignments      map[string]string                // nil = no override; empty map = reset to defaults
 	CodexPhaseModelAssignments       map[string]string                // nil = no override (partial sync); non-nil empty = clear (preset selected); non-nil non-empty = custom per-phase assignments
-	SDDMode                          SDDModeID                        // "" = no override; when non-empty, overrides the sync's default SDD mode
 	StrictTDD                        *bool                            // nil = no override; non-nil = override strict TDD mode
 }
