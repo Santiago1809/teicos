@@ -88,7 +88,7 @@ var reviewStopInvariantClassification = map[string]reviewStopDisposition{
 	},
 	"managed_assets_outdated": {
 		Terminal:      false,
-		Justification: "caller-continuable: the stop's own `continuation` field names the exact `gentle-ai sync` command that reconciles the recorded managed-asset digest; re-querying STATUS afterward offers the same candidate's START again — a concrete, flag-driven continuation (#3299, #4170), not a maintainer-only action",
+		Justification: "caller-continuable: the stop's own `continuation` field names the exact `teicos sync` command that reconciles the recorded managed-asset digest; re-querying STATUS afterward offers the same candidate's START again — a concrete, flag-driven continuation (#3299, #4170), not a maintainer-only action",
 	},
 	"corrupted_or_unverifiable_authority": {
 		Terminal:      true,

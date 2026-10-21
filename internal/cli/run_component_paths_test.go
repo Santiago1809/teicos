@@ -297,7 +297,7 @@ func TestNativeReviewPreservedAction(t *testing.T) {
 				"Keeping it unchanged is valid",
 				"back up this file and verify the backup",
 				"remove only this warned file",
-				"rerun your existing gentle-ai install or gentle-ai sync command",
+				"rerun your existing teicos install or teicos sync command",
 				"same runtime, scope, and model choices",
 				"Gentle AI will not adopt or delete it automatically",
 			} {
@@ -1251,7 +1251,7 @@ func TestInstallCodexTelemetryWithoutSDD(t *testing.T) {
 	runInstallInjectionSteps(t, newTestInstallRuntime(t, home, selection))
 	path := filepath.Join(home, ".codex", "hooks.json")
 	first := readTextFile(t, path)
-	for _, want := range []string{`"SubagentStop"`, `"Stop"`, `gentle-ai telemetry runtime codex --json`, `gentle-ai skill-registry refresh`} {
+	for _, want := range []string{`"SubagentStop"`, `"Stop"`, `teicos telemetry runtime codex --json`, `gentle-ai skill-registry refresh`} {
 		if !strings.Contains(first, want) {
 			t.Fatalf("missing %q in %s", want, path)
 		}

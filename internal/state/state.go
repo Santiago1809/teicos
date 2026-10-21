@@ -61,7 +61,7 @@ type InstallState struct {
 
 	// ClaudeModelAssignments maps SDD phase names (e.g. "sdd-explore") to a
 	// Claude model alias ("fable", "opus", "sonnet", "haiku"). Persisted so that
-	// `gentle-ai sync` preserves the user's model choices instead of falling
+	// `teicos sync` preserves the user's model choices instead of falling
 	// back to the "balanced" preset every time.
 	ClaudeModelAssignments map[string]string `json:"claude_model_assignments,omitempty"`
 
@@ -75,7 +75,7 @@ type InstallState struct {
 	KiroModelAssignments map[string]string `json:"kiro_model_assignments,omitempty"`
 
 	// CodexModelAssignments maps SDD phase names to a Codex reasoning_effort value
-	// (low|medium|high|xhigh). Persisted so that `gentle-ai sync` preserves the
+	// (low|medium|high|xhigh). Persisted so that `teicos sync` preserves the
 	// user's per-phase effort preset instead of falling back to Recommended.
 	CodexModelAssignments map[string]string `json:"codexModelAssignments,omitempty"`
 
@@ -89,7 +89,7 @@ type InstallState struct {
 
 	// CodexCarrilModelAssignments maps the three carril profile names
 	// (sdd-strong|sdd-mid|sdd-cheap) to OpenAI subscription model IDs
-	// (e.g. "gpt-5.6-sol", "gpt-5.6-luna"). Persisted so that `gentle-ai sync`
+	// (e.g. "gpt-5.6-sol", "gpt-5.6-luna"). Persisted so that `teicos sync`
 	// regenerates profile files with the user's chosen model per tier.
 	// Absent/empty = resolve to DefaultCarrilModels at runtime (backward-compat).
 	CodexCarrilModelAssignments map[string]string `json:"codexCarrilModelAssignments,omitempty"`
@@ -105,7 +105,7 @@ type InstallState struct {
 	ModelAssignments map[string]ModelAssignmentState `json:"model_assignments,omitempty"`
 
 	// Persona records the persona the user installed ("gentleman", "neutral",
-	// "custom"). Persisted so that `gentle-ai sync` regenerates the same persona
+	// "custom"). Persisted so that `teicos sync` regenerates the same persona
 	// the user originally chose instead of defaulting to Gentleman every time.
 	// Empty for state files written before persona persistence was added —
 	// callers fall back to PersonaGentleman in that case.

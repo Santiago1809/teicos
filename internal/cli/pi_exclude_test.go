@@ -62,8 +62,8 @@ func TestRunInstallRejectsInvalidPiExcludePackagesBeforeWrites(t *testing.T) {
 		{"unknown value", []string{"--agent", "pi", "--pi-exclude-package", "npm:unknown"}, "", `--pi-exclude-package: unknown Pi package "npm:unknown"; allowed values: npm:gentle-pi, npm:pi-web-access, npm:pi-btw`},
 		{"unknown env value", []string{"--agent", "pi"}, "npm:unknown", `GENTLE_AI_PI_EXCLUDE_PACKAGES: unknown Pi package "npm:unknown"`},
 		{"engram source", []string{"--agent", "pi", "--pi-exclude-package", "npm:gentle-engram"}, "", `--pi-exclude-package: package "npm:gentle-engram" cannot be excluded`},
-		{"orphan flag", []string{"--agent", "claude-code", "--pi-exclude-package", "npm:gentle-pi"}, "", "--pi-exclude-package requires the pi agent in the resolved install plan; rerun gentle-ai install with pi added to your existing agent list, or remove --pi-exclude-package"},
-		{"orphan env", []string{"--agent", "claude-code"}, "npm:gentle-pi", "GENTLE_AI_PI_EXCLUDE_PACKAGES requires the pi agent in the resolved install plan; rerun gentle-ai install with pi added to your existing agent list, or unset GENTLE_AI_PI_EXCLUDE_PACKAGES"},
+		{"orphan flag", []string{"--agent", "claude-code", "--pi-exclude-package", "npm:gentle-pi"}, "", "--pi-exclude-package requires the pi agent in the resolved install plan; rerun teicos install with pi added to your existing agent list, or remove --pi-exclude-package"},
+		{"orphan env", []string{"--agent", "claude-code"}, "npm:gentle-pi", "GENTLE_AI_PI_EXCLUDE_PACKAGES requires the pi agent in the resolved install plan; rerun teicos install with pi added to your existing agent list, or unset GENTLE_AI_PI_EXCLUDE_PACKAGES"},
 	} {
 		for _, dryRun := range []bool{true, false} {
 			name := tc.name + "/real"

@@ -17,7 +17,7 @@ func WrapRule(content string) string {
 func ValidateRule(content []byte) error {
 	lines := strings.Split(strings.ReplaceAll(string(content), "\r\n", "\n"), "\n")
 	if len(lines) < 2 || lines[0] != "---" {
-		return fmt.Errorf("Cursor rule is missing YAML frontmatter; run `gentle-ai sync` to repair it")
+		return fmt.Errorf("Cursor rule is missing YAML frontmatter; run `teicos sync` to repair it")
 	}
 	end := -1
 	for i := 1; i < len(lines); i++ {
@@ -27,7 +27,7 @@ func ValidateRule(content []byte) error {
 		}
 	}
 	if end < 0 {
-		return fmt.Errorf("Cursor rule has unclosed YAML frontmatter; run `gentle-ai sync` to repair it")
+		return fmt.Errorf("Cursor rule has unclosed YAML frontmatter; run `teicos sync` to repair it")
 	}
 	decoder := yaml.NewDecoder(strings.NewReader(strings.Join(lines[1:end], "\n")))
 	var metadata map[string]any
@@ -42,7 +42,7 @@ func ValidateRule(content []byte) error {
 		return fmt.Errorf("Cursor rule frontmatter must contain exactly one YAML document")
 	}
 	if enabled, ok := metadata["alwaysApply"].(bool); !ok || !enabled {
-		return fmt.Errorf("Cursor rule requires boolean alwaysApply: true; run `gentle-ai sync` to repair it")
+		return fmt.Errorf("Cursor rule requires boolean alwaysApply: true; run `teicos sync` to repair it")
 	}
 	return nil
 }

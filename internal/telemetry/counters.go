@@ -42,7 +42,7 @@ func IncrementCounter(homeDir string, mutate func(*Counters)) error {
 	return Save(homeDir, s)
 }
 
-// IncrementSyncs records one successful `gentle-ai sync` run.
+// IncrementSyncs records one successful `teicos sync` run.
 func IncrementSyncs(homeDir string) error {
 	return IncrementCounter(homeDir, func(c *Counters) { c.Syncs++ })
 }

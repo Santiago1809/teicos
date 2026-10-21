@@ -201,7 +201,7 @@ func (m *startupPathModel) resolve(launcher, goos string, assumeLauncher bool) L
 				return readyLoginShell(launcher, entry.source)
 			}
 			if _, err := validateManagedLauncherCandidate(m.homeDir, launcher, goos); err != nil {
-				return LoginShellResolution{Status: ActivationStatusPending, Source: entry.source, Reason: fmt.Sprintf("new login shells put %s on PATH, but %v; run gentle-ai sync", binDir, err)}
+				return LoginShellResolution{Status: ActivationStatusPending, Source: entry.source, Reason: fmt.Sprintf("new login shells put %s on PATH, but %v; run teicos sync", binDir, err)}
 			}
 			return readyLoginShell(launcher, entry.source)
 		}

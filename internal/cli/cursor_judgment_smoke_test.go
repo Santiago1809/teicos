@@ -166,7 +166,7 @@ func TestCursorJudgmentDayCLISmoke(t *testing.T) {
 	if got := read(skillPath); got != assets.MustRead("skills/judgment-day/SKILL.md") {
 		t.Fatal("sync did not restore the current Judgment Day skill")
 	}
-	wantNoOp := "gentle-ai sync — no managed sync actions needed\nAgents: cursor\nAll managed assets are already up to date. No files changed.\n"
+	wantNoOp := "teicos sync — no managed sync actions needed\nAgents: cursor\nAll managed assets are already up to date. No files changed.\n"
 	if output := run("sync", "--agent", "cursor"); output != wantNoOp {
 		t.Fatalf("idempotent stdout = %q, want %q", output, wantNoOp)
 	}

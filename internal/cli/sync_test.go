@@ -367,7 +367,7 @@ func TestSyncOpenCodeAssignmentRejectsNonRegularSettings(t *testing.T) {
 	}
 	if err := step.Run(); err == nil {
 		t.Fatal("sync accepted directory at settings path")
-	} else if !strings.Contains(err.Error(), "regular file") || !strings.Contains(err.Error(), "gentle-ai sync") {
+	} else if !strings.Contains(err.Error(), "regular file") || !strings.Contains(err.Error(), "teicos sync") {
 		t.Fatalf("settings refusal lacks an actionable resolution: %v", err)
 	}
 	if info, err := os.Lstat(path); err != nil || !info.IsDir() || len(changed) != 0 {
@@ -534,7 +534,7 @@ func TestParseSyncFlagsAgentsRepeated(t *testing.T) {
 }
 
 // TestRunSyncRejectsUnsupportedAgent closes install/sync surface audit
-// finding 3: `gentle-ai sync --agent cluade` (a typo) previously printed
+// finding 3: `teicos sync --agent cluade` (a typo) previously printed
 // "All managed assets are already up to date. No files changed." — the user
 // believed they synced, but asAgentIDs silently converted the typo into an
 // AgentID nothing ever matches, so DiscoverAgents-equivalent resolution
@@ -646,7 +646,7 @@ func TestParseSyncFlagsUnknownFlagReturnsError(t *testing.T) {
 // pointer to how to discover the real flags. The fix captures the FlagSet's
 // own canonical usage text (derived from the registered flags themselves,
 // not a hand-written list) instead of discarding it, and names
-// `gentle-ai sync --help`.
+// `teicos sync --help`.
 func TestParseSyncFlagsMistypedFlagNamesTheSupportedFlags(t *testing.T) {
 	_, err := ParseSyncFlags([]string{"-sdd", "single"})
 	if err == nil {
@@ -656,8 +656,8 @@ func TestParseSyncFlagsMistypedFlagNamesTheSupportedFlags(t *testing.T) {
 	if !strings.Contains(msg, "flag provided but not defined: -sdd") {
 		t.Fatalf("error = %q, want it to preserve the original flag package error", msg)
 	}
-	if !strings.Contains(msg, "gentle-ai sync --help") {
-		t.Fatalf("error = %q, want it to point at `gentle-ai sync --help`", msg)
+	if !strings.Contains(msg, "teicos sync --help") {
+		t.Fatalf("error = %q, want it to point at `teicos sync --help`", msg)
 	}
 	if strings.Contains(msg, "-sdd-mode") || strings.Contains(msg, "-sdd-profile-strategy") || strings.Contains(msg, "-profile-phase") {
 		t.Fatalf("usage advertises retired flags: %q", msg)
@@ -667,7 +667,7 @@ func TestParseSyncFlagsMistypedFlagNamesTheSupportedFlags(t *testing.T) {
 	}
 }
 
-// TestParseSyncFlagsHelpFlagRendersUsage proves `gentle-ai sync --help` now
+// TestParseSyncFlagsHelpFlagRendersUsage proves `teicos sync --help` now
 // actually surfaces the supported flags instead of the bare
 // "flag: help requested" text it produced before (the FlagSet's usage output
 // was being discarded via ioDiscard{}).
@@ -685,7 +685,7 @@ func TestParseSyncFlagsHelpFlagRendersUsage(t *testing.T) {
 }
 
 // TestParseSyncFlagsPositionalArgumentNamesTheAgentFlag closes install/sync
-// surface audit finding 5: `gentle-ai sync claude` (a positional agent name
+// surface audit finding 5: `teicos sync claude` (a positional agent name
 // instead of a flag) produced only `unexpected sync argument "claude"` with
 // no pointer to the correct --agent form.
 func TestParseSyncFlagsPositionalArgumentNamesTheAgentFlag(t *testing.T) {
@@ -991,7 +991,7 @@ func TestComponentSyncStepSkipsEngramBinaryInstall(t *testing.T) {
 // threads the detected engram binary version into engram.InjectOptions.Version
 // (internal/cli/run.go), so a verified Claude Code install renders the SLIM
 // engram-protocol CLAUDE.md section. The sync path built InjectOptions WITHOUT
-// Version, so every `gentle-ai sync` silently re-inflated the slim section
+// Version, so every `teicos sync` silently re-inflated the slim section
 // back to the full (~6.7 KB) one. Sync must detect the version identically
 // (resolveEngramVersion) and keep the installed slim section byte-identical.
 func TestComponentSyncStepPreservesSlimEngramProtocol(t *testing.T) {
@@ -1746,7 +1746,7 @@ func TestRunSyncSkipsOpenCodeGentleLogoWhenOpenCodeNotSelected(t *testing.T) {
 // TestRunSyncRefreshesInstalledOpenCodeReviewPluginWithoutSDDComponent
 // reproduces issue #1440: when the persisted selection lacks the SDD component
 // but a previous release's managed OpenCode plugins are installed on disk,
-// `gentle-ai sync` must refresh them to the embedded assets of the running
+// `teicos sync` must refresh them to the embedded assets of the running
 // binary.
 func TestRunSyncRefreshesInstalledOpenCodeReviewPluginWithoutSDDComponent(t *testing.T) {
 	home := t.TempDir()
@@ -3603,7 +3603,7 @@ func TestRenderSyncReportIncludesManagedActions(t *testing.T) {
 
 // TestRunSyncExcludesUnmanagedLookalikeFile verifies the spec scenario:
 // "User modified an unmanaged file that resembles a managed target —
-// gentle-ai sync excludes it from the plan and does not adopt it."
+// teicos sync excludes it from the plan and does not adopt it."
 //
 // We create a file with the same NAME as a managed target but in a directory
 // that is NOT part of the managed inventory (simulating an unmanaged lookalike).
@@ -4424,7 +4424,7 @@ func TestParseSyncFlagsProfilePhaseUnknownPhaseReturnsError(t *testing.T) {
 // https://github.com/Gentleman-Programming/gentle-ai/issues/3430: a machine
 // that installed without the SDD component (state.json's persisted
 // Components list omits "sdd") never gets its OpenCode SDD profile written
-// by `gentle-ai sync --profile ...`, even though the sync reports success.
+// by `teicos sync --profile ...`, even though the sync reports success.
 //
 // RestorePersistedSelection replaces selection.Components wholesale with the
 // persisted list, dropping ComponentSDD, so the componentSyncStep that writes
@@ -6882,7 +6882,7 @@ func TestSyncSkipsOpenCodeWhenRuntimeDetectionFails(t *testing.T) {
 			if !errors.As(err, &partial) {
 				t.Fatalf("sync error = %v, want *PartialSyncError", err)
 			}
-			for _, want := range []string{"OpenCode", "opencode --version", "deselect OpenCode", "gentle-ai sync"} {
+			for _, want := range []string{"OpenCode", "opencode --version", "deselect OpenCode", "teicos sync"} {
 				if !strings.Contains(err.Error(), want) {
 					t.Errorf("partial sync error missing %q: %s", want, err)
 				}
@@ -6974,7 +6974,7 @@ func TestInstallStillFailsClosedWhenOpenCodeRuntimeDetectionFails(t *testing.T) 
 
 // TestPartialSyncKeepsOpenCodeInPersistedSelection pins that skipping OpenCode
 // only narrows one run: the persisted selection still lists it, so the next
-// plain `gentle-ai sync` reselects OpenCode and applies it once detection works.
+// plain `teicos sync` reselects OpenCode and applies it once detection works.
 func TestPartialSyncKeepsOpenCodeInPersistedSelection(t *testing.T) {
 	for name, run := range map[string]func(home string) (SyncResult, error){
 		"cli explicit agents": func(string) (SyncResult, error) { return RunSync([]string{"--agents", "claude-code,opencode"}) },
@@ -7276,7 +7276,7 @@ func TestSyncDriftedOpenCodePluginIsScopedAndTheRestOfSyncRuns(t *testing.T) {
 	if !errors.As(err, &partial) {
 		t.Fatalf("sync error = %v, want *PartialSyncError", err)
 	}
-	for _, want := range []string{"opencode managed plugins were skipped", plugin, "does not match any Gentle AI release", "then re-run `gentle-ai sync`"} {
+	for _, want := range []string{"opencode managed plugins were skipped", plugin, "does not match any Gentle AI release", "then re-run `teicos sync`"} {
 		if !strings.Contains(err.Error(), want) {
 			t.Errorf("partial sync error missing %q: %s", want, err)
 		}

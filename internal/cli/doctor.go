@@ -177,7 +177,7 @@ func checkOpenCodeProfile(homeDir string, pathDirs []string) CheckResult {
 		Name:   id,
 		Status: CheckStatusWarn,
 		Detail: "OpenCode background subagents are on, but new shells bypass the managed launcher: " + resolution.Reason,
-		Remedy: doctor.NewRemedy(doctor.RemedySync, "Run 'gentle-ai sync' from a zsh or bash login shell, or add "+opencode.ProfileExportLine(binDir)+" to your login profile, then start a new login shell"),
+		Remedy: doctor.NewRemedy(doctor.RemedySync, "Run 'teicos sync' from a zsh or bash login shell, or add "+opencode.ProfileExportLine(binDir)+" to your login profile, then start a new login shell"),
 	}
 }
 
@@ -269,7 +269,7 @@ func checkOneToolContext(ctx context.Context, tool string, pathDirs []string) Ch
 			Name:   doctor.ToolCheckID(tool),
 			Status: CheckStatusWarn,
 			Detail: detail + "; version probe failed: " + err.Error(),
-			Remedy: doctor.NewRemedy(doctor.RemedyInstallTool, "Repair or reinstall "+tool+" at "+resolved+", then run 'gentle-ai doctor' again"),
+			Remedy: doctor.NewRemedy(doctor.RemedyInstallTool, "Repair or reinstall "+tool+" at "+resolved+", then run 'teicos doctor' again"),
 		}
 	}
 	return CheckResult{
@@ -521,7 +521,7 @@ func checkStateJSON(homeDir string) CheckResult {
 				Name:   id,
 				Status: CheckStatusWarn,
 				Detail: "state file not found at " + statePath + " (expected for first-time install)",
-				Remedy: doctor.NewRemedy(doctor.RemedyInstall, "Run 'gentle-ai install' to create initial state"),
+				Remedy: doctor.NewRemedy(doctor.RemedyInstall, "Run 'teicos install' to create initial state"),
 			}
 		}
 		var pathErr *os.PathError
@@ -534,14 +534,14 @@ func checkStateJSON(homeDir string) CheckResult {
 				Name:   id,
 				Status: CheckStatusFail,
 				Detail: "failed to read " + statePath + ": " + err.Error(),
-				Remedy: doctor.NewRemedy(doctor.RemedyInspectStateAccess, guidance+", then re-run 'gentle-ai doctor'; keep the existing state file"),
+				Remedy: doctor.NewRemedy(doctor.RemedyInspectStateAccess, guidance+", then re-run 'teicos doctor'; keep the existing state file"),
 			}
 		}
 		return CheckResult{
 			Name:   id,
 			Status: CheckStatusFail,
 			Detail: "failed to parse " + statePath + ": " + err.Error(),
-			Remedy: doctor.NewRemedy(doctor.RemedyRepairState, "Restore a valid backup or repair "+statePath+" while preserving your installation settings, then re-run 'gentle-ai doctor'"),
+			Remedy: doctor.NewRemedy(doctor.RemedyRepairState, "Restore a valid backup or repair "+statePath+" while preserving your installation settings, then re-run 'teicos doctor'"),
 		}
 	}
 
@@ -550,7 +550,7 @@ func checkStateJSON(homeDir string) CheckResult {
 			Name:   id,
 			Status: CheckStatusWarn,
 			Detail: "state file found at " + statePath + " with no installed agents",
-			Remedy: doctor.NewRemedy(doctor.RemedyInstall, "Run 'gentle-ai install' to configure agents"),
+			Remedy: doctor.NewRemedy(doctor.RemedyInstall, "Run 'teicos install' to configure agents"),
 		}
 	}
 
@@ -575,7 +575,7 @@ func checkStateJSON(homeDir string) CheckResult {
 					return CheckResult{
 						Name:   id,
 						Status: CheckStatusWarn,
-						Detail: fmt.Sprintf("managed config path %s could not be inspected: %v; inspect or repair it manually, then re-run 'gentle-ai doctor'", dir, ancestorErr),
+						Detail: fmt.Sprintf("managed config path %s could not be inspected: %v; inspect or repair it manually, then re-run 'teicos doctor'", dir, ancestorErr),
 					}
 				}
 				if ancestor != "" {
@@ -589,21 +589,21 @@ func checkStateJSON(homeDir string) CheckResult {
 				return CheckResult{
 					Name:   id,
 					Status: CheckStatusWarn,
-					Detail: fmt.Sprintf("managed config path %s could not be inspected: %v; inspect or repair it manually, then re-run 'gentle-ai doctor'", dir, lstatErr),
+					Detail: fmt.Sprintf("managed config path %s could not be inspected: %v; inspect or repair it manually, then re-run 'teicos doctor'", dir, lstatErr),
 				}
 			}
 			if info.Mode()&os.ModeSymlink != 0 {
 				if _, statErr := os.Stat(dir); os.IsNotExist(statErr) {
 					dangling = append(dangling, dir)
 				} else if statErr != nil {
-					return CheckResult{Name: id, Status: CheckStatusWarn, Detail: fmt.Sprintf("managed config symlink target %s could not be inspected: %v; inspect or repair it manually, then re-run 'gentle-ai doctor'", dir, statErr)}
+					return CheckResult{Name: id, Status: CheckStatusWarn, Detail: fmt.Sprintf("managed config symlink target %s could not be inspected: %v; inspect or repair it manually, then re-run 'teicos doctor'", dir, statErr)}
 				}
 			}
 		}
 	}
 
 	if len(dangling) > 0 {
-		detail := fmt.Sprintf("state lists %d agent(s) whose managed config paths are dangling symlinks: %s; inspect or repair these paths manually, then re-run 'gentle-ai doctor'", len(dangling), strings.Join(dangling, ", "))
+		detail := fmt.Sprintf("state lists %d agent(s) whose managed config paths are dangling symlinks: %s; inspect or repair these paths manually, then re-run 'teicos doctor'", len(dangling), strings.Join(dangling, ", "))
 		if len(missing) > 0 {
 			detail += "; genuinely absent config dirs: " + strings.Join(missing, ", ")
 		}
@@ -614,11 +614,11 @@ func checkStateJSON(homeDir string) CheckResult {
 	}
 
 	if len(unknown) > 0 {
-		detail := fmt.Sprintf("state lists unrecognized agent IDs: %s; inspect or repair the state file, then re-run 'gentle-ai doctor'", strings.Join(unknown, ", "))
+		detail := fmt.Sprintf("state lists unrecognized agent IDs: %s; inspect or repair the state file, then re-run 'teicos doctor'", strings.Join(unknown, ", "))
 		result := CheckResult{Name: id, Status: CheckStatusWarn, Detail: detail}
 		if len(missing) > 0 {
 			result.Detail += "; config dirs are missing: " + strings.Join(missing, ", ")
-			result.Remedy = doctor.NewRemedy(doctor.RemedySync, "Run 'gentle-ai sync' to restore missing config files")
+			result.Remedy = doctor.NewRemedy(doctor.RemedySync, "Run 'teicos sync' to restore missing config files")
 		}
 		return result
 	}
@@ -628,7 +628,7 @@ func checkStateJSON(homeDir string) CheckResult {
 			Name:   id,
 			Status: CheckStatusWarn,
 			Detail: fmt.Sprintf("state lists %d agent(s) whose config dirs are missing: %s", len(missing), strings.Join(missing, ", ")),
-			Remedy: doctor.NewRemedy(doctor.RemedySync, "Run 'gentle-ai sync' to restore missing config files"),
+			Remedy: doctor.NewRemedy(doctor.RemedySync, "Run 'teicos sync' to restore missing config files"),
 		}
 	}
 
@@ -665,7 +665,7 @@ func danglingAncestor(homeDir, path string) (string, error) {
 			// sync cannot mkdir below a regular file. POSIX surfaces this as
 			// ENOTDIR at the final lstat, but Windows reports it as not-exist,
 			// which is how the walk gets here.
-			return "", fmt.Errorf("ancestor %s is not a directory", ancestor) // refusal:by-design world-action: the caller embeds this cause in a warn that already names the continuation (inspect or repair the path, re-run 'gentle-ai doctor'); the repair itself happens on the filesystem, not through a command
+			return "", fmt.Errorf("ancestor %s is not a directory", ancestor) // refusal:by-design world-action: the caller embeds this cause in a warn that already names the continuation (inspect or repair the path, re-run 'teicos doctor'); the repair itself happens on the filesystem, not through a command
 		}
 		if _, err := os.Stat(ancestor); os.IsNotExist(err) {
 			return ancestor, nil
@@ -707,13 +707,13 @@ func checkEngramReachable(ctx context.Context, homeDir string, installedAgents [
 			Name:   id,
 			Status: CheckStatusFail,
 			Detail: "engram MCP persisted configuration is invalid: " + err.Error(),
-			Remedy: doctor.NewRemedy(doctor.RemedyInspectEngram, "Repair the persisted Engram MCP configuration, then run 'gentle-ai sync'"),
+			Remedy: doctor.NewRemedy(doctor.RemedyInspectEngram, "Repair the persisted Engram MCP configuration, then run 'teicos sync'"),
 		}
 	}
 	if len(commands) == 0 {
 		// Engram on Pi runs through gentle-engram's native tools, not an MCP
 		// server, so a Pi-only host has no Engram MCP entry by design and
-		// 'gentle-ai sync' would never create one.
+		// 'teicos sync' would never create one.
 		if onlyNativeEngramAgents(installedAgents) {
 			return CheckResult{
 				Name:   id,
@@ -725,7 +725,7 @@ func checkEngramReachable(ctx context.Context, homeDir string, installedAgents [
 			Name:   id,
 			Status: CheckStatusWarn,
 			Detail: "engram MCP not probed: no persisted MCP configuration found for installed agents",
-			Remedy: doctor.NewRemedy(doctor.RemedySync, "Run 'gentle-ai sync' to restore the Engram MCP configuration"),
+			Remedy: doctor.NewRemedy(doctor.RemedySync, "Run 'teicos sync' to restore the Engram MCP configuration"),
 		}
 	}
 
@@ -865,7 +865,7 @@ func renderDoctorReport(w io.Writer, report DoctorReport) {
 		}
 	}
 
-	fmt.Fprintln(w, "gentle-ai doctor — system health check")
+	fmt.Fprintln(w, "teicos doctor — system health check")
 	fmt.Fprintln(w, "=======================================")
 	fmt.Fprintln(w)
 

@@ -92,9 +92,9 @@ func NormalizeInstallFlags(flags InstallFlags, detection system.DetectionResult)
 			}
 			agents := strings.Join(agentNames, ",")
 			if scope != ScopeGlobal {
-				return InstallInput{}, fmt.Errorf("--claude-orchestrator-modules requires --scope global, got %q; rerun gentle-ai install --agent %s --scope global --claude-orchestrator-modules", scope, agents)
+				return InstallInput{}, fmt.Errorf("--claude-orchestrator-modules requires --scope global, got %q; rerun teicos install --agent %s --scope global --claude-orchestrator-modules", scope, agents)
 			}
-			return InstallInput{}, fmt.Errorf("--claude-orchestrator-modules requires the claude-code agent in the selection; rerun gentle-ai install --agent %s --scope global --claude-orchestrator-modules", agents)
+			return InstallInput{}, fmt.Errorf("--claude-orchestrator-modules requires the claude-code agent in the selection; rerun teicos install --agent %s --scope global --claude-orchestrator-modules", agents)
 		}
 	}
 
@@ -130,7 +130,7 @@ func validateInstallModifierConsumers(flags InstallFlags, selection model.Select
 			}
 		}
 		if !found {
-			return fmt.Errorf("%s requires component %s in the resolved install plan; rerun gentle-ai install with --component %s added to your existing component list, or remove %s", modifier.flag, modifier.consumer, modifier.consumer, modifier.flag)
+			return fmt.Errorf("%s requires component %s in the resolved install plan; rerun teicos install with --component %s added to your existing component list, or remove %s", modifier.flag, modifier.consumer, modifier.consumer, modifier.flag)
 		}
 	}
 	return nil
@@ -298,7 +298,7 @@ func defaultAgentsFromDetection(detection system.DetectionResult) []model.AgentI
 // by internal/app/app.go's default agent list -- so it can never drift from
 // a hand-written list (install/sync surface audit finding 3: an unknown
 // value like `cluade` previously converted silently and was later dropped
-// without any error, so `gentle-ai sync --agent cluade` reported success
+// without any error, so `teicos sync --agent cluade` reported success
 // having synced nothing).
 func asAgentIDs(values []string) ([]model.AgentID, error) {
 	supported := catalog.AllAgents()

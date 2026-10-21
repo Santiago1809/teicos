@@ -23,7 +23,7 @@ func hookWriters() []hookWriter {
 		{"claude retained hooks", model.AgentClaudeCode, "gentle-ai review stop-hook --agent claude-code", InstallRetainedClaudeHooks},
 		{"claude skill registry", model.AgentClaudeCode, "gentle-ai skill-registry refresh", InstallSkillRegistry},
 		{"codex skill registry", model.AgentCodex, "gentle-ai skill-registry refresh", InstallSkillRegistry},
-		{"codex telemetry", model.AgentCodex, "gentle-ai telemetry runtime codex --json", InstallCodexTelemetry},
+		{"codex telemetry", model.AgentCodex, "teicos telemetry runtime codex --json", InstallCodexTelemetry},
 	}
 }
 

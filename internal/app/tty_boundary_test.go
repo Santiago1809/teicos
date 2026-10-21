@@ -103,7 +103,7 @@ func TestRunArgsNoArgumentRequiresInteractiveStdinAndStdout(t *testing.T) {
 			if err == nil {
 				t.Fatalf("RunArgs(nil) error = nil, want non-nil terminal guidance")
 			}
-			for _, want := range []string{"--version", "gentle-ai update", "--help"} {
+			for _, want := range []string{"--version", "teicos update", "--help"} {
 				if !strings.Contains(err.Error(), want) {
 					t.Fatalf("RunArgs(nil) error = %q, want actionable guidance containing %q", err, want)
 				}
@@ -262,7 +262,7 @@ func TestBuiltBinaryClosedStdinRefusesBeforeBubbleTea(t *testing.T) {
 	}
 
 	combined := stdout.String() + stderr.String()
-	for _, want := range []string{"--version", "gentle-ai update", "--help"} {
+	for _, want := range []string{"--version", "teicos update", "--help"} {
 		if !strings.Contains(combined, want) {
 			t.Fatalf("built binary output = %q, want actionable guidance containing %q", combined, want)
 		}

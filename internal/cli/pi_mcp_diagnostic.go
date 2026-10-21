@@ -52,7 +52,7 @@ func inspectPiMCP(homeDir string) (string, error) {
 	if adapterPresent {
 		adapterStatus = "inactive"
 	}
-	return fmt.Sprintf("Pi built-in MCP is disabled in %s; pi-mcp-adapter is %s, so servers in %s will not load. If you want these servers enabled, remove -builtin:mcp from extensions in %s, then restart Pi and run `gentle-ai doctor`. If MCP is intentionally disabled, keep the setting.", settingsPath, adapterStatus, mcpPath, settingsPath), nil
+	return fmt.Sprintf("Pi built-in MCP is disabled in %s; pi-mcp-adapter is %s, so servers in %s will not load. If you want these servers enabled, remove -builtin:mcp from extensions in %s, then restart Pi and run `teicos doctor`. If MCP is intentionally disabled, keep the setting.", settingsPath, adapterStatus, mcpPath, settingsPath), nil
 }
 
 // Presence and activity are separate: npm dependencies cannot override an
@@ -106,7 +106,7 @@ func checkPiMCP(homeDir string) CheckResult {
 	const id doctor.CheckID = "pi:mcp"
 	warning, err := inspectPiMCP(homeDir)
 	if err != nil {
-		return CheckResult{Name: id, Status: CheckStatusWarn, Detail: fmt.Sprintf("Pi MCP configuration could not be inspected: %v; inspect or repair it manually, then run `gentle-ai doctor`", err)}
+		return CheckResult{Name: id, Status: CheckStatusWarn, Detail: fmt.Sprintf("Pi MCP configuration could not be inspected: %v; inspect or repair it manually, then run `teicos doctor`", err)}
 	}
 	if warning != "" {
 		return CheckResult{Name: id, Status: CheckStatusWarn, Detail: warning}

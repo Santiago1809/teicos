@@ -51,8 +51,8 @@ func InstallRetainedClaudeHooks(homeDir string, adapter agents.Adapter) (Result,
 	}{
 		{"Stop", "", command, 60, false},
 		{"SessionStart", "startup|resume|clear|compact", command, 30, false},
-		{"SubagentStop", "", "gentle-ai telemetry runtime claude --json", 5, true},
-		{"Stop", "", "gentle-ai telemetry runtime claude --json", 5, true},
+		{"SubagentStop", "", "teicos telemetry runtime claude --json", 5, true},
+		{"Stop", "", "teicos telemetry runtime claude --json", 5, true},
 	}
 	changed := false
 	for _, e := range entries {

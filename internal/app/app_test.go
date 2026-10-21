@@ -1492,7 +1492,7 @@ func TestLoadPersistedAssignmentsWiresEffort(t *testing.T) {
 	}
 }
 
-// TestVersionBeforeSystemGuards verifies that `gentle-ai version` returns the
+// TestVersionBeforeSystemGuards verifies that `teicos version` returns the
 // version string without going through system detection or platform guards.
 func TestVersionBeforeSystemGuards(t *testing.T) {
 	var buf bytes.Buffer
@@ -1526,15 +1526,15 @@ func TestHelpCommand(t *testing.T) {
 }
 
 // TestUnknownCommandSuggestsHelp verifies that an unrecognised command returns
-// an error whose message suggests running 'gentle-ai help'.
+// an error whose message suggests running 'teicos help'.
 func TestUnknownCommandSuggestsHelp(t *testing.T) {
 	var buf bytes.Buffer
 	err := RunArgs([]string{"notacommand"}, &buf)
 	if err == nil {
 		t.Fatal("unknown command should return error")
 	}
-	if !strings.Contains(err.Error(), "gentle-ai help") {
-		t.Error("unknown command error should suggest 'gentle-ai help'")
+	if !strings.Contains(err.Error(), "teicos help") {
+		t.Error("unknown command error should suggest 'teicos help'")
 	}
 }
 
@@ -2190,7 +2190,7 @@ func writeAppSDDStatusFile(t *testing.T, path string, content string) {
 }
 
 // TestRunArgs_TUIRestartsAfterGentleAIUpgradeResult verifies that when the TUI
-// reports a successful gentle-ai upgrade, RunArgs calls restartAfterGentleAIUpgrade
+// reports a successful teicos upgrade, RunArgs calls restartAfterGentleAIUpgrade
 // which (after task 4.6) prints the restart guidance message instead of re-execing.
 func TestRunArgs_TUIRestartsAfterGentleAIUpgradeResult(t *testing.T) {
 	assumeInteractiveTTY(t)
@@ -2533,7 +2533,7 @@ func TestRunArgs_PendingSync_PrintsDoctorAdvisory(t *testing.T) {
 	}
 
 	out := buf.String()
-	if !strings.Contains(out, "Run 'gentle-ai doctor' to verify ecosystem health after upgrade") {
+	if !strings.Contains(out, "Run 'teicos doctor' to verify ecosystem health after upgrade") {
 		t.Errorf("stdout = %q, want doctor advisory when PendingSync=true on launch", out)
 	}
 }
@@ -2587,7 +2587,7 @@ func TestRunArgs_PendingSync_PrintsDoctorAdvisoryEvenOnSyncFailure(t *testing.T)
 	}
 
 	out := buf.String()
-	if !strings.Contains(out, "Run 'gentle-ai doctor' to verify ecosystem health after upgrade") {
+	if !strings.Contains(out, "Run 'teicos doctor' to verify ecosystem health after upgrade") {
 		t.Errorf("stdout = %q, want doctor advisory even when deferred sync fails", out)
 	}
 }

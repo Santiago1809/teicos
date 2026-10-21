@@ -388,7 +388,7 @@ func (r RetireResult) ManualActions() []string {
 		}
 	}
 	for _, reference := range r.Referenced {
-		actions = append(actions, fmt.Sprintf("%s still references retired SDD agent files %s, so they were kept to avoid breaking it. SDD was retired in v4.0.0: remove those subagent entries from it (or move or delete it), then rerun `gentle-ai sync` to retire them.", reference.Parent, strings.Join(reference.Agents, ", ")))
+		actions = append(actions, fmt.Sprintf("%s still references retired SDD agent files %s, so they were kept to avoid breaking it. SDD was retired in v4.0.0: remove those subagent entries from it (or move or delete it), then rerun `teicos sync` to retire them.", reference.Parent, strings.Join(reference.Agents, ", ")))
 	}
 	return actions
 }

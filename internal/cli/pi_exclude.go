@@ -44,7 +44,7 @@ func validatePiExcludePackages(flagValues []string, agents []model.AgentID) ([]s
 		source, remedy = PiExcludePackagesEnv, "unset "+PiExcludePackagesEnv
 	}
 	if !containsAgent(agents, model.AgentPi) {
-		return nil, fmt.Errorf("%s requires the pi agent in the resolved install plan; rerun gentle-ai install with pi added to your existing agent list, or %s", source, remedy)
+		return nil, fmt.Errorf("%s requires the pi agent in the resolved install plan; rerun teicos install with pi added to your existing agent list, or %s", source, remedy)
 	}
 	if err := piagent.ValidateExcludedPackageSources(excluded); err != nil {
 		return nil, fmt.Errorf("%s: %w", source, err)

@@ -283,12 +283,12 @@ func TestMergeExplicitAgentInstallStateFailsHonestlyOnCorruptState(t *testing.T)
 }
 
 // TestRunInstallFailsHonestlyWhenExistingStateIsCorruptDuringExplicitAgentInstall
-// closes install/sync surface audit finding 2: previously, `gentle-ai install
+// closes install/sync surface audit finding 2: previously, `teicos install
 // --agent X` against a corrupted ~/.gentle-ai/state.json completed the whole
 // pipeline (files written, verification passed) and RunInstall returned
 // (result, nil) -- reported success -- WITHOUT ever calling state.Write. The
 // user believed the install fully completed; state.json stayed corrupted
-// forever, silently breaking every future `gentle-ai sync`.
+// forever, silently breaking every future `teicos sync`.
 func TestRunInstallFailsHonestlyWhenExistingStateIsCorruptDuringExplicitAgentInstall(t *testing.T) {
 	home := t.TempDir()
 	original := osUserHomeDir

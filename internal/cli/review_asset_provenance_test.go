@@ -354,7 +354,7 @@ func TestManagedAssetsStopTransitionCarriesExactlyOneSignal(t *testing.T) {
 	// caller reading both would not know which one to trust.
 	executeWithContinuation := converged
 	bogusTransition := *converged.NextTransition
-	bogusTransition.Continuation = &ReviewStopContinuation{Operation: "sync", Command: "gentle-ai sync --agent opencode", Agent: "opencode"}
+	bogusTransition.Continuation = &ReviewStopContinuation{Operation: "sync", Command: "teicos sync --agent opencode", Agent: "opencode"}
 	executeWithContinuation.NextTransition = &bogusTransition
 	if err := executeWithContinuation.Validate(); err == nil {
 		t.Fatal("STATUS accepted a sync continuation attached to an executable START transition")
@@ -430,12 +430,12 @@ func TestManagedAssetsContinuationUsesInvokingExecutable(t *testing.T) {
 		"posix path over the safe bare class stays bare": {
 			executable: func() (string, error) { return `/opt/gentle-ai/bin/gentle-ai`, nil },
 			goos:       "linux",
-			want:       `/opt/gentle-ai/bin/gentle-ai sync --agent opencode`,
+			want:       `/opt/gentle-ai/bin/teicos sync --agent opencode`,
 		},
 		"unresolvable executable keeps the bare fallback": {
 			executable: func() (string, error) { return "", errors.New("unresolvable") },
 			goos:       "linux",
-			want:       `gentle-ai sync --agent opencode`,
+			want:       `teicos sync --agent opencode`,
 		},
 	} {
 		t.Run(name, func(t *testing.T) {
@@ -463,9 +463,9 @@ func TestManagedAssetsContinuationUsesInvokingExecutable(t *testing.T) {
 	}
 
 	// The published contract itself must refuse a shell-significant bare
-	// executable token: `/opt/$HOME/gentle-ai sync` unquoted is exactly the
+	// executable token: `/opt/$HOME/teicos sync` unquoted is exactly the
 	// shape a POSIX shell would expand into the wrong binary.
-	if validManagedAssetsContinuationCommand(`/opt/$HOME/gentle-ai sync --agent pi`) {
+	if validManagedAssetsContinuationCommand(`/opt/$HOME/teicos sync --agent pi`) {
 		t.Fatal("published pattern accepted a shell-significant bare executable token")
 	}
 
@@ -591,13 +591,13 @@ func TestManagedAssetsContinuationRejectsUnsafeExecutableIdentities(t *testing.T
 			name:       "multiline argv zero falls through to canonical fallback",
 			resolveErr: errors.New("executable unavailable"),
 			argvZero:   filepath.Join(t.TempDir(), "gentle\rai"),
-			want:       "gentle-ai sync --agent opencode",
+			want:       "teicos sync --agent opencode",
 		},
 		{
 			name:       "relative argv zero falls through to canonical fallback",
 			resolveErr: errors.New("executable unavailable"),
 			argvZero:   "gentle-ai",
-			want:       "gentle-ai sync --agent opencode",
+			want:       "teicos sync --agent opencode",
 		},
 	} {
 		t.Run(test.name, func(t *testing.T) {

@@ -3418,7 +3418,7 @@ func reportUpgradedGentleAI(report upgrade.UpgradeReport) bool {
 	return false
 }
 
-// GentleAIUpgradeVersion returns the upgraded gentle-ai version when the current
+// GentleAIUpgradeVersion returns the upgraded teicos version when the current
 // TUI result requires restarting the app before continuing with config sync.
 func (m Model) GentleAIUpgradeVersion() (string, bool) {
 	if m.UpgradeReport == nil {

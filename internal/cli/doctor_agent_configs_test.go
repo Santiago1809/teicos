@@ -56,7 +56,7 @@ func TestRunDoctor_AgentConfigDirectories(t *testing.T) {
 					t.Fatalf("missing exact state result %q:\n%s", want, output)
 				}
 				if !present {
-					if !strings.Contains(output, "Run 'gentle-ai sync' to restore missing config files") {
+					if !strings.Contains(output, "Run 'teicos sync' to restore missing config files") {
 						t.Fatalf("missing sync remedy:\n%s", output)
 					}
 					if _, err := os.Lstat(dir); !os.IsNotExist(err) {
@@ -76,8 +76,8 @@ func TestRunDoctor_AgentConfigSpecialCases(t *testing.T) {
 		{"kimi current", `{"installed_agents":["kimi"]}`, "  [ok]  state:json                     state file OK — 1 agent(s) installed: kimi", []string{".kimi-code"}},
 		{"kimi both layouts", `{"installed_agents":["kimi"]}`, "  [ok]  state:json                     state file OK — 1 agent(s) installed: kimi", []string{".kimi", ".kimi-code"}},
 		{"conductor detection only", `{"installed_agents":["conductor"]}`, "  [ok]  state:json                     state file OK — 1 agent(s) installed: conductor", nil},
-		{"unknown", `{"installed_agents":["future-agent"]}`, "  [!!]  state:json                     state lists unrecognized agent IDs: future-agent; inspect or repair the state file, then re-run 'gentle-ai doctor'", nil},
-		{"unknown and missing", `{"installed_agents":["future-agent","pi"]}`, "  [!!]  state:json                     state lists unrecognized agent IDs: future-agent; inspect or repair the state file, then re-run 'gentle-ai doctor'; config dirs are missing: pi", nil},
+		{"unknown", `{"installed_agents":["future-agent"]}`, "  [!!]  state:json                     state lists unrecognized agent IDs: future-agent; inspect or repair the state file, then re-run 'teicos doctor'", nil},
+		{"unknown and missing", `{"installed_agents":["future-agent","pi"]}`, "  [!!]  state:json                     state lists unrecognized agent IDs: future-agent; inspect or repair the state file, then re-run 'teicos doctor'; config dirs are missing: pi", nil},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -92,10 +92,10 @@ func TestRunDoctor_AgentConfigSpecialCases(t *testing.T) {
 				t.Fatalf("missing exact state result %q:\n%s", tt.want, output)
 			}
 			if tt.name == "unknown and missing" {
-				if !strings.Contains(output, "       Remedy: Run 'gentle-ai sync' to restore missing config files\n") {
+				if !strings.Contains(output, "       Remedy: Run 'teicos sync' to restore missing config files\n") {
 					t.Fatalf("missing sync remedy for absent managed config:\n%s", output)
 				}
-			} else if strings.Contains(output, "gentle-ai sync") {
+			} else if strings.Contains(output, "teicos sync") {
 				t.Fatalf("unexpected sync remedy:\n%s", output)
 			}
 		})

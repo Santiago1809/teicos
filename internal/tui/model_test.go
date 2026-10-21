@@ -2038,7 +2038,7 @@ func TestReportUpgradedGentleAI(t *testing.T) {
 
 	report.Results[1].Status = upgrade.UpgradeFailed
 	if reportUpgradedGentleAI(report) {
-		t.Fatal("reportUpgradedGentleAI() = true for failed gentle-ai upgrade")
+		t.Fatal("reportUpgradedGentleAI() = true for failed teicos upgrade")
 	}
 }
 
@@ -5473,7 +5473,7 @@ func TestStartUpgradeSync_DoesNotSetPendingSyncWhenGentleAINotUpgraded(t *testin
 		}
 		// File absent → PendingSync was never set — correct.
 	} else if s.PendingSync {
-		t.Errorf("PendingSync = true after non-gentle-ai upgrade, want false")
+		t.Errorf("PendingSync = true after non-teicos upgrade, want false")
 	}
 
 	// Verify SyncDoneMsg arrived.

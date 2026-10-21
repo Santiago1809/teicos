@@ -186,7 +186,7 @@ type ReviewIntegrationFailure struct {
 	Context *ReviewIntegrationFailureContext `json:"context,omitempty"`
 	// Continuation is the one candidate-preserving runnable follow-up a
 	// managed_assets_outdated refusal can offer (#3299, #4170): the exact
-	// `gentle-ai sync` invocation that reconciles the recorded digest. It is
+	// `teicos sync` invocation that reconciles the recorded digest. It is
 	// additive and, on THIS envelope, only ever set for that one refusal code;
 	// the release continuation the type also carries travels on a STATUS stop,
 	// never here.

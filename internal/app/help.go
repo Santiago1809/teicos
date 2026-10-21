@@ -6,15 +6,15 @@ import (
 )
 
 func printHelp(w io.Writer, version string) {
-	fmt.Fprintf(w, `gentle-ai — Gentle-AI: The wall in the code (%s)
+	fmt.Fprintf(w, `teicos — The wall in the code (%s)
 
 USAGE
-  gentle-ai                     Launch interactive TUI
-  gentle-ai <command> [flags]
+  teicos                        Launch interactive TUI
+  teicos <command> [flags]
 
 COMMANDS
   install      Configure AI coding agents on this machine
-  uninstall    Remove Gentle AI managed files from this machine
+  uninstall    Remove Teicos managed files from this machine
   sync         Sync agent configs and skills to current version
   codegraph init --cwd <project-root>
                Initialize a project's CodeGraph index; codegraph [init] --help shows local help
@@ -72,7 +72,7 @@ COMPATIBILITY COMMANDS
 FLAGS
   --help, -h    Show global help; every review subcommand also supports help
 
-Run 'gentle-ai help' for this message.
-Documentation: https://github.com/Gentleman-Programming/gentle-ai
+Run 'teicos help' for this message.
+Documentation: https://github.com/Santiago1809/teicos
 `, version)
 }

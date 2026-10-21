@@ -15,9 +15,9 @@ func TestRunInstallRejectsOrphanModifiers(t *testing.T) {
 		args []string
 		want string
 	}{
-		{"persona", []string{"--persona", "neutral"}, "--persona requires component persona in the resolved install plan; rerun gentle-ai install with --component persona added to your existing component list, or remove --persona"},
-		{"skill", []string{"--skill", "go-testing"}, "--skill/--skills requires component skills in the resolved install plan; rerun gentle-ai install with --component skills added to your existing component list, or remove --skill/--skills"},
-		{"skills", []string{"--skills", "go-testing"}, "--skill/--skills requires component skills in the resolved install plan; rerun gentle-ai install with --component skills added to your existing component list, or remove --skill/--skills"},
+		{"persona", []string{"--persona", "neutral"}, "--persona requires component persona in the resolved install plan; rerun teicos install with --component persona added to your existing component list, or remove --persona"},
+		{"skill", []string{"--skill", "go-testing"}, "--skill/--skills requires component skills in the resolved install plan; rerun teicos install with --component skills added to your existing component list, or remove --skill/--skills"},
+		{"skills", []string{"--skills", "go-testing"}, "--skill/--skills requires component skills in the resolved install plan; rerun teicos install with --component skills added to your existing component list, or remove --skill/--skills"},
 	} {
 		for _, dryRun := range []bool{true, false} {
 			name := tc.name + "/real"

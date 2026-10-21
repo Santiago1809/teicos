@@ -61,7 +61,7 @@ func Run() error {
 	return RunArgs(os.Args[1:], os.Stdout)
 }
 
-const nonInteractiveTUIError = "gentle-ai requires both stdin and stdout to be terminals (TTYs); use --version, gentle-ai update, or --help for non-interactive use"
+const nonInteractiveTUIError = "gentle-ai requires both stdin and stdout to be terminals (TTYs); use --version, teicos update, or --help for non-interactive use"
 
 // clearPendingSyncAfterDeferredSync clears PendingSync under the canonical
 // install-state lock. It re-reads the latest state inside the lock so changes
@@ -346,7 +346,7 @@ func RunArgs(args []string, stdout io.Writer) error {
 	case "doctor":
 		return cli.RunDoctor(context.Background(), stdout)
 	default:
-		return fmt.Errorf("unknown command %q — run 'gentle-ai help' for available commands", args[0])
+		return fmt.Errorf("unknown command %q — run 'teicos help' for available commands", args[0])
 	}
 }
 
@@ -548,7 +548,7 @@ func runUpdate(ctx context.Context, currentVersion string, profile system.Platfo
 	return nil
 }
 
-// runUpgrade handles the `gentle-ai upgrade [--dry-run] [tool...]` command.
+// runUpgrade handles the `teicos upgrade [--dry-run] [tool...]` command.
 //
 // This command:
 //   - Checks for available updates for managed tools (gentle-ai, engram, gga)

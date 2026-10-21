@@ -75,7 +75,7 @@ func defaultPromptForUpdate(stdout io.Writer, stdin io.Reader, currentVersion, l
 // selfUpdateTimeout is the maximum time allowed for the update check + upgrade.
 const selfUpdateTimeout = 7 * time.Second
 
-// selfUpdate checks for and applies a gentle-ai update before normal dispatch.
+// selfUpdate checks for and applies a teicos update before normal dispatch.
 // Returns nil on success or skip; errors are non-fatal (caller logs and continues).
 //
 // Guard evaluation order (per spec):
@@ -227,15 +227,15 @@ func restartAfterGentleAIUpgrade(latestVersion string, stdout io.Writer) error {
 }
 
 // printPostUpgradeDoctorAdvisory prints a non-blocking informational advisory
-// suggesting the user run 'gentle-ai doctor' to verify ecosystem health after
-// a successful gentle-ai upgrade. It is purely informational: it does not run
+// suggesting the user run 'teicos doctor' to verify ecosystem health after
+// a successful teicos upgrade. It is purely informational: it does not run
 // any checks, does not change exit status, and does not block the upgrade.
 //
 // The advisory is shown in two places:
-//  1. After a successful `gentle-ai upgrade` CLI invocation (printed by runUpgrade).
+//  1. After a successful `teicos upgrade` CLI invocation (printed by runUpgrade).
 //  2. On the next launch under the new binary when PendingSync=true is observed
 //     (covers the TUI self-update path, where the new binary was not yet running
 //     when the upgrade completed).
 func printPostUpgradeDoctorAdvisory(stdout io.Writer) {
-	_, _ = fmt.Fprintf(stdout, "\n[info]    Run 'gentle-ai doctor' to verify ecosystem health after upgrade\n")
+	_, _ = fmt.Fprintf(stdout, "\n[info]    Run 'teicos doctor' to verify ecosystem health after upgrade\n")
 }

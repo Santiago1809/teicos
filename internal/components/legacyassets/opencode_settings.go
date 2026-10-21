@@ -450,10 +450,10 @@ func (r OpenCodeSettingsResult) ManualActions() []string {
 		if !strings.HasSuffix(r.Path, ".jsonc") {
 			// Gentle AI's writers re-encode plain JSON, so its comments do not
 			// survive them; promising to keep the notes would be false.
-			actions = append(actions, fmt.Sprintf("Retired SDD agent %s in %s was not removed in this run because comments are attached to it. %s is plain JSON, whose comments Gentle AI's settings writers do not preserve, so a later `gentle-ai sync` removes this entry once they are gone. SDD was retired in v4.0.0: copy any notes you want to keep elsewhere, then move or delete the entry.", entry, r.Path, filepath.Base(r.Path)))
+			actions = append(actions, fmt.Sprintf("Retired SDD agent %s in %s was not removed in this run because comments are attached to it. %s is plain JSON, whose comments Gentle AI's settings writers do not preserve, so a later `teicos sync` removes this entry once they are gone. SDD was retired in v4.0.0: copy any notes you want to keep elsewhere, then move or delete the entry.", entry, r.Path, filepath.Base(r.Path)))
 			continue
 		}
-		actions = append(actions, fmt.Sprintf("Retired SDD agent %s in %s was kept because comments are attached to it: Gentle AI wrote this entry, but removing it would discard your notes. SDD was retired in v4.0.0: move your comments and then move or delete it, or rerun `gentle-ai sync` to retire it.", entry, r.Path))
+		actions = append(actions, fmt.Sprintf("Retired SDD agent %s in %s was kept because comments are attached to it: Gentle AI wrote this entry, but removing it would discard your notes. SDD was retired in v4.0.0: move your comments and then move or delete it, or rerun `teicos sync` to retire it.", entry, r.Path))
 	}
 	return actions
 }

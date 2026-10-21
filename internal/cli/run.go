@@ -123,7 +123,7 @@ var (
 	probeEngramProtocolFlag        = engram.ProbeProtocolFlag
 	probeEngramProtocolFlagCommand = engram.ProbeProtocolFlagCommand
 
-	// AppVersion is the gentle-ai version that will be written into backup manifests.
+	// AppVersion is the teicos version that will be written into backup manifests.
 	// It is set by app.go before any CLI operation so that every backup created during
 	// an install or sync records which version of gentle-ai made it.
 	// Default "dev" matches the ldflags default in app.Version.
@@ -340,7 +340,7 @@ func RunPreparedInstall(prepared PreparedInstall, detection system.DetectionResu
 		agentIDs = append(agentIDs, string(a))
 	}
 
-	// When the user ran `gentle-ai install --agent X` (explicit agent flag),
+	// When the user ran `teicos install --agent X` (explicit agent flag),
 	// merge into the existing state so that previously installed agents and
 	// model assignments are preserved. A full install (no --agent flag) keeps
 	// overwrite semantics so the TUI selection is the source of truth.
@@ -554,7 +554,7 @@ func withReadyAgentRunNote(report verify.Report, resolved planner.ResolvedPlan) 
 
 // withFailedVerificationNote replaces the generic verify.VerificationIssuesMessage
 // with one naming the concrete command that retries the install for the
-// agents that were actually resolved this run: `gentle-ai install --agent
+// agents that were actually resolved this run: `teicos install --agent
 // <agent1>,<agent2>`. There is no `repair` case in the CLI dispatcher
 // (internal/app/app.go), so the old generic text named a command that could
 // never succeed -- a false continuation worse than no note at all.
@@ -573,7 +573,7 @@ func withFailedVerificationNote(report verify.Report, resolved planner.ResolvedP
 	for i, agent := range resolved.Agents {
 		names[i] = string(agent)
 	}
-	report.FinalNote = verify.VerificationIssuesMessageForCommand("gentle-ai install --agent " + strings.Join(names, ","))
+	report.FinalNote = verify.VerificationIssuesMessageForCommand("teicos install --agent " + strings.Join(names, ","))
 	return report
 }
 
@@ -1303,7 +1303,7 @@ func (s retiredOpenCodeSDDSettingsStep) Run() error {
 }
 
 func nativeReviewPreservedAction(path string) string {
-	return fmt.Sprintf("Native review agent %s was preserved, not updated: ownership cannot be verified (missing ledger entry or differing recorded hash). This does not mean you customized the file. Keeping it unchanged is valid. To opt into management, back up this file and verify the backup, remove only this warned file, then rerun your existing gentle-ai install or gentle-ai sync command with the same runtime, scope, and model choices. See docs/rollback.md for per-file recovery. Gentle AI will not adopt or delete it automatically.", path)
+	return fmt.Sprintf("Native review agent %s was preserved, not updated: ownership cannot be verified (missing ledger entry or differing recorded hash). This does not mean you customized the file. Keeping it unchanged is valid. To opt into management, back up this file and verify the backup, remove only this warned file, then rerun your existing teicos install or teicos sync command with the same runtime, scope, and model choices. See docs/rollback.md for per-file recovery. Gentle AI will not adopt or delete it automatically.", path)
 }
 
 type managedOpenCodePluginsInstallStep struct {
@@ -2618,7 +2618,7 @@ type prepareBackupStep struct {
 	source      backup.BackupSource
 	description string
 
-	// appVersion is the gentle-ai version that created this backup.
+	// appVersion is the teicos version that created this backup.
 	// When set, it is written into the manifest as CreatedByVersion.
 	appVersion string
 }
@@ -4523,7 +4523,7 @@ func runPostApplyVerification(input postApplyVerificationInput) verify.Report {
 						}
 						return err
 					}
-					return fmt.Errorf("retired managed file still exists; rerun `gentle-ai sync` to finish retiring it")
+					return fmt.Errorf("retired managed file still exists; rerun `teicos sync` to finish retiring it")
 				},
 			})
 			continue
@@ -4671,7 +4671,7 @@ func engramHealthChecks(state *runtimeState, agentIDs []model.AgentID) []verify.
 // engramInstallCommand names the install continuation for a missing engram
 // binary so the warning that reports it is actionable on its own.
 func engramInstallCommand(agentIDs []model.AgentID) string {
-	return fmt.Sprintf("gentle-ai install --agent %s --components engram", joinAgentIDs(agentIDs))
+	return fmt.Sprintf("teicos install --agent %s --components engram", joinAgentIDs(agentIDs))
 }
 
 // antigravityCollisionCheck returns a soft verify check that warns the user
@@ -4742,7 +4742,7 @@ func (s checkDependenciesStep) Run() error {
 	for _, component := range s.resolved.OrderedComponents {
 		if betaEngramRequiresGo(s.channel, component) {
 			if _, err := cmdLookPath("go"); err != nil {
-				return fmt.Errorf("beta Engram requires Go; stopped before backup or component apply. Run `%s`, restart the terminal, then rerun your original `gentle-ai install` command", system.InstallHintForDep("go", s.profile))
+				return fmt.Errorf("beta Engram requires Go; stopped before backup or component apply. Run `%s`, restart the terminal, then rerun your original `teicos install` command", system.InstallHintForDep("go", s.profile))
 			}
 			break
 		}

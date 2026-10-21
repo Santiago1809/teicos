@@ -844,9 +844,9 @@ func failureManualActions(failures []operationFailure, batch []model.AgentID, ho
 		if location == "" {
 			location = homeDir
 		}
-		command := "gentle-ai uninstall --all --yes"
+		command := "teicos uninstall --all --yes"
 		if len(retry) > 0 {
-			command = "gentle-ai uninstall " + strings.Join(retry, " ") + " --yes"
+			command = "teicos uninstall " + strings.Join(retry, " ") + " --yes"
 		}
 		actions = append(actions, fmt.Sprintf(
 			"Uninstall did not complete for %s at %s: %v. Those agents are still recorded in %s. Resolve the file, then rerun `%s`.",
@@ -1356,8 +1356,8 @@ func managedRetainedHookCommand(cmd string) bool {
 	return cmd == `gentle-ai skill-registry refresh --quiet --no-gitignore --cwd "${CLAUDE_PROJECT_DIR:-$PWD}" || true` ||
 		cmd == `gentle-ai skill-registry refresh --quiet --no-gitignore --cwd "$PWD" || true` ||
 		cmd == "gentle-ai review stop-hook --agent "+string(model.AgentClaudeCode) ||
-		cmd == "gentle-ai telemetry runtime claude --json" ||
-		cmd == "gentle-ai telemetry runtime codex --json"
+		cmd == "teicos telemetry runtime claude --json" ||
+		cmd == "teicos telemetry runtime codex --json"
 }
 
 // removeSkillRegistryHook removes the managed hook commands. Strict JSON is

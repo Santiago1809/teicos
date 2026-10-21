@@ -296,7 +296,7 @@ func (r AssetRetireResult) ManualActions() []string {
 			actions = append(actions, fmt.Sprintf("Retired SDD workflow %s was preserved: its content differs from every render a Gentle AI release wrote (for example, it carries model assignments you customized), so it may contain your changes. SDD was retired in v4.0.0 and Claude Code no longer reads this file; if you no longer need it, move or delete it.", path))
 			continue
 		}
-		actions = append(actions, fmt.Sprintf("Retired SDD file %s was preserved: Gentle AI cannot prove it wrote this file (its content differs from every released version, or it is not a regular file), so it may contain your changes. SDD was retired in v4.0.0 and this file is no longer maintained; if you no longer need it, move or delete it, then rerun `gentle-ai sync` to retire the SDD files kept beside it.", path))
+		actions = append(actions, fmt.Sprintf("Retired SDD file %s was preserved: Gentle AI cannot prove it wrote this file (its content differs from every released version, or it is not a regular file), so it may contain your changes. SDD was retired in v4.0.0 and this file is no longer maintained; if you no longer need it, move or delete it, then rerun `teicos sync` to retire the SDD files kept beside it.", path))
 	}
 	return actions
 }

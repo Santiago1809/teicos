@@ -53,7 +53,7 @@ func updateHint(tool ToolInfo, profile system.PlatformProfile) string {
 	case "gga":
 		return ggaHint(profile)
 	case "opencode-subagent-statusline", "opencode-sdd-engram-manage":
-		return "gentle-ai upgrade updates ~/.config/opencode npm deps, clears this plugin's @latest cache, then requires OpenCode restart/reload"
+		return "teicos upgrade updates ~/.config/opencode npm deps, clears this plugin's @latest cache, then requires OpenCode restart/reload"
 	default:
 		return ""
 	}
@@ -79,7 +79,7 @@ func gentleAIHint(profile system.PlatformProfile) string {
 	case "linux":
 		return "curl -fsSL https://raw.githubusercontent.com/Santiago1809/teicos/main/scripts/install.sh | bash"
 	case "darwin":
-		return "gentle-ai upgrade (downloads pre-built binary)"
+		return "teicos upgrade (downloads pre-built binary)"
 	case "windows":
 		return WindowsDistributionHoldMessage + " Install/update from source with Go 1.25.10+: " + GentleAISourceInstallCommand("")
 	default:
@@ -91,7 +91,7 @@ func engramHint(profile system.PlatformProfile) string {
 	if profile.PackageManager == "brew" && homebrewPackageInstalled("engram") {
 		return "brew upgrade engram"
 	}
-	return "gentle-ai upgrade (downloads pre-built binary)"
+	return "teicos upgrade (downloads pre-built binary)"
 }
 
 func ggaHint(profile system.PlatformProfile) string {

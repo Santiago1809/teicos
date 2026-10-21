@@ -130,9 +130,9 @@ func (e *PartialSyncError) Error() string {
 // error and the TUI manual actions.
 func (s SyncSkippedAgent) Action() string {
 	if s.Part != "" {
-		return fmt.Sprintf("%s %s were skipped: %s; then re-run `gentle-ai sync`", s.Agent, s.Part, s.Reason)
+		return fmt.Sprintf("%s %s were skipped: %s; then re-run `teicos sync`", s.Agent, s.Part, s.Reason)
 	}
-	return fmt.Sprintf("%s was skipped: %s; then re-run `gentle-ai sync`", s.Agent, s.Reason)
+	return fmt.Sprintf("%s was skipped: %s; then re-run `teicos sync`", s.Agent, s.Reason)
 }
 
 // skipUndetectableOpenCode probes the OpenCode runtime once per sync, before
@@ -207,9 +207,9 @@ func ParseSyncFlags(args []string) (SyncFlags, error) {
 		}
 		usageText = strings.TrimRight(usageText, "\n")
 		if usageText != "" {
-			return SyncFlags{}, fmt.Errorf("%w — run `gentle-ai sync --help` for the supported flags:\n%s", err, usageText)
+			return SyncFlags{}, fmt.Errorf("%w — run `teicos sync --help` for the supported flags:\n%s", err, usageText)
 		}
-		return SyncFlags{}, fmt.Errorf("%w — run `gentle-ai sync --help` for the supported flags", err)
+		return SyncFlags{}, fmt.Errorf("%w — run `teicos sync --help` for the supported flags", err)
 	}
 	fs.Visit(func(f *flag.Flag) {
 		switch f.Name {
@@ -229,7 +229,7 @@ func ParseSyncFlags(args []string) (SyncFlags, error) {
 	})
 
 	if opts.strictTDDSet {
-		return SyncFlags{}, fmt.Errorf("--strict-tdd is retired: ODD uses applicable test-first development by default; rerun `gentle-ai sync` without --strict-tdd (retain any other flags)")
+		return SyncFlags{}, fmt.Errorf("--strict-tdd is retired: ODD uses applicable test-first development by default; rerun `teicos sync` without --strict-tdd (retain any other flags)")
 	}
 
 	if fs.NArg() > 0 {
@@ -241,7 +241,7 @@ func ParseSyncFlags(args []string) (SyncFlags, error) {
 
 func PrintSyncHelp(w io.Writer) {
 	fmt.Fprint(w, `USAGE
-  gentle-ai sync [flags]
+  teicos sync [flags]
 
 FLAGS
   --agent, --agents <list>           Agents to sync
@@ -1100,7 +1100,7 @@ func (s *openCodeMarkerMigrationSyncStep) Run() error {
 		return fmt.Errorf("stat OpenCode settings: %w", err)
 	}
 	if !info.Mode().IsRegular() {
-		return fmt.Errorf("refuse non-regular OpenCode settings %q: inspect the path and use a regular settings file (not a symlink), then rerun gentle-ai sync", s.path)
+		return fmt.Errorf("refuse non-regular OpenCode settings %q: inspect the path and use a regular settings file (not a symlink), then rerun teicos sync", s.path)
 	}
 	raw, err := os.ReadFile(s.path)
 	if err != nil {
@@ -1155,7 +1155,7 @@ func (s openCodeModelAssignmentSyncStep) Run() error {
 	// independently refuses leaf links at publication time.
 	info, err := os.Lstat(s.path)
 	if err == nil && !info.Mode().IsRegular() {
-		return fmt.Errorf("refuse non-regular OpenCode settings %q: move the symlink or directory aside, place a regular file at this path, then rerun `gentle-ai sync`", s.path)
+		return fmt.Errorf("refuse non-regular OpenCode settings %q: move the symlink or directory aside, place a regular file at this path, then rerun `teicos sync`", s.path)
 	}
 	if err != nil && !os.IsNotExist(err) {
 		return fmt.Errorf("stat OpenCode settings: %w", err)
@@ -2104,7 +2104,7 @@ func runSyncWithSelectionScope(homeDir string, selection model.Selection, scope 
 	if scope == ScopeGlobal && containsAgent(agentIDs, model.AgentPi) {
 		warning, inspectErr := inspectPiMCP(homeDir)
 		if inspectErr != nil {
-			warning = fmt.Sprintf("Pi MCP configuration could not be inspected: %v; inspect or repair it manually, then run `gentle-ai doctor`", inspectErr)
+			warning = fmt.Sprintf("Pi MCP configuration could not be inspected: %v; inspect or repair it manually, then run `teicos doctor`", inspectErr)
 		}
 		if warning != "" {
 			result.ManualActions = append(result.ManualActions, "WARNING: "+warning)
@@ -2186,7 +2186,7 @@ func persistSyncManagedAssetStateWithBackground(homeDir string, selection model.
 			latest = state.InstallState{}
 		} else if err != nil {
 			return fmt.Errorf(
-				"read install state for managed asset provenance: %w; run `gentle-ai install` to rewrite %s",
+				"read install state for managed asset provenance: %w; run `teicos install` to rewrite %s",
 				err, state.Path(homeDir))
 		}
 
@@ -2327,7 +2327,7 @@ func RunSync(args []string) (SyncResult, error) {
 	}
 
 	// Restore Codex effort and carril model assignments from state so that
-	// `gentle-ai sync` preserves the user's per-phase effort and per-carril
+	// `teicos sync` preserves the user's per-phase effort and per-carril
 	// model choices instead of falling back to canonical defaults every time.
 	// This mirrors the TUI path (loadPersistedAssignments in app.go).
 	if len(selection.CodexModelAssignments) == 0 && len(persistedState.CodexModelAssignments) > 0 {
@@ -2570,7 +2570,7 @@ func RenderSyncReport(result SyncResult) string {
 	}
 
 	if result.NoOp {
-		fmt.Fprintln(&b, "gentle-ai sync — no managed sync actions needed")
+		fmt.Fprintln(&b, "teicos sync — no managed sync actions needed")
 		if len(result.Agents) == 0 {
 			fmt.Fprintln(&b, "No agents were discovered or specified. Nothing to sync.")
 		} else {
@@ -2588,7 +2588,7 @@ func RenderSyncReport(result SyncResult) string {
 	}
 
 	if result.DryRun {
-		fmt.Fprintln(&b, "gentle-ai sync — dry-run")
+		fmt.Fprintln(&b, "teicos sync — dry-run")
 		fmt.Fprintf(&b, "Agents: %s\n", joinAgentIDs(result.Agents))
 
 		compParts := make([]string, 0, len(result.Selection.Components))
@@ -2607,7 +2607,7 @@ func RenderSyncReport(result SyncResult) string {
 		return strings.TrimRight(b.String(), "\n")
 	}
 
-	fmt.Fprintln(&b, "gentle-ai sync — managed sync executed")
+	fmt.Fprintln(&b, "teicos sync — managed sync executed")
 	fmt.Fprintf(&b, "Agents synced: %s\n", joinAgentIDs(result.Agents))
 	renderSyncSkippedAgents(&b, result.SkippedAgents)
 
@@ -2671,8 +2671,8 @@ func renderSyncManualActions(b *strings.Builder, actions []string) {
 
 // withFailedSyncVerificationNote replaces the generic
 // verify.VerificationIssuesMessage with one naming the concrete command that
-// retries a failed sync: `gentle-ai sync`. Unlike the install path, sync has
-// no per-agent retry command -- rerunning `gentle-ai sync` re-applies every
+// retries a failed sync: `teicos sync`. Unlike the install path, sync has
+// no per-agent retry command -- rerunning `teicos sync` re-applies every
 // discovered/persisted agent, so no agent list is needed.
 //
 // It is scoped to exactly the generic failure text so it never clobbers a
@@ -2682,7 +2682,7 @@ func withFailedSyncVerificationNote(report verify.Report) verify.Report {
 	if report.Ready || report.FinalNote != verify.VerificationIssuesMessage {
 		return report
 	}
-	report.FinalNote = verify.VerificationIssuesMessageForCommand("gentle-ai sync")
+	report.FinalNote = verify.VerificationIssuesMessageForCommand("teicos sync")
 	return report
 }
 
@@ -2728,7 +2728,7 @@ func runPostSyncVerificationScoped(homeDir, workspaceDir string, scope InstallSc
 							}
 							return err
 						}
-						return fmt.Errorf("retired managed file still exists; rerun `gentle-ai sync` to finish retiring it")
+						return fmt.Errorf("retired managed file still exists; rerun `teicos sync` to finish retiring it")
 					},
 				})
 				continue
@@ -2804,7 +2804,7 @@ func runPostSyncVerificationScoped(homeDir, workspaceDir string, scope InstallSc
 					Description: "retired OpenCode plugin " + name + " removed",
 					Run: func(context.Context) error {
 						if _, err := os.Lstat(retiredPath); err == nil {
-							return fmt.Errorf("retired OpenCode plugin %s still exists; rerun `gentle-ai sync` to complete the managed plugin migration", retiredPath)
+							return fmt.Errorf("retired OpenCode plugin %s still exists; rerun `teicos sync` to complete the managed plugin migration", retiredPath)
 						} else if !os.IsNotExist(err) {
 							return err
 						}

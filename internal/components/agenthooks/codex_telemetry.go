@@ -42,7 +42,7 @@ func InstallCodexTelemetry(homeDir string, adapter agents.Adapter) (Result, erro
 		hooksMap = map[string]any{}
 	}
 	changed := false
-	const telemetryCommand = `gentle-ai telemetry runtime codex --json`
+	const telemetryCommand = `teicos telemetry runtime codex --json`
 	for _, event := range []string{"SubagentStop", "Stop"} {
 		if codexHookCommandExists(hooksMap, event, telemetryCommand) {
 			continue

@@ -10,8 +10,8 @@ import (
 )
 
 const (
-	jsoncManagedStop = `"Stop": [{"matcher": "", "hooks": [{"type": "command", "command": "gentle-ai telemetry runtime claude --json", "async": true}]}]`
-	jsoncMixedStop   = `"Stop": [{"matcher": "", "hooks": [{"type": "command", "command": "gentle-ai telemetry runtime claude --json", "async": true}, {"type": "command", "command": "echo keep"}]}]`
+	jsoncManagedStop = `"Stop": [{"matcher": "", "hooks": [{"type": "command", "command": "teicos telemetry runtime claude --json", "async": true}]}]`
+	jsoncMixedStop   = `"Stop": [{"matcher": "", "hooks": [{"type": "command", "command": "teicos telemetry runtime claude --json", "async": true}, {"type": "command", "command": "echo keep"}]}]`
 )
 
 // applyClaudeSettingsRewrite runs the full-agent uninstall rewrites planned

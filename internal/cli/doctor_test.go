@@ -385,7 +385,7 @@ func TestCheckStateJSON_ManagedConfigPathUnreadable(t *testing.T) {
 	if got.Status != CheckStatusWarn {
 		t.Fatalf("expected warn for unreadable managed config path, got %s: %s", got.Status, got.Detail)
 	}
-	wants := []string{configPath, "inspect or repair", "gentle-ai doctor"}
+	wants := []string{configPath, "inspect or repair", "teicos doctor"}
 	if runtime.GOOS == "windows" {
 		// Windows reports a file-blocked path as not-exist, so the warn is
 		// produced by the ancestor walk naming the blocking file rather than
@@ -441,10 +441,10 @@ func TestCheckStateJSON_AgentConfigDirDanglingSymlink(t *testing.T) {
 	if !strings.Contains(got.Detail, configDir) {
 		t.Fatalf("detail must identify dangling managed path %q, got %q", configDir, got.Detail)
 	}
-	if !strings.Contains(got.Detail, "inspect") || !strings.Contains(got.Detail, "gentle-ai doctor") {
+	if !strings.Contains(got.Detail, "inspect") || !strings.Contains(got.Detail, "teicos doctor") {
 		t.Fatalf("detail must provide manual inspection and doctor rerun guidance, got %q", got.Detail)
 	}
-	if strings.Contains(got.Detail, "gentle-ai sync") {
+	if strings.Contains(got.Detail, "teicos sync") {
 		t.Fatalf("dangling config symlink must not recommend sync, got %q", got.Detail)
 	}
 	info, err := os.Lstat(configDir)
@@ -474,12 +474,12 @@ func TestCheckStateJSON_DanglingAndAbsentConfigDirsSuppressSync(t *testing.T) {
 	if got.Remedy != nil {
 		t.Fatalf("mixed dangling/absent config dirs must suppress sync, got %+v", got.Remedy)
 	}
-	for _, want := range []string{configDir, "genuinely absent config dirs: claude-code", "inspect or repair", "gentle-ai doctor"} {
+	for _, want := range []string{configDir, "genuinely absent config dirs: claude-code", "inspect or repair", "teicos doctor"} {
 		if !strings.Contains(got.Detail, want) {
 			t.Fatalf("mixed result missing %q: %s", want, got.Detail)
 		}
 	}
-	if strings.Contains(got.Detail, "gentle-ai sync") {
+	if strings.Contains(got.Detail, "teicos sync") {
 		t.Fatalf("mixed dangling/absent result must not recommend sync: %s", got.Detail)
 	}
 }
@@ -510,12 +510,12 @@ func TestCheckStateJSON_DanglingAncestorSymlinkSuppressesSync(t *testing.T) {
 	if got.Remedy != nil && got.Remedy.ID == doctor.RemedySync {
 		t.Fatalf("dangling ancestor symlink must not recommend sync: %+v", got.Remedy)
 	}
-	for _, want := range []string{configDir, "dangling ancestor symlink " + ancestor, "inspect", "gentle-ai doctor"} {
+	for _, want := range []string{configDir, "dangling ancestor symlink " + ancestor, "inspect", "teicos doctor"} {
 		if !strings.Contains(got.Detail, want) {
 			t.Fatalf("dangling ancestor result missing %q: %s", want, got.Detail)
 		}
 	}
-	if strings.Contains(got.Detail, "gentle-ai sync") || strings.Contains(got.Detail, "config dirs are missing") {
+	if strings.Contains(got.Detail, "teicos sync") || strings.Contains(got.Detail, "config dirs are missing") {
 		t.Fatalf("dangling ancestor must not be classified as missing: %s", got.Detail)
 	}
 	info, err := os.Lstat(ancestor)
@@ -1010,7 +1010,7 @@ func TestRunDoctor_IntegrationAllMocked(t *testing.T) {
 		t.Fatalf("RunDoctor returned error: %v", err)
 	}
 
-	want := fmt.Sprintf(`gentle-ai doctor — system health check
+	want := fmt.Sprintf(`teicos doctor — system health check
 =======================================
 
   [ok]  tool:gentle-ai                 gentle-ai found at /usr/local/bin/gentle-ai; invoked executable: /usr/local/bin/gentle-ai (version dev)
@@ -1074,10 +1074,10 @@ func TestRunDoctor_DanglingConfigSymlinkIsReadOnly(t *testing.T) {
 	if err := RunDoctor(context.Background(), &output); err != nil {
 		t.Fatalf("RunDoctor returned error: %v", err)
 	}
-	if strings.Contains(output.String(), "gentle-ai sync") {
+	if strings.Contains(output.String(), "teicos sync") {
 		t.Fatalf("Doctor must not recommend sync for a dangling config symlink, got:\n%s", output.String())
 	}
-	for _, want := range []string{configDir, "inspect", "gentle-ai doctor"} {
+	for _, want := range []string{configDir, "inspect", "teicos doctor"} {
 		if !strings.Contains(output.String(), want) {
 			t.Fatalf("Doctor output missing %q:\n%s", want, output.String())
 		}
@@ -1757,7 +1757,7 @@ func TestRunDoctor_OnlySelectedAgentsAreRequired(t *testing.T) {
 func TestRenderDoctorReportDoesNotRenderRemedyMetadata(t *testing.T) {
 	var buf bytes.Buffer
 	renderDoctorReport(&buf, DoctorReport{Checks: []CheckResult{{Name: doctor.CheckDiskSpace, Status: CheckStatusFail, Detail: "cleanup needed", Remedy: doctor.NewRemedy(doctor.RemedyFreeDiskSpace, "Free disk space")}}})
-	want := "gentle-ai doctor — system health check\n=======================================\n\n  [xx]  disk:space                     cleanup needed\n       Remedy: Free disk space\n\nSummary: 0 passed, 1 failed, 0 warnings\nStatus:  unhealthy\n"
+	want := "teicos doctor — system health check\n=======================================\n\n  [xx]  disk:space                     cleanup needed\n       Remedy: Free disk space\n\nSummary: 0 passed, 1 failed, 0 warnings\nStatus:  unhealthy\n"
 	if got := buf.String(); got != want {
 		t.Fatalf("rendered report mismatch\ngot:\n%s\nwant:\n%s", got, want)
 	}
@@ -1765,7 +1765,7 @@ func TestRenderDoctorReportDoesNotRenderRemedyMetadata(t *testing.T) {
 
 // TestCheckEngramReachable_PiOnlyNativeEngramPasses covers a Pi-only host:
 // Engram on Pi runs through gentle-engram's native tools, not an MCP server,
-// so a missing Engram MCP entry is expected and 'gentle-ai sync' cannot and
+// so a missing Engram MCP entry is expected and 'teicos sync' cannot and
 // should not create one.
 func TestCheckEngramReachable_PiOnlyNativeEngramPasses(t *testing.T) {
 	t.Setenv(engramHealthEnvVar, "")

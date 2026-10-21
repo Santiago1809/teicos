@@ -30,7 +30,7 @@ func TestRunSyncPiWarnsWithoutReenablingBuiltinMCP(t *testing.T) {
 			t.Fatal(err)
 		}
 		report := RenderSyncReport(result)
-		warning := "- WARNING: Pi built-in MCP is disabled in " + settingsPath + "; pi-mcp-adapter is absent, so servers in " + filepath.Join(dir, "mcp.json") + " will not load. If you want these servers enabled, remove -builtin:mcp from extensions in " + settingsPath + ", then restart Pi and run `gentle-ai doctor`. If MCP is intentionally disabled, keep the setting."
+		warning := "- WARNING: Pi built-in MCP is disabled in " + settingsPath + "; pi-mcp-adapter is absent, so servers in " + filepath.Join(dir, "mcp.json") + " will not load. If you want these servers enabled, remove -builtin:mcp from extensions in " + settingsPath + ", then restart Pi and run `teicos doctor`. If MCP is intentionally disabled, keep the setting."
 		if strings.Count(report, warning) != 1 {
 			t.Fatalf("sync %d missing exact warning:\n%s", i, report)
 		}
@@ -148,12 +148,12 @@ func TestRunDoctorPiMCPDiagnosticIsReadOnly(t *testing.T) {
 				t.Fatalf("wrong diagnostic: %s", line)
 			}
 			if tt.warn {
-				want := "  [!!]  pi:mcp                         Pi built-in MCP is disabled in " + filepath.Join(dir, "settings.json") + "; pi-mcp-adapter is absent, so servers in " + filepath.Join(dir, "mcp.json") + " will not load. If you want these servers enabled, remove -builtin:mcp from extensions in " + filepath.Join(dir, "settings.json") + ", then restart Pi and run `gentle-ai doctor`. If MCP is intentionally disabled, keep the setting."
+				want := "  [!!]  pi:mcp                         Pi built-in MCP is disabled in " + filepath.Join(dir, "settings.json") + "; pi-mcp-adapter is absent, so servers in " + filepath.Join(dir, "mcp.json") + " will not load. If you want these servers enabled, remove -builtin:mcp from extensions in " + filepath.Join(dir, "settings.json") + ", then restart Pi and run `teicos doctor`. If MCP is intentionally disabled, keep the setting."
 				if tt.inactive {
 					want = strings.Replace(want, "pi-mcp-adapter is absent", "pi-mcp-adapter is inactive", 1)
 				}
 				if tt.dangling != "" {
-					want = "  [!!]  pi:mcp                         Pi MCP configuration could not be inspected: inspect " + filepath.Join(dir, tt.dangling) + ": " + readErr.Error() + "; inspect or repair it manually, then run `gentle-ai doctor`"
+					want = "  [!!]  pi:mcp                         Pi MCP configuration could not be inspected: inspect " + filepath.Join(dir, tt.dangling) + ": " + readErr.Error() + "; inspect or repair it manually, then run `teicos doctor`"
 				}
 				if line != want {
 					t.Fatalf("wrong warning:\n got %s\nwant %s", line, want)
