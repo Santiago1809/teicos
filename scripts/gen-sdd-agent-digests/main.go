@@ -122,6 +122,12 @@ func main() {
 		}
 	}
 	tags = tags[:slices.Index(tags, closingTag)+1]
+	// A fork's own tags descend from the closing release, so they are future,
+	// not history — even when versionsort places them inside the closed range.
+	descendants := strings.Fields(git("tag", "-l", "v*", "--contains", closingTag))
+	tags = slices.DeleteFunc(tags, func(tag string) bool {
+		return tag != closingTag && slices.Contains(descendants, tag)
+	})
 	committedTags, committedDigests := readCommitted(output)
 	openCodeTags, openCodeDigests := readCommitted(openCodeOutput)
 	assetTags, assetDigests := readCommitted(assetOutput)
