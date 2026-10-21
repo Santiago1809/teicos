@@ -1631,7 +1631,7 @@ func (s openCodePluginDependencyPreflightStep) Run() error {
 		}
 		if !openCodeSDKInstalled(config, dependency) {
 			// refusal:by-design world-action: the external manager did not materialize the requested package
-			return fmt.Errorf("%s SDK install verification failed: %s completed without materializing %s in %s; package-manager changes are not covered by Gentle AI rollback; run `%s` manually in your normal shell, then retry", proposal.Manager, proposal.Manager, dependency, config, openCodeSDKInstallContinuation(runtime.GOOS, config, proposal.Manager, dependency))
+			return fmt.Errorf("%s SDK install verification failed: %s completed without materializing %s in %s; package-manager changes are not covered by Teicos rollback; run `%s` manually in your normal shell, then retry", proposal.Manager, proposal.Manager, dependency, config, openCodeSDKInstallContinuation(runtime.GOOS, config, proposal.Manager, dependency))
 		}
 		return nil
 	}
@@ -1785,7 +1785,7 @@ func openCodeSDKRunApprovedManager(proposal *OpenCodeSDKConsent) error {
 	// Never reflect raw command errors or output: both may embed credentials.
 	// Only the failure class (start, exit code, signal, deadline) is reported.
 	// refusal:by-design world-action: package manager failed without exposing its possibly sensitive output
-	return fmt.Errorf("%s SDK install failed: %s %s; package-manager changes are not covered by Gentle AI rollback; run `%s` manually in your normal shell, then retry", proposal.Manager, proposal.Manager, openCodeSDKFailureClass(err, ctx.Err(), openCodeSDKInstallTimeout), openCodeSDKInstallContinuation(runtime.GOOS, proposal.ConfigDir, proposal.Manager, proposal.Dependency))
+	return fmt.Errorf("%s SDK install failed: %s %s; package-manager changes are not covered by Teicos rollback; run `%s` manually in your normal shell, then retry", proposal.Manager, proposal.Manager, openCodeSDKFailureClass(err, ctx.Err(), openCodeSDKInstallTimeout), openCodeSDKInstallContinuation(runtime.GOOS, proposal.ConfigDir, proposal.Manager, proposal.Dependency))
 }
 
 func openCodeSDKIsolatedEnv(isolated string, proposal *OpenCodeSDKConsent) []string {

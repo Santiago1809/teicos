@@ -23,7 +23,7 @@ import (
 func openCodeRuntimeMajorForManagedAssets() (opencodeactivation.RuntimeMajor, error) {
 	major, err := opencodeactivation.DetectRuntimeMajor(context.Background())
 	if err != nil {
-		return major, fmt.Errorf("%w; Gentle AI could not choose V1 or V2 managed OpenCode plugins and telemetry; make sure `opencode --version` succeeds in this shell (install, update, or add OpenCode to PATH), or deselect OpenCode, then retry", err)
+		return major, fmt.Errorf("%w; Teicos could not choose V1 or V2 managed OpenCode plugins and telemetry; make sure `opencode --version` succeeds in this shell (install, update, or add OpenCode to PATH), or deselect OpenCode, then retry", err)
 	}
 	return major, nil
 }
