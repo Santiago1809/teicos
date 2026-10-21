@@ -16,7 +16,7 @@ type InjectionResult struct {
 	Files   []string
 }
 
-var themeOverlayJSON = []byte("{\n  \"theme\": \"gentleman\"\n}\n")
+var themeOverlayJSON = []byte("{\n  \"theme\": \"teicos\"\n}\n")
 
 type claudeTheme struct {
 	Name      string            `json:"name"`
@@ -39,50 +39,55 @@ func palette(pairs ...string) map[string]string {
 	return colors
 }
 
-var gentlemanClaudeTheme = claudeTheme{
-	Name: "gentleman", Base: "dark",
+var teicosClaudeTheme = claudeTheme{
+	Name: "teicos", Base: "dark",
 	Overrides: palette(
-		"diffAdded", "#3F4A2D", "diffRemoved", "#5C3838", "diffAddedWord", "#76946A", "diffRemovedWord", "#C34043",
-		"chromeYellow", "#DCA561", "briefLabelYou", "#DCA561", "rainbow_yellow", "#DCA561", "yellow_FOR_SUBAGENTS_ONLY", "#DCA561",
+		"claude", "#E5484D", "claudeShimmer", "#FF7A7D", "text", "#FFFFFF", "inactive", "#6A6A6A", "subtle", "#2E2E2E", "suggestion", "#E5484D",
+		"permission", "#E5484D", "promptBorder", "#8B0000", "planMode", "#5C8AB8", "autoAccept", "#4E9A51", "bashBorder", "#D9A441",
+		"remember", "#D9A441", "success", "#4E9A51", "merged", "#4E9A51", "error", "#E5484D", "warning", "#D9A441",
+		"diffAdded", "#131F13", "diffRemoved", "#1F1315", "diffAddedWord", "#2D5A45", "diffRemovedWord", "#7A2948",
+		"userMessageBackground", "#1A1A1A", "userMessageBackgroundHover", "#242424", "selectionBg", "#3A1414", "memoryBackgroundColor", "#141414", "bashMessageBackgroundColor", "#121212",
+		"chromeYellow", "#D9A441", "briefLabelYou", "#D9A441", "rainbow_yellow", "#D9A441", "yellow_FOR_SUBAGENTS_ONLY", "#D9A441",
 	),
 }
 
-var gentlemanCuteClaudeTheme = claudeTheme{
-	Name: "Gentleman Cute", Base: "dark",
+var teicosCuteClaudeTheme = claudeTheme{
+	Name: "Teicos Cute", Base: "dark",
 	Overrides: palette(
-		"claude", "#F095C8", "claudeShimmer", "#FFB1DD", "text", "#F6EFF3", "inactive", "#A78E9B", "subtle", "#76616B", "suggestion", "#FFB1DD",
-		"permission", "#F095C8", "promptBorder", "#F095C8", "planMode", "#A9C7EE", "autoAccept", "#FF81CC", "bashBorder", "#E0C27A",
-		"remember", "#E0C27A", "success", "#B4E7C7", "merged", "#B4E7C7", "error", "#FF718F", "warning", "#F2B86D",
-		"diffAdded", "#1A2420", "diffRemoved", "#2D151F", "diffAddedWord", "#2D5A45", "diffRemovedWord", "#7A2948",
-		"userMessageBackground", "#241822", "userMessageBackgroundHover", "#342230", "selectionBg", "#563040", "memoryBackgroundColor", "#1A1218", "bashMessageBackgroundColor", "#151316",
+		"claude", "#C0392B", "claudeShimmer", "#E5484D", "text", "#FFFFFF", "inactive", "#6A6A6A", "subtle", "#2E2E2E", "suggestion", "#E5484D",
+		"permission", "#E5484D", "promptBorder", "#C0392B", "planMode", "#5C8AB8", "autoAccept", "#4E9A51", "bashBorder", "#D9A441",
+		"remember", "#D9A441", "success", "#4E9A51", "merged", "#4E9A51", "error", "#E5484D", "warning", "#D9A441",
+		"diffAdded", "#131F13", "diffRemoved", "#1F1315", "diffAddedWord", "#2D5A45", "diffRemovedWord", "#7A2948",
+		"userMessageBackground", "#1F1A1A", "userMessageBackgroundHover", "#292424", "selectionBg", "#3A1414", "memoryBackgroundColor", "#141414", "bashMessageBackgroundColor", "#121212",
+		"chromeYellow", "#D9A441", "briefLabelYou", "#D9A441", "rainbow_yellow", "#D9A441", "yellow_FOR_SUBAGENTS_ONLY", "#D9A441",
 	),
 }
 
-var gentlemanOpenCodeTheme = openCodeTheme{
+var teicosOpenCodeTheme = openCodeTheme{
 	Schema: openCodeThemeSchema,
 	Theme: palette(
-		"background", "none", "backgroundPanel", "#06080f", "backgroundElement", "#06080f", "text", "#F3F6F9", "textMuted", "#5C6170",
-		"primary", "#7FB4CA", "secondary", "#A3B5D6", "accent", "#E0C15A", "error", "#CB7C94", "warning", "#DEBA87", "success", "#B7CC85", "info", "#7FB4CA",
-		"border", "#313342", "borderActive", "#7FB4CA", "borderSubtle", "#232A40", "diffAdded", "#B7CC85", "diffRemoved", "#CB7C94", "diffContext", "#5C6170",
-		"diffHunkHeader", "#8394A3", "diffHighlightAdded", "#D1E8A9", "diffHighlightRemoved", "#DE8FA8", "diffAddedBg", "#1a2e1a", "diffRemovedBg", "#2e1a1a", "diffContextBg", "#0d0f14",
-		"diffLineNumber", "#8394A3", "diffAddedLineNumberBg", "#1a2e1a", "diffRemovedLineNumberBg", "#2e1a1a", "markdownText", "#F3F6F9", "markdownHeading", "#B5B2D0",
-		"markdownLink", "#7FB4CA", "markdownLinkText", "#79B8EA", "markdownCode", "#B7CC85", "markdownBlockQuote", "#DEBA87", "markdownEmph", "#7CB9DD", "markdownStrong", "#DEBA87",
-		"markdownHorizontalRule", "#5C6170", "markdownListItem", "#7FB4CA", "markdownListEnumeration", "#A3B5D6", "markdownImage", "#7FB4CA", "markdownImageText", "#79B8EA", "markdownCodeBlock", "#F3F6F9",
-		"syntaxComment", "#8394A3", "syntaxKeyword", "#C99AD6", "syntaxFunction", "#B99BF2", "syntaxVariable", "#F3F6F9", "syntaxString", "#DFBD76", "syntaxNumber", "#A4DAA7", "syntaxType", "#8FB8DD", "syntaxOperator", "#DEBA87", "syntaxPunctuation", "#96A2B0",
+		"background", "#0D0D0D", "backgroundPanel", "#1A1A1A", "backgroundElement", "#1A1A1A", "text", "#FFFFFF", "textMuted", "#8A8A8A",
+		"primary", "#8B0000", "secondary", "#B3B3B3", "accent", "#8B0000", "error", "#E5484D", "warning", "#D9A441", "success", "#4E9A51", "info", "#5C8AB8",
+		"border", "#2E2E2E", "borderActive", "#8B0000", "borderSubtle", "#1F1F1F", "diffAdded", "#4E9A51", "diffRemoved", "#E5484D", "diffContext", "#8A8A8A",
+		"diffHunkHeader", "#B3B3B3", "diffHighlightAdded", "#6BBF6E", "diffHighlightRemoved", "#FF7A7D", "diffAddedBg", "#131F13", "diffRemovedBg", "#1F1315", "diffContextBg", "#141414",
+		"diffLineNumber", "#6A6A6A", "diffAddedLineNumberBg", "#131F13", "diffRemovedLineNumberBg", "#1F1315", "markdownText", "#FFFFFF", "markdownHeading", "#E8E8E8",
+		"markdownLink", "#E5484D", "markdownLinkText", "#E5484D", "markdownCode", "#4E9A51", "markdownBlockQuote", "#8A8A8A", "markdownEmph", "#C7C7C7", "markdownStrong", "#FFFFFF",
+		"markdownHorizontalRule", "#2E2E2E", "markdownListItem", "#B3B3B3", "markdownListEnumeration", "#8A8A8A", "markdownImage", "#B3B3B3", "markdownImageText", "#8A8A8A", "markdownCodeBlock", "#E8E8E8",
+		"syntaxComment", "#6A6A6A", "syntaxKeyword", "#E5484D", "syntaxFunction", "#C7C7C7", "syntaxVariable", "#FFFFFF", "syntaxString", "#4E9A51", "syntaxNumber", "#D9A441", "syntaxType", "#5C8AB8", "syntaxOperator", "#8A8A8A", "syntaxPunctuation", "#8A8A8A",
 	),
 }
 
-var gentlemanCuteOpenCodeTheme = openCodeTheme{
+var teicosCuteOpenCodeTheme = openCodeTheme{
 	Schema: openCodeThemeSchema,
 	Theme: palette(
-		"background", "none", "backgroundPanel", "#1A1218", "backgroundElement", "#241822", "text", "#F6EFF3", "textMuted", "#A78E9B",
-		"primary", "#F095C8", "secondary", "#D7A0B8", "accent", "#F095C8", "error", "#FF718F", "warning", "#F2B86D", "success", "#B4E7C7", "info", "#D7A0B8",
-		"border", "#342230", "borderActive", "#FFB1DD", "borderSubtle", "#241822", "diffAdded", "#B4E7C7", "diffRemoved", "#FF718F", "diffContext", "#A78E9B",
-		"diffHunkHeader", "#D7A0B8", "diffHighlightAdded", "#B4E7C7", "diffHighlightRemoved", "#FF718F", "diffAddedBg", "#1A2420", "diffRemovedBg", "#261019", "diffContextBg", "#1A1218",
-		"diffLineNumber", "#76616B", "diffAddedLineNumberBg", "#1A2420", "diffRemovedLineNumberBg", "#261019", "markdownText", "#F6EFF3", "markdownHeading", "#E0C27A",
-		"markdownLink", "#F095C8", "markdownLinkText", "#F095C8", "markdownCode", "#E0C27A", "markdownBlockQuote", "#A78E9B", "markdownEmph", "#D7A0B8", "markdownStrong", "#E0C27A",
-		"markdownHorizontalRule", "#A78E9B", "markdownListItem", "#F095C8", "markdownListEnumeration", "#D7A0B8", "markdownImage", "#F095C8", "markdownImageText", "#F095C8", "markdownCodeBlock", "#F6EFF3",
-		"syntaxComment", "#A78E9B", "syntaxKeyword", "#F095C8", "syntaxFunction", "#A9C7EE", "syntaxVariable", "#F6EFF3", "syntaxString", "#B4E7C7", "syntaxNumber", "#F2B86D", "syntaxType", "#E0C27A", "syntaxOperator", "#C4DAF6", "syntaxPunctuation", "#A78E9B",
+		"background", "#0D0D0D", "backgroundPanel", "#1F1A1A", "backgroundElement", "#1F1A1A", "text", "#FFFFFF", "textMuted", "#8A8A8A",
+		"primary", "#C0392B", "secondary", "#B3B3B3", "accent", "#C0392B", "error", "#E5484D", "warning", "#D9A441", "success", "#4E9A51", "info", "#5C8AB8",
+		"border", "#2E2E2E", "borderActive", "#C0392B", "borderSubtle", "#241F1F", "diffAdded", "#4E9A51", "diffRemoved", "#E5484D", "diffContext", "#8A8A8A",
+		"diffHunkHeader", "#B3B3B3", "diffHighlightAdded", "#6BBF6E", "diffHighlightRemoved", "#FF7A7D", "diffAddedBg", "#131F13", "diffRemovedBg", "#1F1315", "diffContextBg", "#141414",
+		"diffLineNumber", "#6A6A6A", "diffAddedLineNumberBg", "#131F13", "diffRemovedLineNumberBg", "#1F1315", "markdownText", "#FFFFFF", "markdownHeading", "#E8E8E8",
+		"markdownLink", "#E5484D", "markdownLinkText", "#E5484D", "markdownCode", "#4E9A51", "markdownBlockQuote", "#8A8A8A", "markdownEmph", "#C7C7C7", "markdownStrong", "#FFFFFF",
+		"markdownHorizontalRule", "#2E2E2E", "markdownListItem", "#B3B3B3", "markdownListEnumeration", "#8A8A8A", "markdownImage", "#B3B3B3", "markdownImageText", "#8A8A8A", "markdownCodeBlock", "#E8E8E8",
+		"syntaxComment", "#6A6A6A", "syntaxKeyword", "#E5484D", "syntaxFunction", "#C7C7C7", "syntaxVariable", "#FFFFFF", "syntaxString", "#4E9A51", "syntaxNumber", "#D9A441", "syntaxType", "#5C8AB8", "syntaxOperator", "#8A8A8A", "syntaxPunctuation", "#8A8A8A",
 	),
 }
 
@@ -128,9 +133,9 @@ func InjectVisualThemes(homeDir string, adapter agents.Adapter) (InjectionResult
 	var values []any
 	switch adapter.Agent() {
 	case model.AgentClaudeCode:
-		values = []any{gentlemanClaudeTheme, gentlemanCuteClaudeTheme}
+		values = []any{teicosClaudeTheme, teicosCuteClaudeTheme}
 	case model.AgentOpenCode:
-		values = []any{gentlemanOpenCodeTheme, gentlemanCuteOpenCodeTheme}
+		values = []any{teicosOpenCodeTheme, teicosCuteOpenCodeTheme}
 	}
 
 	result := InjectionResult{Files: make([]string, 0, len(paths))}
@@ -161,7 +166,7 @@ func VisualThemePaths(homeDir string, adapter agents.Adapter) []string {
 	default:
 		return nil
 	}
-	return []string{filepath.Join(root, "gentleman.json"), filepath.Join(root, "gentleman-cute.json")}
+	return []string{filepath.Join(root, "teicos.json"), filepath.Join(root, "teicos-cute.json")}
 }
 
 func mergeJSONFile(path string, overlay []byte) (filemerge.WriteResult, error) {

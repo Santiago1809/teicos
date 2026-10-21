@@ -965,10 +965,10 @@ func TestPartialUninstallClaudeThemeRemovesOnlyThemeAssets(t *testing.T) {
 	}
 
 	managed := []string{
-		filepath.Join(homeDir, ".claude", "themes", "gentleman.json"),
-		filepath.Join(homeDir, ".claude", "themes", "gentleman-cute.json"),
-		filepath.Join(homeDir, ".config", "opencode", "themes", "gentleman.json"),
-		filepath.Join(homeDir, ".config", "opencode", "themes", "gentleman-cute.json"),
+		filepath.Join(homeDir, ".claude", "themes", "teicos.json"),
+		filepath.Join(homeDir, ".claude", "themes", "teicos-cute.json"),
+		filepath.Join(homeDir, ".config", "opencode", "themes", "teicos.json"),
+		filepath.Join(homeDir, ".config", "opencode", "themes", "teicos-cute.json"),
 	}
 	for _, path := range managed {
 		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {

@@ -1734,8 +1734,8 @@ func TestComponentPathsVisualThemesMatchSelectedAdapter(t *testing.T) {
 		agent model.AgentID
 		want  []string
 	}{
-		{model.AgentClaudeCode, []string{filepath.Join(home, ".claude", "themes", "gentleman.json"), filepath.Join(home, ".claude", "themes", "gentleman-cute.json")}},
-		{model.AgentOpenCode, []string{filepath.Join(home, ".config", "opencode", "themes", "gentleman.json"), filepath.Join(home, ".config", "opencode", "themes", "gentleman-cute.json")}},
+		{model.AgentClaudeCode, []string{filepath.Join(home, ".claude", "themes", "teicos.json"), filepath.Join(home, ".claude", "themes", "teicos-cute.json")}},
+		{model.AgentOpenCode, []string{filepath.Join(home, ".config", "opencode", "themes", "teicos.json"), filepath.Join(home, ".config", "opencode", "themes", "teicos-cute.json")}},
 	} {
 		paths := componentPathsWithWorkspaceScoped(home, "", ScopeGlobal, model.Selection{}, resolveAdapters([]model.AgentID{tt.agent}), model.ComponentClaudeTheme)
 		if len(paths) != len(tt.want) {
