@@ -38,3 +38,6 @@ dist/
 .engram/engram.db
 .engram/cloud.json
 /odd/
+
+# CodeGraph local index (per-checkout, never shared)
+.codegraph/
