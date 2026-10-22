@@ -29,11 +29,10 @@ func TestWelcomeOptions_NoLegacyProfilesEntry(t *testing.T) {
 	}
 }
 
-// TestWelcomeOptions_OptionCount verifies 12 options when hasEngines=true.
+// TestWelcomeOptions_OptionCount verifies 10 options when hasEngines=true.
 func TestWelcomeOptions_OptionCount(t *testing.T) {
 	opts := screens.WelcomeOptions(nil, true, true)
-	// Includes the Receipt-Driven Development entry.
-	want := 12
+	want := 10
 	if len(opts) != want {
 		t.Errorf("WelcomeOptions(hasEngines=true) = %d options, want %d; opts: %v", len(opts), want, opts)
 	}

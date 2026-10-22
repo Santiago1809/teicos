@@ -68,7 +68,7 @@ func TestRenderWelcome_StaysWithinViewport(t *testing.T) {
 		{name: "narrow resize", width: 80, height: 24},
 		{name: "short viewport", width: 120, height: 19},
 		{name: "below compact height", width: 120, height: 2, minimum: true},
-		{name: "below compact width", width: 18, height: 19, minimum: true},
+		{name: "below compact width", width: 18, height: 19},
 		{name: "below frame border width", width: 2, height: 20, minimum: true, wantPrimary: "Go"},
 		{name: "tiny viewport uses atomic labels", width: 2, height: 2, minimum: true, wantPrimary: "Go", wantControl: "q"},
 		{name: "single column tiny viewport uses atomic labels", width: 1, height: 2, minimum: true, wantPrimary: ">", wantControl: "q"},
@@ -99,10 +99,13 @@ func TestRenderWelcome_StaysWithinViewport(t *testing.T) {
 			if got := lipgloss.Height(view); got > tc.height {
 				t.Fatalf("welcome height = %d, want <= %d\nview:\n%s", got, tc.height, view)
 			}
-			content := view
-			if tc.minimum {
-				content = strings.ReplaceAll(view, "\n", "")
-			}
+			// The compact renderer wraps an option to the viewport width, so
+			// the primary action can span two lines; the action is present
+			// either way.
+			content := strings.Join(strings.Fields(view), " ")
+			// The minimum renderer wraps one character per line, so the
+			// control hint only reads whole with the line breaks removed.
+			unwrapped := strings.ReplaceAll(view, "\n", "")
 			primary := tc.wantPrimary
 			if primary == "" {
 				primary = "Start installation"
@@ -116,13 +119,13 @@ func TestRenderWelcome_StaysWithinViewport(t *testing.T) {
 					control = "j/k"
 				}
 				for _, want := range []string{primary, control} {
-					if !strings.Contains(content, want) {
+					if !strings.Contains(unwrapped, want) {
 						t.Fatalf("minimum welcome state lost %q\nview:\n%s", want, view)
 					}
 				}
 			} else {
 				for _, want := range []string{"Quit", "j/k: navigate • enter: select • q: quit"} {
-					if !strings.Contains(view, want) {
+					if !strings.Contains(content, want) {
 						t.Fatalf("welcome lost %q after fitting viewport\nview:\n%s", want, view)
 					}
 				}

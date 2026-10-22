@@ -1521,7 +1521,7 @@ func TestRunSyncRecreatesMissingManagedOpenCodePlugins(t *testing.T) {
 	}
 	openCodePlugins := filepath.Join(home, ".config", "opencode", "plugins")
 	for _, name := range opencoderuntimeplugins.ManagedPluginNames(model.AgentOpenCode) {
-		if name != "sdd-task-result-artifacts.ts" {
+		if name != "telemetry-runtime.ts" {
 			mustWriteFile(t, filepath.Join(openCodePlugins, name), []byte(assets.MustRead("opencode/plugins/"+name)))
 		}
 	}
@@ -1549,7 +1549,7 @@ func TestRunSyncRecreatesMissingManagedOpenCodePlugins(t *testing.T) {
 			}
 		}
 	}
-	recreated := filepath.Join(openCodePlugins, "sdd-task-result-artifacts.ts")
+	recreated := filepath.Join(openCodePlugins, "telemetry-runtime.ts")
 	if !containsPath(result.ChangedFiles, recreated) {
 		t.Errorf("ChangedFiles missing recreated plugin %q\nchanged = %#v", recreated, result.ChangedFiles)
 	}
@@ -2631,14 +2631,13 @@ func TestRunSyncReleasesRetiredPiSDDAgentsFromCodeGraphManifest(t *testing.T) {
 	if _, err := os.Stat(missing); !os.IsNotExist(err) {
 		_ = err
 	}
-	if got := readTextFile(t, overlaid); got != before {
-		t.Fatalf("retired Pi SDD agent = %q, want before-image %q", got, before)
+	// The Pi SDD agent belongs to gentle-ai: Teicos leaves the file and its
+	// manifest entry alone.
+	if got := readTextFile(t, overlaid); got == before {
+		t.Fatalf("gentle-ai's Pi SDD agent was overwritten with its before-image: %q", got)
 	}
-	if !containsPath(result.ChangedFiles, overlaid) || containsPath(result.ChangedFiles, missing) {
-		t.Fatalf("changed files = %v, want only the released overlay", result.ChangedFiles)
-	}
-	if text := readTextFile(t, manifestPath); strings.Contains(text, "sdd-apply.md") || strings.Contains(text, "sdd-verify.md") {
-		t.Fatalf("manifest still owns retired Pi SDD agents:\n%s", text)
+	if containsPath(result.ChangedFiles, missing) {
+		t.Fatalf("changed files = %v, want none for another product's agent", result.ChangedFiles)
 	}
 }
 
@@ -3625,20 +3624,20 @@ func TestRunSyncWithSelection_WritesExpectedFiles(t *testing.T) {
 		t.Fatalf("decode synced OpenCode settings: %v", err)
 	}
 	orchestrator := settings.Agent["gentle-orchestrator"].Prompt
-	if !strings.Contains(orchestrator, "Organic Driven Development") || !strings.Contains(orchestrator, "Receipt-driven development") {
+	if !strings.Contains(orchestrator, "Organic Driven Development") {
 		t.Fatal("synced OpenCode orchestrator lost the ODD routing")
 	}
 	if strings.Contains(orchestrator, "--agent "+string(model.AgentClaudeCode)) {
 		t.Fatal("synced OpenCode orchestrator declares Claude Code identity")
 	}
-	for _, role := range []string{"review-refuter", "review-validator"} {
+	for _, role := range []string{"jd-judge-a", "jd-judge-b"} {
 		if _, ok := settings.Agent[role]; !ok {
 			t.Errorf("missing retained provider role %s", role)
 		}
 	}
 	agents := readOpenCodeAgentMap(t, settingsPath)
 	permissions := agents["gentle-orchestrator"].(map[string]any)["permission"].(map[string]any)["task"].(map[string]any)
-	if permissions["review-validator"] != "allow" || permissions["review-refuter"] != "allow" {
+	if permissions["jd-judge-a"] != "allow" || permissions["jd-judge-b"] != "allow" {
 		t.Fatalf("orchestrator cannot invoke retained provider roles: %v", permissions)
 	}
 }
@@ -4299,7 +4298,7 @@ func TestSyncCodexGentlemanConvergesWithHooksJSON(t *testing.T) {
 	home := t.TempDir()
 	selection := BuildSyncSelection(SyncFlags{}, []model.AgentID{model.AgentCodex, model.AgentClaudeCode})
 	selection.Persona = model.PersonaGentleman
-	if selection.HasComponent(model.ComponentSkills) {
+	if selection.HasComponent(model.RetiredSDDComponentID) {
 		t.Fatal("default sync selected legacy SDD")
 	}
 	run := func() (int, []string) {
@@ -6137,16 +6136,18 @@ func TestSyncRoutingGuidanceSurvivesOpenCodePluginRefresh(t *testing.T) {
 	if !strings.Contains(prompt, routingOpenMarker) || !strings.Contains(prompt, "<!-- gentle-ai:remote-authorization -->") {
 		t.Fatalf("install omitted OpenCode routing or remote authorization:\n%s", prompt)
 	}
-	plugin := filepath.Join(home, ".config", "opencode", "plugins", "opencode-review-transport.ts")
-	if err := os.WriteFile(plugin, releasedOpenCodePlugin(t, "v3.7.0/plugins/opencode-review-transport.ts"), 0o644); err != nil {
+	// A plugin a release shipped and Teicos no longer manages is retired by
+	// the sync; the routing guidance must survive that change untouched.
+	plugin := filepath.Join(home, ".config", "opencode", "plugins", "sdd-task-result-artifacts.ts")
+	if err := os.WriteFile(plugin, releasedOpenCodePlugin(t, "v3.7.0/plugins/sdd-task-result-artifacts.ts"), 0o644); err != nil {
 		t.Fatal(err)
 	}
 	changed := runSyncInjectionSteps(t, home, selection)
 	if !containsPath(changed, plugin) {
-		t.Fatal("sync did not report refreshed review plugin")
+		t.Fatal("sync did not report the retired plugin")
 	}
-	if got := readTextFile(t, plugin); got != assets.MustRead("opencode/plugins/opencode-review-transport.ts") {
-		t.Fatal("sync did not restore pinned review plugin")
+	if _, err := os.Stat(plugin); !os.IsNotExist(err) {
+		t.Fatal("sync did not remove the retired plugin")
 	}
 	if got := openCodeOrchestratorPrompt(t, home); got != prompt {
 		t.Fatal("plugin refresh changed OpenCode routing prompt")
@@ -6180,7 +6181,7 @@ func TestSyncRoutingGuidanceSecondRunReportsNoChange(t *testing.T) {
 	home := t.TempDir()
 	selection := model.Selection{Agents: []model.AgentID{model.AgentOpenCode, model.AgentClaudeCode}}
 	runInstallInjectionSteps(t, newTestInstallRuntime(t, home, selection))
-	plugin := filepath.Join(home, ".config", "opencode", "plugins", "opencode-review-transport.ts")
+	plugin := filepath.Join(home, ".config", "opencode", "plugins", "skill-registry.ts")
 	before := map[string]string{
 		"review plugin":     readTextFile(t, plugin),
 		"OpenCode settings": readTextFile(t, openCodeSettingsPath(home)),
@@ -6681,7 +6682,7 @@ func TestSyncDriftedOpenCodePluginIsScopedAndTheRestOfSyncRuns(t *testing.T) {
 	if _, err := RunSync([]string{"--agents", "claude-code,opencode"}); err != nil {
 		t.Fatalf("first RunSync() error = %v", err)
 	}
-	plugin := filepath.Join(home, ".config", "opencode", "plugins", "opencode-review-transport.ts")
+	plugin := filepath.Join(home, ".config", "opencode", "plugins", "skill-registry.ts")
 	drifted := append([]byte(readTextFile(t, plugin)), []byte("// my local edit\n")...)
 	mustWriteFile(t, plugin, drifted)
 	claudePrompt := filepath.Join(home, ".claude", "CLAUDE.md")

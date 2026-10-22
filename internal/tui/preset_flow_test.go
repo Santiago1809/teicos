@@ -101,9 +101,6 @@ func TestCustomPresetPostComponentFlowMatrix(t *testing.T) {
 			}
 			if tt.want == ScreenSkillPicker {
 				assertInstallerSnapshot(t, state, skillPickerSnapshot)
-			} else {
-				assertInstallerView(t, state, "Receipt-Driven Development")
-				assertViewSections(t, state.View(), "RDD is ON by default", "Enable RDD", "Disable RDD", "Back")
 			}
 			if tt.want == ScreenReview {
 				state = applyFlowAction(t, state, flowAction{key: tea.KeyMsg{Type: tea.KeyEsc}})
@@ -195,7 +192,7 @@ func TestPiOnlyDependencyTreeBackReturnsToAgentSelection(t *testing.T) {
 	}
 }
 
-func TestCustomEngramRDDChoiceReviewBack(t *testing.T) {
+func TestCustomEngramReviewBack(t *testing.T) {
 	m := NewModel(system.DetectionResult{}, "dev")
 	m.Screen, m.Selection.Preset = ScreenDependencyTree, model.PresetCustom
 	m.Selection.Agents = []model.AgentID{model.AgentCursor}
@@ -203,29 +200,9 @@ func TestCustomEngramRDDChoiceReviewBack(t *testing.T) {
 	m.Cursor = len(screens.AllComponents())
 	state := applyFlowAction(t, m, flowAction{key: tea.KeyMsg{Type: tea.KeyEnter}, runCmd: true})
 	if state.Screen != ScreenReview {
-		t.Fatalf("component continue = %v, want RDD choice", state.Screen)
+		t.Fatalf("component continue = %v, want ScreenReview", state.Screen)
 	}
-	assertViewSections(t, state.View(), "Receipt-Driven Development", "Enable RDD", "Disable RDD", "Back")
-	state = applyFlowAction(t, state, flowAction{key: tea.KeyMsg{Type: tea.KeyEnter}, cursor: 1, setCursor: true})
-	if state.Screen != ScreenReview {
-		t.Fatalf("review screen = %v, want ScreenReview", state.Screen)
-	}
-	assertViewSections(t, state.View(), "Review and Confirm", "Receipt-Driven Development", "RDD OFF", "engram", "Install", "Back")
-	if strings.Contains(state.View(), "Strict TDD") {
-		t.Fatalf("removed choice appeared in review:\n%s", state.View())
-	}
-	state = applyFlowAction(t, state, flowAction{key: tea.KeyMsg{Type: tea.KeyEsc}})
-	if state.Screen != ScreenReview || state.Cursor != 1 {
-		t.Fatalf("review Esc = screen %v cursor %d, want RDD choice with OFF selected", state.Screen, state.Cursor)
-	}
-	state = applyFlowAction(t, state, flowAction{key: tea.KeyMsg{Type: tea.KeyEnter}})
-	if state.Screen != ScreenReview {
-		t.Fatalf("re-confirm RDD OFF = %v, want Review", state.Screen)
-	}
-	state = applyFlowAction(t, state, flowAction{key: tea.KeyMsg{Type: tea.KeyEnter}, cursor: 1, setCursor: true})
-	if state.Screen != ScreenDependencyTree {
-		t.Fatalf("review Back = %v, want component selection", state.Screen)
-	}
+	assertViewSections(t, state.View(), "Review and Confirm", "engram", "Install", "Back")
 }
 
 func applyFlowAction(t *testing.T, state Model, action flowAction) Model {
@@ -307,7 +284,6 @@ Foundation Skills
   [x] Cognitive Doc Design
   [x] Comment Writer
   [x] Work Unit Commits
-  [x] RDD Defect Workflow
   [x] Systemic Issue Triage
   [x] Security Context
   [x] API Security Tester

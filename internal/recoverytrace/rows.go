@@ -275,63 +275,9 @@ func reviewAuthorityRows() []Row {
 			Contributor: recoveryContributor,
 			Publication: published(),
 		},
-		{
-			Path:        "internal/reviewtransaction/risk.go",
-			Disposition: DispositionKeep,
-			Context:     ContextRAR,
-			Invariant:   "review tier follows authorization, data-loss, mutation, release, and security risk; size alone never escalates",
-			Proof:       []string{"internal/reviewtransaction/risk_test.go"},
-			Contributor: recoveryContributor,
-			Publication: published(),
-		},
 		// risk_test.go is named by the design as deliberately absent from the
 		// branch diff. It is recorded so the ledger states that its coverage was
 		// left untouched rather than leaving a named path unaccounted for.
-		{
-			Path:        "internal/reviewtransaction/risk_test.go",
-			Disposition: DispositionKeep,
-			Context:     ContextRAR,
-			Invariant:   "the risk classifier's tier boundaries stay asserted by an untouched test",
-			Proof:       []string{"internal/reviewtransaction/risk_test.go"},
-			Contributor: recoveryContributor,
-			Publication: published(),
-		},
-		{
-			Path:        "internal/cli/review.go",
-			Disposition: DispositionKeep,
-			Context:     ContextRAR,
-			Invariant:   "the review command surface is the only route to review authority",
-			Proof:       []string{"internal/cli/review_test.go"},
-			Contributor: recoveryContributor,
-			Publication: published(),
-		},
-		{
-			Path:        "internal/cli/review_facade.go",
-			Disposition: DispositionKeep,
-			Context:     ContextRAR,
-			Invariant:   "the compact facade appends and reads back native authority before materializing artifacts",
-			Proof:       []string{"internal/cli/review_facade_test.go"},
-			Contributor: recoveryContributor,
-			Publication: published(),
-		},
-		{
-			Path:        "internal/cli/review_status_contract.go",
-			Disposition: DispositionKeep,
-			Context:     ContextRAR,
-			Invariant:   "status is read-only and never authors a transition",
-			Proof:       []string{"internal/cli/review_status_contract_test.go"},
-			Contributor: recoveryContributor,
-			Publication: published(),
-		},
-		{
-			Path:        "internal/cli/review_next_transition.go",
-			Disposition: DispositionKeep,
-			Context:     ContextRAR,
-			Invariant:   "at most one authorized transition is offered, and a stale authorization is refused",
-			Proof:       []string{"internal/cli/review_next_transition_test.go"},
-			Contributor: recoveryContributor,
-			Publication: published(),
-		},
 		{
 			Path:        "internal/app/app.go",
 			Disposition: DispositionKeep,
@@ -368,131 +314,13 @@ func reviewAuthorityRows() []Row {
 			Contributor: recoveryContributor,
 			Publication: published(),
 		},
-		{
-			Path:        "internal/reviewtransaction/verification_contract.go",
-			Disposition: DispositionKeep,
-			Context:     ContextRAR,
-			Invariant:   "applicability, cost, mutation effect, and permission effect are independent dimensions",
-			Proof:       []string{"internal/reviewtransaction/verification_contract_test.go"},
-			Contributor: recoveryContributor,
-			Publication: unpublished(),
-		},
-		{
-			Path:        "internal/reviewtransaction/verification_contract_test.go",
-			Disposition: DispositionKeep,
-			Context:     ContextRAR,
-			Invariant:   "every cross-product of the verification dimensions is asserted, including unknown",
-			Proof:       []string{"internal/reviewtransaction/verification_contract_test.go"},
-			Contributor: recoveryContributor,
-			Publication: unpublished(),
-		},
-		{
-			Path:        "internal/reviewtransaction/rar_plan_authority.go",
-			Disposition: DispositionKeep,
-			Context:     ContextRAR,
-			Invariant:   "the native plan authority binds every verification dimension; adapters never select lenses",
-			Proof:       []string{"internal/reviewtransaction/rar_plan_authority_test.go"},
-			Contributor: recoveryContributor,
-			Publication: unpublished(),
-		},
-		{
-			Path:        "internal/reviewtransaction/rar_plan_authority_test.go",
-			Disposition: DispositionKeep,
-			Context:     ContextRAR,
-			Invariant:   "a sensitive effect requires immediate authorization and cannot be pre-authorized",
-			Proof:       []string{"internal/reviewtransaction/rar_plan_authority_test.go"},
-			Contributor: recoveryContributor,
-			Publication: unpublished(),
-		},
-		{
-			Path:        "internal/reviewtransaction/compact_reviewer_capture.go",
-			Disposition: DispositionKeep,
-			Context:     ContextRAR,
-			Invariant:   "reviewer results are canonicalized and hashed natively; models never construct canonical bytes",
-			Proof:       []string{"internal/reviewtransaction/compact_reviewer_capture_test.go"},
-			Contributor: recoveryContributor,
-			Publication: unpublished(),
-		},
-		{
-			Path:        "internal/reviewtransaction/compact_reviewer_capture_test.go",
-			Disposition: DispositionKeep,
-			Context:     ContextRAR,
-			Invariant:   "a capture that does not echo the frozen subject hash is refused",
-			Proof:       []string{"internal/reviewtransaction/compact_reviewer_capture_test.go"},
-			Contributor: recoveryContributor,
-			Publication: unpublished(),
-		},
 		// The kill switch is written now: rdd_mode.go carries the global plus
 		// clone-local off-only review mode, and review_mode.go projects it as the
 		// command surface. Its rows are KEEP so the deletion rows that name
 		// rdd_mode_test.go as a destination proof cite a path the ledger itself
 		// acknowledges exists.
-		{
-			Path:        "internal/reviewtransaction/rdd_mode.go",
-			Disposition: DispositionKeep,
-			Context:     ContextRAR,
-			Invariant:   "review mode is user-owned and off-only per clone: any off wins, and re-enabling applies to future candidates only",
-			Proof:       []string{"internal/reviewtransaction/rdd_mode_test.go"},
-			Contributor: recoveryContributor,
-			Publication: unpublished(),
-		},
-		{
-			Path:        "internal/reviewtransaction/rdd_mode_test.go",
-			Disposition: DispositionKeep,
-			Context:     ContextRAR,
-			Invariant:   "disabled review authority stays read-only frozen and delivery reports disabled/unmanaged",
-			Proof:       []string{"internal/reviewtransaction/rdd_mode_test.go"},
-			Contributor: recoveryContributor,
-			Publication: unpublished(),
-		},
 		// The dedicated consent surface remains designed but unwritten; the
 		// frozen-plan consent obligation is owned by rar_plan_authority.go today.
-		{
-			Path:        "internal/reviewtransaction/verification_consent.go",
-			Disposition: DispositionDefer,
-			Context:     ContextRAR,
-			Contributor: recoveryContributor,
-			Publication: unpublished(),
-		},
-		{
-			Path:        "internal/reviewtransaction/verification_consent_test.go",
-			Disposition: DispositionDefer,
-			Context:     ContextRAR,
-			Contributor: recoveryContributor,
-			Publication: unpublished(),
-		},
-		{
-			Path:        "internal/cli/review_mode.go",
-			Disposition: DispositionKeep,
-			Context:     ContextRAR,
-			Invariant:   "the review mode command is the only route to the kill switch and status never mutates",
-			Proof:       []string{"internal/cli/review_mode_test.go"},
-			Contributor: recoveryContributor,
-			Publication: unpublished(),
-		},
-		{
-			Path:        "internal/cli/review_mode_test.go",
-			Disposition: DispositionKeep,
-			Context:     ContextRAR,
-			Invariant:   "every mode transition and its source/effective diagnostics are asserted by code",
-			Proof:       []string{"internal/cli/review_mode_test.go"},
-			Contributor: recoveryContributor,
-			Publication: unpublished(),
-		},
-		{
-			Path:        "internal/cli/review_verification_decide.go",
-			Disposition: DispositionDefer,
-			Context:     ContextRAR,
-			Contributor: recoveryContributor,
-			Publication: unpublished(),
-		},
-		{
-			Path:        "internal/cli/review_verification_decide_test.go",
-			Disposition: DispositionDefer,
-			Context:     ContextRAR,
-			Contributor: recoveryContributor,
-			Publication: unpublished(),
-		},
 	}
 }
 
@@ -500,70 +328,10 @@ func reviewAuthorityRows() []Row {
 // installed review, Judgment Day, and organic routing evidence.
 func retiredSDDRows() []Row {
 	return []Row{
-		{
-			Path:             "internal/components/sdd/inject.go",
-			Disposition:      DispositionDelete,
-			Context:          ContextRAR,
-			Invariant:        "native review and Judgment Day agents retain their installed roles independently of SDD",
-			Contributor:      recoveryContributor,
-			Publication:      published(),
-			DestinationPath:  "internal/components/reviewassets/install.go",
-			DestinationProof: []string{"internal/components/reviewassets/install_test.go"},
-		},
-		{
-			Path:             "internal/components/sdd/boundedreview.go",
-			Disposition:      DispositionDelete,
-			Context:          ContextRAR,
-			Invariant:        "runtime review contracts remain owned outside the SDD injector",
-			Contributor:      recoveryContributor,
-			Publication:      published(),
-			DestinationPath:  "internal/components/reviewassets/contract.go",
-			DestinationProof: []string{"internal/components/reviewassets/reviewassets_test.go", "internal/providercontractbundle/review_execution_contract_test.go"},
-		},
-		{
-			Path:             "internal/components/sdd/inject_test.go",
-			Disposition:      DispositionDelete,
-			Context:          ContextRAR,
-			Invariant:        "retained native agent installation has exact role parity and converges on reinstall",
-			Contributor:      recoveryContributor,
-			Publication:      published(),
-			DestinationPath:  "internal/components/reviewassets/install_test.go",
-			DestinationProof: []string{"internal/components/reviewassets/install_test.go"},
-		},
-		{
-			Path:             "internal/components/sdd/bounded_review_contract_test.go",
-			Disposition:      DispositionDelete,
-			Context:          ContextRAR,
-			Invariant:        "per-runtime review contracts retain their identity and reject unsupported runtimes",
-			Contributor:      recoveryContributor,
-			Publication:      published(),
-			DestinationPath:  "internal/components/reviewassets/reviewassets_test.go",
-			DestinationProof: []string{"internal/components/reviewassets/reviewassets_test.go"},
-		},
 		// The trigger-rules injector is published, so it is removed in systemic
 		// order rather than early. Its retained obligation — that organic routing
 		// guidance reaches every configured agent — is carried by the ACI routing
 		// projection, which is proven today.
-		{
-			Path:             "internal/components/sdd/triggerrules.go",
-			Disposition:      DispositionDelete,
-			Context:          ContextACI,
-			Invariant:        "organic routing guidance reaches every configured agent",
-			Contributor:      recoveryContributor,
-			Publication:      published(),
-			DestinationPath:  "internal/components/agentguidance/routing.go",
-			DestinationProof: []string{"internal/components/agentguidance/routing_test.go"},
-		},
-		{
-			Path:             "internal/components/sdd/triggerrules_test.go",
-			Disposition:      DispositionDelete,
-			Context:          ContextACI,
-			Invariant:        "the rendered routing guidance is asserted for every supported adapter",
-			Contributor:      recoveryContributor,
-			Publication:      published(),
-			DestinationPath:  "internal/components/agentguidance/routing_test.go",
-			DestinationProof: []string{"internal/components/agentguidance/routing_test.go"},
-		},
 		{
 			Path:                "internal/sddstatus/runtime_ledger.go",
 			Disposition:         DispositionDelete,
@@ -625,79 +393,20 @@ func transplantSourceRows() []Row {
 		// whose gate asks for it; ResumeFrozenVerificationPlan replays the exact
 		// frozen plan once, never asks again, and rejects stale, cross-bound, or
 		// forged consent (TestFrozenPlanConsentResumeReusesTheIdenticalPlan).
-		{
-			Path:             "internal/workrun/verification_consent.go",
-			Disposition:      DispositionDelete,
-			Context:          ContextRAR,
-			Invariant:        "verification consent is frozen once, replayed exactly, and never re-asked",
-			Contributor:      recoveryContributor,
-			Publication:      unpublished(),
-			EarlyDeviation:   true,
-			DestinationPath:  "internal/reviewtransaction/rar_plan_authority.go",
-			DestinationProof: []string{"internal/reviewtransaction/rar_plan_authority_test.go"},
-		},
 		// The consent record binds AuthorityRef and PlanDigest of the exact
 		// owner-authored frozen plan; nothing else can manufacture one, and a
 		// plan that does not require consent refuses to issue it.
-		{
-			Path:             "internal/workprovider/productive_verification_consent.go",
-			Disposition:      DispositionDelete,
-			Context:          ContextRAR,
-			Invariant:        "the consent prompt is owner-authored and offers only the choices the owner declared",
-			Contributor:      recoveryContributor,
-			Publication:      unpublished(),
-			EarlyDeviation:   true,
-			DestinationPath:  "internal/reviewtransaction/rar_plan_authority.go",
-			DestinationProof: []string{"internal/reviewtransaction/rar_plan_authority_test.go"},
-		},
 		// One consent resumes one identical plan; the resumed gate never asks
 		// twice, and consent cannot cross to another frozen plan.
-		{
-			Path:             "internal/cli/work_verification_decide.go",
-			Disposition:      DispositionDelete,
-			Context:          ContextRAR,
-			Invariant:        "a consent decision is taken exactly once against the owner's prompt reference",
-			Contributor:      recoveryContributor,
-			Publication:      unpublished(),
-			EarlyDeviation:   true,
-			DestinationPath:  "internal/reviewtransaction/rar_plan_authority.go",
-			DestinationProof: []string{"internal/reviewtransaction/rar_plan_authority_test.go"},
-		},
 		// The failure classes this test carried — stale, cross-bound, and forged
 		// consent answers that must mutate nothing — are asserted against the
 		// surviving plan authority rather than the retired CLI surface.
-		{
-			Path:             "internal/cli/work_verification_decide_test.go",
-			Disposition:      DispositionDelete,
-			Context:          ContextRAR,
-			Invariant:        "an invalid, ambiguous, or unoffered consent answer mutates nothing",
-			Contributor:      recoveryContributor,
-			Publication:      unpublished(),
-			EarlyDeviation:   true,
-			DestinationPath:  "internal/reviewtransaction/rar_plan_authority.go",
-			DestinationProof: []string{"internal/reviewtransaction/rar_plan_authority_test.go"},
-		},
 		// The kill switch this row waited for exists now (rdd_mode.go), and the
 		// recovery classes live in the surviving review transaction: disabled
 		// frozen authority stays read-only (rdd_mode_test.go), interrupted
 		// authority is repaired without a second effect (authority_repair_test.go),
 		// and the prepared reconcile journal admits exactly one replay
 		// (compact_batch_reconcile_journal_test.go).
-		{
-			Path:            "internal/workprovider/productive_advance_recovery_test.go",
-			Disposition:     DispositionDelete,
-			Context:         ContextHCR,
-			Invariant:       "crash and kill-switch failure classes leave recoverable state without a second effect",
-			Contributor:     recoveryContributor,
-			Publication:     unpublished(),
-			EarlyDeviation:  true,
-			DestinationPath: "internal/reviewtransaction/",
-			DestinationProof: []string{
-				"internal/reviewtransaction/rdd_mode_test.go",
-				"internal/reviewtransaction/authority_repair_test.go",
-				"internal/reviewtransaction/compact_batch_reconcile_journal_test.go",
-			},
-		},
 	}
 }
 
@@ -717,15 +426,6 @@ func alreadyImplementedDeletionRows() []Row {
 		// mismatched predecessor with ErrConcurrentUpdate, publication is
 		// content-addressed and reads the existing event back before accepting it
 		// rather than clobbering, and HEAD is replaced through writeAtomic.
-		{
-			Path:                "internal/workrun/store.go",
-			Disposition:         DispositionDelete,
-			Context:             ContextMMI,
-			Contributor:         recoveryContributor,
-			Publication:         unpublished(),
-			EarlyDeviation:      true,
-			NoRetainedInvariant: true,
-		},
 		// snapshot.go runGitCaptured scrubs the unsafe GIT_* variables, forces
 		// LC_ALL=C, pins LANG=C for the frozen candidate, bounds every launch with
 		// LocalGitCommandTimeout/RemoteGitCommandTimeout, and caps output through
@@ -733,107 +433,35 @@ func alreadyImplementedDeletionRows() []Row {
 		// gate.go resolving revisions with rev-parse --verify <rev>^{commit} against
 		// the object format frozen_candidate_context.go validated. Process-tree kill
 		// is git_process_unix.go and git_process_windows.go.
-		{
-			Path:                "internal/workprovider/pad_git_object_authority.go",
-			Disposition:         DispositionDelete,
-			Context:             ContextHCR,
-			Contributor:         recoveryContributor,
-			Publication:         unpublished(),
-			EarlyDeviation:      true,
-			NoRetainedInvariant: true,
-		},
 		// rar_path_safety.go detects directory identity replacement across the whole
 		// window with six os.SameFile checks spanning lock acquisition
 		// (acquireRARAuthorityLock, acquirePrivateRARLocalStoreLock) through
 		// publishPrivateRARImmutable, and repository_locator.go adds eleven more.
-		{
-			Path:                "internal/workrun/path_safety.go",
-			Disposition:         DispositionDelete,
-			Context:             ContextMMI,
-			Contributor:         recoveryContributor,
-			Publication:         unpublished(),
-			EarlyDeviation:      true,
-			NoRetainedInvariant: true,
-		},
 		// rar_path_safety_unix.go refuses traversal at the syscall: rarPathUnsafe
 		// rejects a symlink outright, and openRARPathNoFollow opens relative to a
 		// secured parent descriptor with O_NOFOLLOW|O_CLOEXEC.
-		{
-			Path:                "internal/workrun/path_safety_unix.go",
-			Disposition:         DispositionDelete,
-			Context:             ContextMMI,
-			Contributor:         recoveryContributor,
-			Publication:         unpublished(),
-			EarlyDeviation:      true,
-			NoRetainedInvariant: true,
-		},
 		// rar_path_safety_windows.go validates reparse points before publication
 		// (rarPathUnsafe, openWindowsRARObject, openWindowsRARFileUnsafe) and
 		// enforces the owner-only DACL through privateRARSecurityDescriptorSafe,
 		// ownerOnlyRARSecurityDescriptor, and ownerOnlyRARWindowsAccessMask.
-		{
-			Path:                "internal/workrun/path_safety_windows.go",
-			Disposition:         DispositionDelete,
-			Context:             ContextMMI,
-			Contributor:         recoveryContributor,
-			Publication:         unpublished(),
-			EarlyDeviation:      true,
-			NoRetainedInvariant: true,
-		},
 		// compact_reviewer_capture_unix.go implements the hardlink-count guard as
 		// compactReviewerFileSingleLink (stat.Nlink == 1), and
 		// compact_reviewer_capture.go applies it three times: before opening, on the
 		// opened descriptor, and again after the write.
-		{
-			Path:                "internal/workprovider/productive_advance_path_unix.go",
-			Disposition:         DispositionDelete,
-			Context:             ContextMMI,
-			Contributor:         recoveryContributor,
-			Publication:         unpublished(),
-			EarlyDeviation:      true,
-			NoRetainedInvariant: true,
-		},
 		// compact_reviewer_capture_windows.go is the Windows half of the same guard,
 		// refusing a shared-handle target when NumberOfLinks != 1.
-		{
-			Path:                "internal/workprovider/productive_advance_path_windows.go",
-			Disposition:         DispositionDelete,
-			Context:             ContextMMI,
-			Contributor:         recoveryContributor,
-			Publication:         unpublished(),
-			EarlyDeviation:      true,
-			NoRetainedInvariant: true,
-		},
 		// compact_batch_reconcile_journal.go is the same invariant: a prepared
 		// journal is persisted as a global fail-closed marker before any entry
 		// moves, the whole plan is bound by request identity, and a crash resumes
 		// only through replayCompactBatchReconcileJournalLocked, which either
 		// completes the identical batch or refuses it. compact_batch_reconcile_plan.go
 		// derives the all-or-nothing plan itself.
-		{
-			Path:                "internal/workprovider/runtime_policy_provisioner.go",
-			Disposition:         DispositionDelete,
-			Context:             ContextMMI,
-			Contributor:         recoveryContributor,
-			Publication:         unpublished(),
-			EarlyDeviation:      true,
-			NoRetainedInvariant: true,
-		},
 		// artifact_subject.go makes candidate identity immutable: NewArtifactSubject
 		// derives one hashed slot identity from the frozen candidate and refuses a
 		// subject that binds no lens slot. compact_reviewer_capture.go keeps the slot
 		// append-only, and requireCompactReviewerSlotCompatible refuses to rebind a
 		// bound slot to different canonical bytes; compact_result_disposition.go
 		// keeps the order+lens slot exclusive.
-		{
-			Path:                "internal/workprovider/pad_candidate_catalog.go",
-			Disposition:         DispositionDelete,
-			Context:             ContextPAD,
-			Contributor:         recoveryContributor,
-			Publication:         unpublished(),
-			EarlyDeviation:      true,
-			NoRetainedInvariant: true,
-		},
 	}
 }
 
@@ -873,17 +501,6 @@ func retiredPackageRows() []Row {
 		// gate.go validateBoundaryRefSelector, which holds every pre-PR/pre-push
 		// boundary selector and gate-request base ref to the same structured-ref
 		// rule before it can become a Git argv element.
-		{
-			Path:             "internal/deliveryadmission/",
-			Disposition:      DispositionDelete,
-			Context:          ContextMMI,
-			Invariant:        "PR head and destination refs are structured bindings, never command strings",
-			Contributor:      recoveryContributor,
-			Publication:      unpublished(),
-			EarlyDeviation:   true,
-			DestinationPath:  "internal/reviewtransaction/gate.go",
-			DestinationProof: []string{"internal/reviewtransaction/pr_command_boundary_test.go"},
-		},
 		// Already implemented in the surviving review transaction:
 		//   - Immutable append-only, replay-safe execution admission:
 		//     artifact_admission.go (AdmitArtifact validates the subject echo and a
@@ -944,34 +561,6 @@ func retiredPackageRows() []Row {
 		// The two control-plane packages keep their own rows for the highest-loss
 		// sources above. These directory rows carry only the residual generic
 		// invariants, which already have surviving equivalents.
-		{
-			Path:            "internal/workrun/",
-			Disposition:     DispositionDelete,
-			Context:         ContextMMI,
-			Invariant:       "residual atomic-publication and path-containment invariants outside the individually transplanted sources",
-			Contributor:     recoveryContributor,
-			Publication:     unpublished(),
-			EarlyDeviation:  true,
-			DestinationPath: "internal/reviewtransaction/",
-			DestinationProof: []string{
-				"internal/reviewtransaction/store_test.go",
-				"internal/reviewtransaction/rar_path_safety_windows_test.go",
-			},
-		},
-		{
-			Path:            "internal/workprovider/",
-			Disposition:     DispositionDelete,
-			Context:         ContextPAD,
-			Invariant:       "residual delivery-authorization and terminal-outcome invariants outside the individually transplanted sources",
-			Contributor:     recoveryContributor,
-			Publication:     unpublished(),
-			EarlyDeviation:  true,
-			DestinationPath: "internal/reviewtransaction/",
-			DestinationProof: []string{
-				"internal/reviewtransaction/gate_test.go",
-				"internal/reviewtransaction/receipt_test.go",
-			},
-		},
 	}
 }
 
@@ -1071,15 +660,6 @@ func regenerationRows() []Row {
 			Context:     ContextACI,
 			Invariant:   "the embedded asset assertions match the organic surface, and are rewritten before regeneration rather than after",
 			Proof:       []string{"internal/assets/assets_test.go"},
-			Contributor: recoveryContributor,
-			Publication: published(),
-		},
-		{
-			Path:        "internal/assets/skills/_shared/review-ledger-contract.md",
-			Disposition: DispositionKeep,
-			Context:     ContextACI,
-			Invariant:   "the embedded key skills/_shared/review-ledger-contract.md is unchanged so existing installs still resolve it",
-			Proof:       []string{"internal/assets/shared_skill_files_test.go", "internal/cli/review_next_transition_docs_test.go"},
 			Contributor: recoveryContributor,
 			Publication: published(),
 		},

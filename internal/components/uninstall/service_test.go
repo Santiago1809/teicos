@@ -1769,7 +1769,6 @@ func TestFullAgentOpenCodeUninstallRemovesReleasedPluginBytes(t *testing.T) {
 		return data
 	}
 	owned := map[string][]byte{
-		"opencode-review-transport.ts": released("v3.7.0/plugins/opencode-review-transport.ts"),
 		"sdd-task-result-artifacts.ts": released("v3.7.0/plugins-v2/sdd-task-result-artifacts.ts"),
 		"background-agents.ts":         released("v1.33.2/plugins/background-agents.ts"),
 		"review-result-artifacts.ts":   released("v2.1.7/plugins/review-result-artifacts.ts"),
@@ -1777,6 +1776,8 @@ func TestFullAgentOpenCodeUninstallRemovesReleasedPluginBytes(t *testing.T) {
 	user := map[string][]byte{
 		"skill-registry.ts": append(released("v3.7.0/plugins/opencode-review-transport.ts"), "// user edit\n"...),
 		"model-variants.ts": released("v3.7.0/plugins/sdd-task-result-artifacts.ts"),
+		// The review transport plugin belongs to gentle-ai: Teicos leaves it.
+		"opencode-review-transport.ts": released("v3.7.0/plugins/opencode-review-transport.ts"),
 	}
 	for _, files := range []map[string][]byte{owned, user} {
 		for name, data := range files {

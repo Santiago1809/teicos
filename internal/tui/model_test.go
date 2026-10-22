@@ -1048,27 +1048,6 @@ func TestEscBlockedWhilePipelineRunning(t *testing.T) {
 	}
 }
 
-func TestEscBlockedWhileInstallReviewModePersists(t *testing.T) {
-	for _, testCase := range []struct {
-		name string
-		err  error
-	}{
-		{name: "succeeds"},
-		{name: "fails", err: errors.New("write global mode")},
-	} {
-		t.Run(testCase.name, func(t *testing.T) {
-			m := NewModel(system.DetectionResult{}, "dev")
-			m.Screen = ScreenInstalling
-
-			state := updateModel(m, tea.KeyMsg{Type: tea.KeyEsc})
-			if state.Screen != ScreenInstalling {
-				t.Fatalf("screen = %v, want ScreenInstalling while RDD mode persists", state.Screen)
-			}
-
-		})
-	}
-}
-
 func TestEnterAtFullProgressWaitsForPipelineDone(t *testing.T) {
 	m := installingModel([]string{"only-step"}, 11)
 	m.Progress.Mark(0, string(pipeline.StepStatusSucceeded))
@@ -1801,13 +1780,13 @@ func TestWelcomeMenu_BackupsNavigation(t *testing.T) {
 func TestWelcomeMenu_UninstallNavigation(t *testing.T) {
 	m := NewModel(system.DetectionResult{}, "dev")
 	m.Screen = ScreenWelcome
-	m.Cursor = 9
+	m.Cursor = 7
 
 	updated, _ := m.Update(tea.KeyMsg{Type: tea.KeyEnter})
 	state := updated.(Model)
 
 	if state.Screen != ScreenUninstallMode {
-		t.Fatalf("cursor=9 (Managed uninstall): screen = %v, want %v", state.Screen, ScreenUninstallMode)
+		t.Fatalf("cursor=7 (Managed uninstall): screen = %v, want %v", state.Screen, ScreenUninstallMode)
 	}
 }
 
@@ -1816,22 +1795,22 @@ func TestWelcomeMenu_UninstallNavigation_WithOpenCodeDetected(t *testing.T) {
 		Configs: []system.ConfigState{{Agent: string(model.AgentOpenCode), Exists: true}},
 	}, "dev")
 	m.Screen = ScreenWelcome
-	m.Cursor = 9
+	m.Cursor = 7
 
 	updated, _ := m.Update(tea.KeyMsg{Type: tea.KeyEnter})
 	state := updated.(Model)
 
 	if state.Screen != ScreenUninstallMode {
-		t.Fatalf("cursor=9 (Managed uninstall with OpenCode): screen = %v, want %v", state.Screen, ScreenUninstallMode)
+		t.Fatalf("cursor=7 (Managed uninstall with OpenCode): screen = %v, want %v", state.Screen, ScreenUninstallMode)
 	}
 }
 
-// TestWelcomeMenu_OptionCount verifies the 12 retained welcome options.
+// TestWelcomeMenu_OptionCount verifies the 10 retained welcome options.
 func TestWelcomeMenu_OptionCount(t *testing.T) {
 	m := NewModel(system.DetectionResult{}, "dev")
 	opts := screens.WelcomeOptions(m.UpdateResults, m.UpdateCheckDone, true)
-	if len(opts) != 12 {
-		t.Fatalf("WelcomeOptions() len = %d, want 12; got %v", len(opts), opts)
+	if len(opts) != 10 {
+		t.Fatalf("WelcomeOptions() len = %d, want 10; got %v", len(opts), opts)
 	}
 }
 
@@ -7152,17 +7131,10 @@ func TestDependencyTreeForward(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			m := tt.setup(t)
-			updated, cmd := m.Update(tea.KeyMsg{Type: tea.KeyEnter})
+			updated, _ := m.Update(tea.KeyMsg{Type: tea.KeyEnter})
 			got := updated.(Model)
-			if tt.confirmRDD {
-				if got.Screen != ScreenReview || cmd == nil {
-					t.Fatalf("screen/load = %v/%t, want loaded ScreenReview", got.Screen, cmd != nil)
-				}
-				updated, _ = got.Update(cmd())
-				got = updated.(Model)
-				got.Cursor = 1 // Explicitly choose OFF instead of the ON default.
-				updated, _ = got.Update(tea.KeyMsg{Type: tea.KeyEnter})
-				got = updated.(Model)
+			if tt.confirmRDD && got.Screen != ScreenReview {
+				t.Fatalf("screen = %v, want ScreenReview", got.Screen)
 			}
 			if got.Screen != tt.wantScreen {
 				t.Fatalf("screen = %v, want %v", got.Screen, tt.wantScreen)

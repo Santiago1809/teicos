@@ -154,15 +154,6 @@
     },
     {
       "context": "ACI",
-      "invariant": "the embedded key skills/_shared/review-ledger-contract.md is unchanged so existing installs still resolve it",
-      "path": "internal/assets/skills/_shared/review-ledger-contract.md",
-      "proof": [
-        "internal/assets/shared_skill_files_test.go",
-        "internal/cli/review_next_transition_docs_test.go"
-      ]
-    },
-    {
-      "context": "ACI",
       "invariant": "the orchestrator prompt carries organic routing under systemic order and no remote work vocabulary",
       "path": "internal/assets/windsurf/orchestrator.md",
       "proof": [
@@ -183,54 +174,6 @@
       "path": "internal/cli/doctor_test.go",
       "proof": [
         "internal/cli/doctor_test.go"
-      ]
-    },
-    {
-      "context": "RAR",
-      "invariant": "the review command surface is the only route to review authority",
-      "path": "internal/cli/review.go",
-      "proof": [
-        "internal/cli/review_test.go"
-      ]
-    },
-    {
-      "context": "RAR",
-      "invariant": "the compact facade appends and reads back native authority before materializing artifacts",
-      "path": "internal/cli/review_facade.go",
-      "proof": [
-        "internal/cli/review_facade_test.go"
-      ]
-    },
-    {
-      "context": "RAR",
-      "invariant": "the review mode command is the only route to the kill switch and status never mutates",
-      "path": "internal/cli/review_mode.go",
-      "proof": [
-        "internal/cli/review_mode_test.go"
-      ]
-    },
-    {
-      "context": "RAR",
-      "invariant": "every mode transition and its source/effective diagnostics are asserted by code",
-      "path": "internal/cli/review_mode_test.go",
-      "proof": [
-        "internal/cli/review_mode_test.go"
-      ]
-    },
-    {
-      "context": "RAR",
-      "invariant": "at most one authorized transition is offered, and a stale authorization is refused",
-      "path": "internal/cli/review_next_transition.go",
-      "proof": [
-        "internal/cli/review_next_transition_test.go"
-      ]
-    },
-    {
-      "context": "RAR",
-      "invariant": "status is read-only and never authors a transition",
-      "path": "internal/cli/review_status_contract.go",
-      "proof": [
-        "internal/cli/review_status_contract_test.go"
       ]
     },
     {
@@ -319,86 +262,6 @@
       "path": "internal/doctor/doctor_test.go",
       "proof": [
         "internal/doctor/doctor_test.go"
-      ]
-    },
-    {
-      "context": "RAR",
-      "invariant": "reviewer results are canonicalized and hashed natively; models never construct canonical bytes",
-      "path": "internal/reviewtransaction/compact_reviewer_capture.go",
-      "proof": [
-        "internal/reviewtransaction/compact_reviewer_capture_test.go"
-      ]
-    },
-    {
-      "context": "RAR",
-      "invariant": "a capture that does not echo the frozen subject hash is refused",
-      "path": "internal/reviewtransaction/compact_reviewer_capture_test.go",
-      "proof": [
-        "internal/reviewtransaction/compact_reviewer_capture_test.go"
-      ]
-    },
-    {
-      "context": "RAR",
-      "invariant": "the native plan authority binds every verification dimension; adapters never select lenses",
-      "path": "internal/reviewtransaction/rar_plan_authority.go",
-      "proof": [
-        "internal/reviewtransaction/rar_plan_authority_test.go"
-      ]
-    },
-    {
-      "context": "RAR",
-      "invariant": "a sensitive effect requires immediate authorization and cannot be pre-authorized",
-      "path": "internal/reviewtransaction/rar_plan_authority_test.go",
-      "proof": [
-        "internal/reviewtransaction/rar_plan_authority_test.go"
-      ]
-    },
-    {
-      "context": "RAR",
-      "invariant": "review mode is user-owned and off-only per clone: any off wins, and re-enabling applies to future candidates only",
-      "path": "internal/reviewtransaction/rdd_mode.go",
-      "proof": [
-        "internal/reviewtransaction/rdd_mode_test.go"
-      ]
-    },
-    {
-      "context": "RAR",
-      "invariant": "disabled review authority stays read-only frozen and delivery reports disabled/unmanaged",
-      "path": "internal/reviewtransaction/rdd_mode_test.go",
-      "proof": [
-        "internal/reviewtransaction/rdd_mode_test.go"
-      ]
-    },
-    {
-      "context": "RAR",
-      "invariant": "review tier follows authorization, data-loss, mutation, release, and security risk; size alone never escalates",
-      "path": "internal/reviewtransaction/risk.go",
-      "proof": [
-        "internal/reviewtransaction/risk_test.go"
-      ]
-    },
-    {
-      "context": "RAR",
-      "invariant": "the risk classifier's tier boundaries stay asserted by an untouched test",
-      "path": "internal/reviewtransaction/risk_test.go",
-      "proof": [
-        "internal/reviewtransaction/risk_test.go"
-      ]
-    },
-    {
-      "context": "RAR",
-      "invariant": "applicability, cost, mutation effect, and permission effect are independent dimensions",
-      "path": "internal/reviewtransaction/verification_contract.go",
-      "proof": [
-        "internal/reviewtransaction/verification_contract_test.go"
-      ]
-    },
-    {
-      "context": "RAR",
-      "invariant": "every cross-product of the verification dimensions is asserted, including unknown",
-      "path": "internal/reviewtransaction/verification_contract_test.go",
-      "proof": [
-        "internal/reviewtransaction/verification_contract_test.go"
       ]
     },
     {

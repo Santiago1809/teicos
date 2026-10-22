@@ -115,13 +115,6 @@
       ]
     },
     {
-      "path": "internal/assets/skills/_shared/review-ledger-contract.md",
-      "proof": [
-        "internal/assets/shared_skill_files_test.go",
-        "internal/cli/review_next_transition_docs_test.go"
-      ]
-    },
-    {
       "path": "internal/assets/windsurf/orchestrator.md",
       "proof": [
         "internal/assets/assets_test.go"
@@ -137,42 +130,6 @@
       "path": "internal/cli/doctor_test.go",
       "proof": [
         "internal/cli/doctor_test.go"
-      ]
-    },
-    {
-      "path": "internal/cli/review.go",
-      "proof": [
-        "internal/cli/review_test.go"
-      ]
-    },
-    {
-      "path": "internal/cli/review_facade.go",
-      "proof": [
-        "internal/cli/review_facade_test.go"
-      ]
-    },
-    {
-      "path": "internal/cli/review_mode.go",
-      "proof": [
-        "internal/cli/review_mode_test.go"
-      ]
-    },
-    {
-      "path": "internal/cli/review_mode_test.go",
-      "proof": [
-        "internal/cli/review_mode_test.go"
-      ]
-    },
-    {
-      "path": "internal/cli/review_next_transition.go",
-      "proof": [
-        "internal/cli/review_next_transition_test.go"
-      ]
-    },
-    {
-      "path": "internal/cli/review_status_contract.go",
-      "proof": [
-        "internal/cli/review_status_contract_test.go"
       ]
     },
     {
@@ -198,18 +155,6 @@
       "proof": [
         "internal/cli/sync_test.go"
       ]
-    },
-    {
-      "destinationProof": [
-        "internal/reviewtransaction/rar_plan_authority_test.go"
-      ],
-      "path": "internal/cli/work_verification_decide.go"
-    },
-    {
-      "destinationProof": [
-        "internal/reviewtransaction/rar_plan_authority_test.go"
-      ],
-      "path": "internal/cli/work_verification_decide_test.go"
     },
     {
       "path": "internal/components/agentguidance/inject.go",
@@ -242,49 +187,6 @@
       ]
     },
     {
-      "destinationProof": [
-        "internal/components/reviewassets/reviewassets_test.go"
-      ],
-      "path": "internal/components/sdd/bounded_review_contract_test.go"
-    },
-    {
-      "destinationProof": [
-        "internal/components/reviewassets/reviewassets_test.go",
-        "internal/providercontractbundle/review_execution_contract_test.go"
-      ],
-      "path": "internal/components/sdd/boundedreview.go"
-    },
-    {
-      "destinationProof": [
-        "internal/components/reviewassets/install_test.go"
-      ],
-      "path": "internal/components/sdd/inject.go"
-    },
-    {
-      "destinationProof": [
-        "internal/components/reviewassets/install_test.go"
-      ],
-      "path": "internal/components/sdd/inject_test.go"
-    },
-    {
-      "destinationProof": [
-        "internal/components/agentguidance/routing_test.go"
-      ],
-      "path": "internal/components/sdd/triggerrules.go"
-    },
-    {
-      "destinationProof": [
-        "internal/components/agentguidance/routing_test.go"
-      ],
-      "path": "internal/components/sdd/triggerrules_test.go"
-    },
-    {
-      "destinationProof": [
-        "internal/reviewtransaction/pr_command_boundary_test.go"
-      ],
-      "path": "internal/deliveryadmission/"
-    },
-    {
       "path": "internal/doctor/doctor.go",
       "proof": [
         "internal/doctor/doctor_test.go"
@@ -294,66 +196,6 @@
       "path": "internal/doctor/doctor_test.go",
       "proof": [
         "internal/doctor/doctor_test.go"
-      ]
-    },
-    {
-      "path": "internal/reviewtransaction/compact_reviewer_capture.go",
-      "proof": [
-        "internal/reviewtransaction/compact_reviewer_capture_test.go"
-      ]
-    },
-    {
-      "path": "internal/reviewtransaction/compact_reviewer_capture_test.go",
-      "proof": [
-        "internal/reviewtransaction/compact_reviewer_capture_test.go"
-      ]
-    },
-    {
-      "path": "internal/reviewtransaction/rar_plan_authority.go",
-      "proof": [
-        "internal/reviewtransaction/rar_plan_authority_test.go"
-      ]
-    },
-    {
-      "path": "internal/reviewtransaction/rar_plan_authority_test.go",
-      "proof": [
-        "internal/reviewtransaction/rar_plan_authority_test.go"
-      ]
-    },
-    {
-      "path": "internal/reviewtransaction/rdd_mode.go",
-      "proof": [
-        "internal/reviewtransaction/rdd_mode_test.go"
-      ]
-    },
-    {
-      "path": "internal/reviewtransaction/rdd_mode_test.go",
-      "proof": [
-        "internal/reviewtransaction/rdd_mode_test.go"
-      ]
-    },
-    {
-      "path": "internal/reviewtransaction/risk.go",
-      "proof": [
-        "internal/reviewtransaction/risk_test.go"
-      ]
-    },
-    {
-      "path": "internal/reviewtransaction/risk_test.go",
-      "proof": [
-        "internal/reviewtransaction/risk_test.go"
-      ]
-    },
-    {
-      "path": "internal/reviewtransaction/verification_contract.go",
-      "proof": [
-        "internal/reviewtransaction/verification_contract_test.go"
-      ]
-    },
-    {
-      "path": "internal/reviewtransaction/verification_contract_test.go",
-      "proof": [
-        "internal/reviewtransaction/verification_contract_test.go"
       ]
     },
     {
@@ -367,40 +209,6 @@
       "proof": [
         "internal/state/state_test.go"
       ]
-    },
-    {
-      "destinationProof": [
-        "internal/reviewtransaction/gate_test.go",
-        "internal/reviewtransaction/receipt_test.go"
-      ],
-      "path": "internal/workprovider/"
-    },
-    {
-      "destinationProof": [
-        "internal/reviewtransaction/rdd_mode_test.go",
-        "internal/reviewtransaction/authority_repair_test.go",
-        "internal/reviewtransaction/compact_batch_reconcile_journal_test.go"
-      ],
-      "path": "internal/workprovider/productive_advance_recovery_test.go"
-    },
-    {
-      "destinationProof": [
-        "internal/reviewtransaction/rar_plan_authority_test.go"
-      ],
-      "path": "internal/workprovider/productive_verification_consent.go"
-    },
-    {
-      "destinationProof": [
-        "internal/reviewtransaction/store_test.go",
-        "internal/reviewtransaction/rar_path_safety_windows_test.go"
-      ],
-      "path": "internal/workrun/"
-    },
-    {
-      "destinationProof": [
-        "internal/reviewtransaction/rar_plan_authority_test.go"
-      ],
-      "path": "internal/workrun/verification_consent.go"
     }
   ]
 }

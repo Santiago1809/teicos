@@ -114,7 +114,7 @@ func TestCursorJudgmentDayCLISmoke(t *testing.T) {
 			got[name] = body
 			wants := []string{"name: " + strings.TrimSuffix(name, ".md"), "model: inherit", "background: false", "Maximum 2 fix rounds", "Only the parent"}
 			if strings.HasPrefix(name, "jd-judge-") {
-				wants = append(wants, "readonly: true", nativeagents.NativeReviewerResultSchema, "frozen ledger plus immutable fix delta", "asks the user to approve", "no `review-refuter`", "do not persist or modify the ledger")
+				wants = append(wants, "readonly: true", nativeagents.NativeReviewerResultSchema, "frozen ledger plus immutable fix delta", "asks the user to approve", "do not persist or modify the ledger")
 			} else {
 				wants = append(wants, "readonly: false", "Fix ONLY the confirmed issues", "parent owns user approval and ledger persistence")
 			}

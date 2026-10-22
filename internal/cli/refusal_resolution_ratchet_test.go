@@ -632,12 +632,12 @@ func TestRefusalRatchetReportsFieldCarriedRefusals(t *testing.T) {
 // now name a resolution, are annotated, or are gone" -- and the one that meant
 // LOST COVERAGE read exactly like the two that meant progress.
 func TestRefusalRatchetReportsStaleBaselineEntries(t *testing.T) {
-	const fixed = "internal/reviewtransaction/gate.go\t\"a refusal that now names its exit\""
-	const gone = "internal/reviewtransaction/gate.go\t\"advertised base commit is not available locally; fetch before validation\""
-	const live = "internal/reviewtransaction/gate.go\t\"a refusal still frozen\""
+	const fixed = "internal/cli/gate.go\t\"a refusal that now names its exit\""
+	const gone = "internal/cli/gate.go\t\"advertised base commit is not available locally; fetch before validation\""
+	const live = "internal/cli/gate.go\t\"a refusal still frozen\""
 
 	analyzed := map[string]bool{fixed: true, live: true}
-	current := map[string]refusalRatchetSite{live: {file: "internal/reviewtransaction/gate.go", message: "a refusal still frozen"}}
+	current := map[string]refusalRatchetSite{live: {file: "internal/cli/gate.go", message: "a refusal still frozen"}}
 
 	drift := refusalRatchetClassifyBaselineDrift([]string{fixed, gone, live, ""}, analyzed, current)
 
@@ -662,10 +662,11 @@ func TestEveryProductionRefusalNamesResolutionOrDeclaresByDesign(t *testing.T) {
 
 	total := len(analysis.violations) + analysis.satisfiedNamed + analysis.satisfiedAnnotated + analysis.exemptWraps + len(analysis.unanalyzable)
 	// The survey that motivated this guard counted ~2,500 constructor sites
-	// across these packages. A walk that suddenly sees a fraction of that is
-	// broken, not clean.
-	if total < 1000 {
-		t.Fatalf("enumerated only %d error-constructor sites; the survey found ~2,500, so the walk is broken", total)
+	// across internal/cli and internal/reviewtransaction. The review engine is
+	// gone, so the walk now covers internal/cli alone; a walk that sees a
+	// fraction of that is broken, not clean.
+	if total < 300 {
+		t.Fatalf("enumerated only %d error-constructor sites; the walk is broken", total)
 	}
 	t.Logf("sites: %d total = %d violations + %d named + %d annotated + %d exempt wraps + %d unanalyzable",
 		total, len(analysis.violations), analysis.satisfiedNamed, analysis.satisfiedAnnotated, analysis.exemptWraps, len(analysis.unanalyzable))
@@ -814,7 +815,6 @@ func refusalRatchetReportFieldCarriedRefusals(t *testing.T, analysis refusalRatc
 // are excluded until they earn an entry the same way.
 var refusalRatchetProductionDirs = []struct{ dir, prefix string }{
 	{".", "internal/cli"},
-	{filepath.Join("..", "reviewtransaction"), "internal/reviewtransaction"},
 }
 
 // refusalRatchetFile is one production source, labelled by its

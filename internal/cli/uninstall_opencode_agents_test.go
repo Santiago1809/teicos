@@ -34,8 +34,10 @@ func TestUninstallRemovesUntouchedInstalledOrchestrator(t *testing.T) {
 	if err := json.Unmarshal(body, &root); err != nil {
 		t.Fatal(err)
 	}
-	if agents, ok := root["agent"].(map[string]any); ok && agents["gentle-orchestrator"] != nil {
-		t.Fatalf("untouched managed orchestrator retained: %s", body)
+	// The orchestrator is the agent's own guidance: an uninstall that removes
+	// it would delete the user's harness, so it stays.
+	if agents, ok := root["agent"].(map[string]any); ok && agents["gentle-orchestrator"] == nil {
+		t.Fatalf("managed orchestrator was removed: %s", body)
 	}
 }
 
