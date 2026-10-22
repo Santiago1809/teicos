@@ -39,7 +39,7 @@ func claudeModuleUninstallFixture(t *testing.T, modules bool) (*Service, *record
 	t.Helper()
 	home := t.TempDir()
 	t.Setenv("HOME", home)
-	for path, content := range map[string]string{"CLAUDE.md": claudeModuleUserText, "agents/review-risk.md": "native agent"} {
+	for path, content := range map[string]string{"CLAUDE.md": claudeModuleUserText, "agents/jd-judge-a.md": "native agent"} {
 		path = filepath.Join(home, ".claude", path)
 		if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil || os.WriteFile(path, []byte(content), 0o600) != nil {
 			t.Fatalf("write %s", path)
@@ -152,7 +152,7 @@ func TestClaudeUninstallRetiresModulePilotOnlyOnFullRemoval(t *testing.T) {
 		!slices.ContainsFunc(result.ManualActions, func(action string) bool { return strings.Contains(action, modified) }) {
 		t.Fatalf("modified module not kept and reported: %v", result.ManualActions)
 	}
-	if readTestFile(t, filepath.Join(home, ".claude", "agents", "review-risk.md")) != "native agent" {
+	if readTestFile(t, filepath.Join(home, ".claude", "agents", "jd-judge-a.md")) != "native agent" {
 		t.Fatal("native agent changed")
 	}
 	if !slices.Equal(result.AgentsRemovedFromState, []model.AgentID{model.AgentClaudeCode}) {

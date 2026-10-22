@@ -23,13 +23,11 @@ var openCodeAgentConfigAllowedKeys = map[string]bool{
 }
 
 // openCodeParityAgentNames is the full parity set from #4471: the 10 agents
-// ported from Gentle Shell's global agents, plus the two review provider
-// roles retained across the SDD retirement.
+// ported from Gentle Shell's global agents. The review lenses and the review
+// provider roles belonged to receipt-driven development and are gone.
 var openCodeParityAgentNames = []string{
 	"gentle-ai-explore", "gentle-ai-verify", "gentle-ai-worker",
 	"jd-judge-a", "jd-judge-b", "jd-fix-agent",
-	"review-risk", "review-readability", "review-reliability", "review-resilience",
-	"review-refuter", "review-validator",
 }
 
 // TestOpenCodeInstallWritesParityAgentsWithoutManagedByMarker is the RED test
@@ -87,7 +85,6 @@ func TestOpenCodeInstallWritesParityAgentsWithoutManagedByMarker(t *testing.T) {
 	for _, name := range []string{
 		"gentle-ai-explore", "gentle-ai-verify", "gentle-ai-worker",
 		"jd-judge-a", "jd-judge-b", "jd-fix-agent",
-		"review-risk", "review-readability", "review-reliability", "review-resilience",
 	} {
 		if task[name] != "allow" {
 			t.Fatalf("gentle-orchestrator does not allow delegating to parity agent %q: %#v", name, task)

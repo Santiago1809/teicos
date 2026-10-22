@@ -152,7 +152,6 @@ func TestInstallAndSyncDeliverOrchestratorOnceForEveryRuntime(t *testing.T) {
 			// Receipt-driven development reaches only its runtimes.
 			rdd := false
 			for _, marker := range []string{
-				"Native Compact Review Orchestration",
 				"Gentle AI Provider Defect Handoff",
 				"Receipt-driven development is user-owned",
 				"gentle-ai review mode enable|disable|status",
@@ -163,7 +162,7 @@ func TestInstallAndSyncDeliverOrchestratorOnceForEveryRuntime(t *testing.T) {
 				}
 			}
 			if !rdd {
-				for _, forbidden := range []string{"gentle-ai review", "RDD", "receipt", "refuter", "native review"} {
+				for _, forbidden := range []string{"gentle-ai review", "receipt", "native review"} {
 					if strings.Contains(prompt, forbidden) {
 						t.Errorf("non-RDD runtime prompt carries %q", forbidden)
 					}
@@ -222,7 +221,7 @@ func TestInstallUpgradesV370OrchestratorBlockAndKeepsUserText(t *testing.T) {
 			if count := strings.Count(got, orchestratorOpenMarker); count != 1 {
 				t.Fatalf("orchestrator block count = %d, want 1:\n%s", count, got)
 			}
-			for _, heading := range []string{"Lossless Blocking Prompts", "Delegated Verification Gate", "Native Checking Contract", "Native Compact Review Orchestration"} {
+			for _, heading := range []string{"Lossless Blocking Prompts", "Delegated Verification Gate", "Native Checking Contract"} {
 				if !strings.Contains(got, heading) {
 					t.Errorf("upgraded prompt is missing %q", heading)
 				}

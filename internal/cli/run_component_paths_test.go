@@ -233,7 +233,7 @@ func TestComponentPathsClaudeRetainsReviewAndRouting(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, relative := range []string{".claude/CLAUDE.md", ".claude/agents/review-risk.md", ".claude/agents/jd-judge-a.md"} {
+	for _, relative := range []string{".claude/CLAUDE.md", ".claude/agents/jd-judge-a.md", ".claude/agents/jd-judge-a.md"} {
 		if !containsPath(targets, filepath.Join(home, relative)) {
 			t.Errorf("retained Claude path missing: %s", relative)
 		}
@@ -796,7 +796,7 @@ func TestInstallRoutingGuidanceSurvivesOpenCodePluginInstall(t *testing.T) {
 	if !strings.Contains(prompt, routingOpenMarker) || !strings.Contains(prompt, routingCloseMarker) || !strings.Contains(prompt, "<!-- gentle-ai:remote-authorization -->") {
 		t.Fatalf("OpenCode prompt lost routing or remote authorization:\n%s", prompt)
 	}
-	plugin := filepath.Join(home, ".config", "opencode", "plugins", "opencode-review-transport.ts")
+	plugin := filepath.Join(home, ".config", "opencode", "plugins", "skill-registry.ts")
 	first := readTextFile(t, plugin)
 	if first == "" {
 		t.Fatal("empty review transport plugin")
@@ -849,14 +849,14 @@ func TestInstallRoutingGuidanceSecondRunIsByteIdentical(t *testing.T) {
 	first := map[string]string{
 		"opencode.json": readTextFile(t, openCodeSettingsPath(home)),
 		"claude prompt": readTextFile(t, systemPromptFileFor(t, home, model.AgentClaudeCode)),
-		"review plugin": readTextFile(t, filepath.Join(home, ".config", "opencode", "plugins", "opencode-review-transport.ts")),
+		"review plugin": readTextFile(t, filepath.Join(home, ".config", "opencode", "plugins", "skill-registry.ts")),
 	}
 
 	runInstallInjectionSteps(t, newTestInstallRuntime(t, home, selection))
 	second := map[string]string{
 		"opencode.json": readTextFile(t, openCodeSettingsPath(home)),
 		"claude prompt": readTextFile(t, systemPromptFileFor(t, home, model.AgentClaudeCode)),
-		"review plugin": readTextFile(t, filepath.Join(home, ".config", "opencode", "plugins", "opencode-review-transport.ts")),
+		"review plugin": readTextFile(t, filepath.Join(home, ".config", "opencode", "plugins", "skill-registry.ts")),
 	}
 
 	for label, before := range first {

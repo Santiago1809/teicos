@@ -174,7 +174,7 @@ func TestCompleteUninstallPreservesNativeReviewAndJudgmentDayAgents(t *testing.T
 	if err := os.MkdirAll(agentsDir, 0700); err != nil {
 		t.Fatal(err)
 	}
-	for _, name := range []string{"review-risk.md", "jd-judge-a.md"} {
+	for _, name := range []string{"jd-judge-a.md"} {
 		if err := os.WriteFile(filepath.Join(agentsDir, name), []byte("native agent"), 0600); err != nil {
 			t.Fatal(err)
 		}
@@ -187,7 +187,7 @@ func TestCompleteUninstallPreservesNativeReviewAndJudgmentDayAgents(t *testing.T
 	if _, err := svc.CompleteUninstall(); err != nil {
 		t.Fatalf("CompleteUninstall: %v", err)
 	}
-	for _, name := range []string{"review-risk.md", "jd-judge-a.md"} {
+	for _, name := range []string{"jd-judge-a.md"} {
 		if _, err := os.Stat(filepath.Join(agentsDir, name)); err != nil {
 			t.Fatalf("native agent %s removed by uninstall: %v", name, err)
 		}

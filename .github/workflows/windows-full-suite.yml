@@ -54,8 +54,8 @@ jobs:
   # below are sized from measured per-selector cost instead (Linux seconds,
   # which Windows tracks at a steady ~20x across every shard in the matrix):
   #
-  #   cli-a-m         33.5s   cli-review-a-m  41.1s
-  #   cli-n-o         46.1s   cli-review-n-z  34.9s
+  #   cli-a-m         33.5s
+  #   cli-n-o         46.1s
   #   cli-p-q-s-z     48.6s   cli-r-other     14.3s
   #
   # That puts the worst shard near 1000s on Windows, roughly half the go-test
@@ -93,17 +93,10 @@ jobs:
           - name: cli-p-q-s-z
             packages: ./internal/cli
             run: ^Test[P-Q]|^Test[S-Z]
-          - name: cli-review-a-m
-            packages: ./internal/cli
-            run: ^TestReview[A-Ma-m]
-          - name: cli-review-n-z
-            packages: ./internal/cli
-            run: ^TestReview[N-Zn-z]
-          # Every TestR* that the two cli-review shards do not claim: the
-          # non-Review TestRe* tests, TestRevision* (TestRevi + s, where
-          # TestReview is TestRevi + e), and TestRo*/TestRu*. The empty
-          # ^TestR[A-Da-d] arm keeps the R space fully tiled for names nobody
-          # has written yet.
+          # Every TestR* the other cli shards do not claim: the non-Review
+          # TestRe* tests, TestRevision* (TestRevi + s, where TestReview is
+          # TestRevi + e), and TestRo*/TestRu*. The empty ^TestR[A-Da-d] arm
+          # keeps the R space fully tiled for names nobody has written yet.
           - name: cli-r-other
             packages: ./internal/cli
             run: ^TestR[A-Da-d]|^TestRe[A-Ua-u]|^TestRevi[N-Zn-z]|^TestR[F-Zf-z]

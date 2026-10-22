@@ -180,7 +180,7 @@ func TestOpenCodeUpgradeRetiresOwnedAgents(t *testing.T) {
 				if !reflect.DeepEqual(agents["other-marked"], map[string]any{"prompt": "keep this"}) {
 					t.Error("unknown marked agent changed beyond marker removal")
 				}
-				for _, key := range []string{"jd-judge-a", "review-risk", "review-refuter", "review-validator", "gentle-orchestrator"} {
+				for _, key := range []string{"jd-judge-a", "gentle-orchestrator"} {
 					entry := agents[key].(map[string]any)
 					if _, stale := entry["tools"]; stale {
 						t.Errorf("%s retained stale tools", key)

@@ -93,8 +93,8 @@ func assertOpenCodeJSONCSurvived(t *testing.T, settingsPath, phase string) {
 	if gentleman, _ := agents["gentleman"].(map[string]any); gentleman["__managed_by"] != nil || gentleman["model"] != "local/m" {
 		t.Fatalf("%s did not migrate the v3.7.0 gentleman agent: %#v", phase, gentleman)
 	}
-	if _, ok := agents["review-validator"]; !ok {
-		t.Fatalf("%s skipped review provider roles: %#v", phase, agents)
+	if _, ok := agents["gentle-ai-explore"]; !ok {
+		t.Fatalf("%s skipped the parity agents: %#v", phase, agents)
 	}
 }
 

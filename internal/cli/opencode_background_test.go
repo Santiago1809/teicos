@@ -442,7 +442,7 @@ func TestInstallPublishesIntentTransactionally(t *testing.T) {
 			}
 			if tt.wantErr == "" {
 				settings, readErr := os.ReadFile(filepath.Join(home, ".config", "opencode", "opencode.json"))
-				if readErr != nil || !strings.Contains(string(settings), "review-refuter") || !strings.Contains(string(settings), "review-validator") {
+				if readErr != nil || !strings.Contains(string(settings), "gentle-ai-explore") || !strings.Contains(string(settings), "gentle-ai-worker") {
 					t.Fatalf("retained review roles missing from OpenCode settings: %s, error = %v", settings, readErr)
 				}
 			}
@@ -675,7 +675,7 @@ func TestSyncBackgroundPublicationWaitsForVerification(t *testing.T) {
 			}
 			if tt.wantErr == "" {
 				settings, readErr := os.ReadFile(filepath.Join(home, ".config", "opencode", "opencode.json"))
-				if readErr != nil || !strings.Contains(string(settings), "review-refuter") || !strings.Contains(string(settings), "review-validator") {
+				if readErr != nil || !strings.Contains(string(settings), "gentle-ai-explore") || !strings.Contains(string(settings), "gentle-ai-worker") {
 					t.Fatalf("retained review roles missing from sync settings: %s, error = %v", settings, readErr)
 				}
 				if !result.Verify.Ready || result.BackgroundPolicyEnabled || (tt.intent == model.OpenCodeBackgroundOn && !strings.Contains(result.Verify.FinalNote, "execution stays foreground")) {
