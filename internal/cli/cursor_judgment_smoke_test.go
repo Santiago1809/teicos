@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/Santiago1809/teicos/internal/assets"
-	"github.com/Santiago1809/teicos/internal/components/reviewassets"
+	"github.com/Santiago1809/teicos/internal/components/nativeagents"
 )
 
 // TestCursorJudgmentDayCLISmoke exercises the shipped executable, not CLI test
@@ -114,7 +114,7 @@ func TestCursorJudgmentDayCLISmoke(t *testing.T) {
 			got[name] = body
 			wants := []string{"name: " + strings.TrimSuffix(name, ".md"), "model: inherit", "background: false", "Maximum 2 fix rounds", "Only the parent"}
 			if strings.HasPrefix(name, "jd-judge-") {
-				wants = append(wants, "readonly: true", reviewassets.NativeReviewerResultSchema, "frozen ledger plus immutable fix delta", "asks the user to approve", "no `review-refuter`", "do not persist or modify the ledger")
+				wants = append(wants, "readonly: true", nativeagents.NativeReviewerResultSchema, "frozen ledger plus immutable fix delta", "asks the user to approve", "no `review-refuter`", "do not persist or modify the ledger")
 			} else {
 				wants = append(wants, "readonly: false", "Fix ONLY the confirmed issues", "parent owns user approval and ledger persistence")
 			}

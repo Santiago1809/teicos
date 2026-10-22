@@ -28,10 +28,10 @@ import (
 	"github.com/Santiago1809/teicos/internal/components/communitytool"
 	"github.com/Santiago1809/teicos/internal/components/engram"
 	"github.com/Santiago1809/teicos/internal/components/filemerge"
+	"github.com/Santiago1809/teicos/internal/components/nativeagents"
 	"github.com/Santiago1809/teicos/internal/components/opencodedefault"
 	"github.com/Santiago1809/teicos/internal/components/opencoderuntimeplugins"
 	"github.com/Santiago1809/teicos/internal/components/persona"
-	"github.com/Santiago1809/teicos/internal/components/reviewassets"
 	"github.com/Santiago1809/teicos/internal/components/telemetryruntime"
 	"github.com/Santiago1809/teicos/internal/model"
 	opencodeactivation "github.com/Santiago1809/teicos/internal/opencode"
@@ -3324,11 +3324,11 @@ func TestNativeReviewSyncPipelineRollbackRestoresLedgerAndAgent(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err := reviewassets.InstallNativeAgents(home, adapter, reviewassets.InstallOptions{CodeGraphGuidanceMarkdown: "original guidance"}); err != nil {
+	if _, err := nativeagents.InstallNativeAgents(home, adapter, nativeagents.InstallOptions{CodeGraphGuidanceMarkdown: "original guidance"}); err != nil {
 		t.Fatal(err)
 	}
 	dir := adapter.SubAgentsDir(home)
-	ledger := filepath.Join(dir, reviewassets.OwnershipLedgerFilename)
+	ledger := filepath.Join(dir, nativeagents.OwnershipLedgerFilename)
 	path := filepath.Join(dir, "jd-judge-a.md")
 	ledgerBefore, err := os.ReadFile(ledger)
 	if err != nil {
@@ -3376,7 +3376,7 @@ func TestNativeReviewSyncPreservesUnknownAndSnapshotsLedger(t *testing.T) {
 	}
 	selection := model.Selection{Agents: []model.AgentID{model.AgentKiroIDE}}
 	path := filepath.Join(adapter.SubAgentsDir(home), "jd-judge-a.md")
-	ledger := filepath.Join(adapter.SubAgentsDir(home), reviewassets.OwnershipLedgerFilename)
+	ledger := filepath.Join(adapter.SubAgentsDir(home), nativeagents.OwnershipLedgerFilename)
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		t.Fatal(err)
 	}

@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Santiago1809/teicos/internal/filecoord"
 	"github.com/Santiago1809/teicos/internal/model"
-	"github.com/Santiago1809/teicos/internal/reviewtransaction"
 	"github.com/Santiago1809/teicos/internal/state"
 )
 
@@ -67,13 +67,12 @@ func TestMigratePersistedPersonaAliasReReadsLatestStateAfterLockContention(t *te
 	// legacy alias, but is stale by the time the migration runs.
 	persisted := state.InstallState{Persona: string(model.PersonaGentlemanNeutralArtifacts)}
 
-	held, err := reviewtransaction.AcquireAuthorityFileLock(mustInstallStateLockPath(t, home))
+	held, err := filecoord.AcquireAuthorityFileLock(mustInstallStateLockPath(t, home))
 	if err != nil {
 		t.Fatal(err)
 	}
 	if err := state.Write(home, state.InstallState{
 		Persona: string(model.PersonaGentlemanNeutralArtifacts),
-		RDDMode: string(reviewtransaction.RDDModeOn),
 	}); err != nil {
 		t.Fatal(err)
 	}
@@ -84,7 +83,7 @@ func TestMigratePersistedPersonaAliasReReadsLatestStateAfterLockContention(t *te
 		t.Fatalf("contended run printed %q, want silence", buf.String())
 	}
 	contended, err := state.Read(home)
-	if err != nil || contended.Persona != string(model.PersonaGentlemanNeutralArtifacts) || contended.RDDMode != string(reviewtransaction.RDDModeOn) {
+	if err != nil || contended.Persona != string(model.PersonaGentlemanNeutralArtifacts) {
 		t.Fatalf("state after contended run = %#v, err = %v", contended, err)
 	}
 	if err := held.Release(); err != nil {
@@ -103,9 +102,7 @@ func TestMigratePersistedPersonaAliasReReadsLatestStateAfterLockContention(t *te
 	if got.Persona != string(model.PersonaNeutral) {
 		t.Fatalf("persisted persona = %q, want %q", got.Persona, model.PersonaNeutral)
 	}
-	if got.RDDMode != string(reviewtransaction.RDDModeOn) {
-		t.Fatalf("concurrent RDDMode clobbered: got %q, want %q", got.RDDMode, reviewtransaction.RDDModeOn)
-	}
+
 	if !strings.Contains(buf.String(), personaAliasRemapNotice) {
 		t.Fatalf("notice not printed; got %q", buf.String())
 	}

@@ -32,13 +32,13 @@ import (
 	"github.com/Santiago1809/teicos/internal/components/engram"
 	"github.com/Santiago1809/teicos/internal/components/filemerge"
 	"github.com/Santiago1809/teicos/internal/components/mcp"
+	"github.com/Santiago1809/teicos/internal/components/nativeagents"
 	"github.com/Santiago1809/teicos/internal/components/opencodeagents"
 	"github.com/Santiago1809/teicos/internal/components/opencodedefault"
 	"github.com/Santiago1809/teicos/internal/components/opencodeplugin"
 	"github.com/Santiago1809/teicos/internal/components/opencoderuntimeplugins"
 	"github.com/Santiago1809/teicos/internal/components/permissions"
 	"github.com/Santiago1809/teicos/internal/components/persona"
-	"github.com/Santiago1809/teicos/internal/components/reviewassets"
 	"github.com/Santiago1809/teicos/internal/components/skills"
 	"github.com/Santiago1809/teicos/internal/components/telemetryruntime"
 	"github.com/Santiago1809/teicos/internal/components/theme"
@@ -1006,13 +1006,13 @@ type nativeReviewAgentStep struct {
 func (s nativeReviewAgentStep) ID() string { return s.id }
 
 func nativeReviewAgentSupported(agent model.AgentID) bool {
-	return reviewassets.NativeAgentsSupported(agent)
+	return nativeagents.NativeAgentsSupported(agent)
 }
 
 func (s nativeReviewAgentStep) Run() error {
 	adapter := resolveAdapters([]model.AgentID{s.agent})[0]
 	target := componentInjectionDirScoped(s.homeDir, s.workspaceDir, s.scope, adapter)
-	res, err := reviewassets.InstallNativeAgents(target, adapter, reviewassets.InstallOptions{
+	res, err := nativeagents.InstallNativeAgents(target, adapter, nativeagents.InstallOptions{
 		ClaudeModelAssignments:    s.selection.ClaudeModelAssignments,
 		ClaudePhaseAssignments:    s.selection.ClaudePhaseAssignments,
 		KiroModelAssignments:      s.selection.KiroModelAssignments,
@@ -1642,13 +1642,6 @@ func (s managedOpenCodePluginsInstallStep) Run() error {
 // it has to be removed, not refreshed.
 const legacyTriggerRulesSection = "trigger-rules"
 
-// routingReviewContract renders the native review execution contract the
-// orchestrator guidance embeds. reviewassets already depends on agentguidance,
-// so the installer passes it through RoutingOptions.ReviewContract instead of
-// agentguidance importing it. It is a variable only so tests can prove the
-// routing step fails closed without it.
-var routingReviewContract agentguidance.ReviewContractSource = reviewassets.ReviewExecutionContractFor
-
 // agentRoutingGuidanceStep delivers the organic routing guidance for one agent.
 //
 // It is deliberately not a component step. Routing guidance is what lets an
@@ -1754,15 +1747,11 @@ func (s agentRoutingGuidanceStep) Run() error {
 			return fmt.Errorf("migrate legacy OpenCode agents: %w", err)
 		}
 	}
-	// legacyRemovedKilo carries the review agents the v3.7.0 marker migration
-	// removed in this run, so their task permissions can be retired below.
-	var legacyRemovedKilo []string
 	if s.agent == model.AgentKilocode {
 		// Kilo received the same marked v3.7.0 overlay (#4471). Migrate before
 		// routing injection so a marked orchestrator prompt is not preserved.
 		settingsPath := adapter.SettingsPath(targetDir)
-		changed, removed, err := migrateLegacyOpenCodeAgents(settingsPath, model.AgentKilocode)
-		legacyRemovedKilo = removed
+		changed, _, err := migrateLegacyOpenCodeAgents(settingsPath, model.AgentKilocode)
 		if changed && s.changedFiles != nil {
 			*s.changedFiles = append(*s.changedFiles, settingsPath)
 		}
@@ -1814,35 +1803,28 @@ func (s agentRoutingGuidanceStep) Run() error {
 		if shareChanged && s.changedFiles != nil {
 			*s.changedFiles = append(*s.changedFiles, settingsPath)
 		}
-		rolesChanged, err := installOpenCodeReviewProviderRoles(settingsPath, model.AgentKilocode)
+		rolesChanged, err := installOpenCodeOrchestratorRoles(settingsPath, model.AgentKilocode)
 		if err != nil {
-			return fmt.Errorf("install Kilo review provider roles: %w", err)
+			return fmt.Errorf("install Kilo orchestrator roles: %w", err)
 		}
 		parityChanged, err := installOpenCodeFamilyParityAgents(settingsPath, model.AgentKilocode)
 		if err != nil {
 			return fmt.Errorf("install Kilo parity agents: %w", err)
 		}
-		retiredChanged, err := retireOpenCodeFamilyReviewAgents(settingsPath, model.AgentKilocode, legacyRemovedKilo)
-		if err != nil {
-			return fmt.Errorf("retire Kilo review agents: %w", err)
-		}
-		if (rolesChanged || parityChanged || retiredChanged) && s.changedFiles != nil {
+		if (rolesChanged || parityChanged) && s.changedFiles != nil {
 			*s.changedFiles = append(*s.changedFiles, settingsPath)
 		}
 	}
 	if s.agent == model.AgentOpenCode {
-		changed, err := installOpenCodeReviewProviderRoles(options.SettingsPath, model.AgentOpenCode)
+		rolesChanged, err := installOpenCodeOrchestratorRoles(options.SettingsPath, model.AgentOpenCode)
 		if err != nil {
-			return fmt.Errorf("install OpenCode review provider roles: %w", err)
-		}
-		if changed && s.changedFiles != nil {
-			*s.changedFiles = append(*s.changedFiles, options.SettingsPath)
+			return fmt.Errorf("install OpenCode orchestrator roles: %w", err)
 		}
 		parityChanged, err := installOpenCodeODDParityAgents(options.SettingsPath)
 		if err != nil {
 			return fmt.Errorf("install OpenCode ODD parity agents: %w", err)
 		}
-		if parityChanged && s.changedFiles != nil {
+		if (rolesChanged || parityChanged) && s.changedFiles != nil {
 			*s.changedFiles = append(*s.changedFiles, options.SettingsPath)
 		}
 		// default_agent and share were owned by the retired SDD overlay; the
@@ -1894,9 +1876,7 @@ func migrateLegacyOpenCodeAgents(settingsPath string, agent model.AgentID) (bool
 	for _, name := range opencodeagents.Roles(agent) {
 		current[name] = true
 	}
-	rdd := model.SupportsReceiptDrivenDevelopment(agent)
 	changed := false
-	var removedReview []string
 	for name, value := range agents {
 		entry, ok := value.(map[string]any)
 		// Retired SDD agents belong to the settings retirement, which removes
@@ -1909,11 +1889,6 @@ func migrateLegacyOpenCodeAgents(settingsPath string, agent model.AgentID) (bool
 		switch {
 		case name == "general", name == "explore":
 			delete(agents, name)
-		case !rdd && opencodeagents.IsReview(name):
-			// The v3.7.0 marker proves ownership of a review agent this
-			// runtime no longer receives.
-			delete(agents, name)
-			removedReview = append(removedReview, name)
 		case current[name]:
 			fresh := map[string]any{}
 			for _, field := range []string{"model", "variant"} {
@@ -1942,7 +1917,7 @@ func migrateLegacyOpenCodeAgents(settingsPath string, agent model.AgentID) (bool
 	result, err := filemerge.WriteFileAtomic(settingsPath, merged, filemerge.ExistingFileMode(settingsPath, 0o644))
 	// WriteFileAtomic may publish the replacement and still report an error;
 	// keep its Changed state so the caller records the file either way.
-	return result.Changed, removedReview, err
+	return result.Changed, nil, err
 }
 
 // retireOpenCodeFamilyReviewAgents removes the review agents earlier releases
@@ -1955,83 +1930,15 @@ func migrateLegacyOpenCodeAgents(settingsPath string, agent model.AgentID) (bool
 // Gentle AI's: here in the managed shape, or earlier in the same run under the
 // v3.7.0 marker (legacyRemoved). A permission whose agent was already absent
 // carries no ownership proof and is the user's.
-func retireOpenCodeFamilyReviewAgents(settingsPath string, agent model.AgentID, legacyRemoved []string) (bool, error) {
-	if model.SupportsReceiptDrivenDevelopment(agent) {
-		return false, nil
-	}
-	raw, err := os.ReadFile(settingsPath)
-	if os.IsNotExist(err) {
-		return false, nil
-	}
-	if err != nil {
-		return false, err
-	}
-	root, err := filemerge.UnmarshalJSONObject(raw)
-	if err != nil {
-		return false, err
-	}
-	agents, _ := root["agent"].(map[string]any)
-	if agents == nil {
-		return false, nil
-	}
-	changed := false
-	removed := map[string]bool{}
-	for _, name := range legacyRemoved {
-		removed[name] = true
-	}
-	for _, name := range opencodeagents.ReviewNames() {
-		entry, ok := agents[name].(map[string]any)
-		if !ok {
-			continue
-		}
-		owned, err := opencodeagents.Shape(name, entry)
-		if err != nil {
-			return false, err
-		}
-		if owned {
-			delete(agents, name)
-			removed[name] = true
-			changed = true
-		}
-	}
-	orchestrator, _ := agents["gentle-orchestrator"].(map[string]any)
-	permission, _ := orchestrator["permission"].(map[string]any)
-	if task, ok := permission["task"].(map[string]any); ok {
-		for _, name := range opencodeagents.ReviewNames() {
-			if _, present := agents[name]; present || !removed[name] {
-				continue
-			}
-			if _, granted := task[name]; granted {
-				delete(task, name)
-				changed = true
-			}
-		}
-	}
-	if !changed {
-		return false, nil
-	}
-	// Only the agent value is rewritten, through the same merge as the other
-	// OpenCode-family writers.
-	overlay, err := json.Marshal(map[string]any{"agent": map[string]any{"__replace__": agents}})
-	if err != nil {
-		return false, err
-	}
-	merged, err := filemerge.MergeJSONObjectsForPath(settingsPath, raw, overlay)
-	if err != nil {
-		return false, err
-	}
-	result, err := filemerge.WriteFileAtomic(settingsPath, merged, filemerge.ExistingFileMode(settingsPath, 0o644))
-	return result.Changed, err
-}
 
-// Provider STATUS can issue these roles without SDD. Keep their task permissions
-// with the OpenCode routing owner, not with the retired SDD overlay.
+// installOpenCodeOrchestratorRoles writes the orchestrator's own roles and
+// permissions for an OpenCode-family runtime.
 //
 // The orchestrator prompt relays blocking prompts through the native question
 // tool, which OpenCode denies to custom agents unless their own permission
 // allows it (#4816); v3.7.0 shipped the same rule. A question rule the user
 // already set is kept, and none is written over a user deny policy.
-func installOpenCodeReviewProviderRoles(settingsPath string, agent model.AgentID) (bool, error) {
+func installOpenCodeOrchestratorRoles(settingsPath string, agent model.AgentID) (bool, error) {
 	raw, err := os.ReadFile(settingsPath)
 	if err != nil {
 		return false, err
@@ -2061,12 +1968,6 @@ func installOpenCodeReviewProviderRoles(settingsPath string, agent model.AgentID
 	}
 	roles := map[string]any{
 		"gentle-orchestrator": map[string]any{"permission": permission},
-	}
-	if model.SupportsReceiptDrivenDevelopment(agent) {
-		roles["review-refuter"] = opencodeagents.Refuter()
-	}
-	if agent == model.AgentOpenCode {
-		roles["review-validator"] = opencodeagents.Validator()
 	}
 	overlay, err := json.Marshal(map[string]any{"agent": roles})
 	if err != nil {
@@ -3509,9 +3410,9 @@ func installBackupTargets(homeDir, workspaceDir string, scope InstallScope, sele
 		}
 		// Native review and Judgment Day agents are installed independently of SDD.
 		// Retired review agents are listed too: the installer may remove them.
-		if names := reviewassets.NativeAgentFileNames(adapter.Agent()); len(names) > 0 {
+		if names := nativeagents.NativeAgentFileNames(adapter.Agent()); len(names) > 0 {
 			dir := adapter.SubAgentsDir(componentInjectionDirScoped(homeDir, workspaceDir, scope, adapter))
-			paths[filepath.Join(dir, reviewassets.OwnershipLedgerFilename)] = struct{}{}
+			paths[filepath.Join(dir, nativeagents.OwnershipLedgerFilename)] = struct{}{}
 			for _, name := range names {
 				paths[filepath.Join(dir, name)] = struct{}{}
 			}
@@ -3876,10 +3777,9 @@ func openCodeLoadedSettingsPath(homeDir, workspaceDir string, adapter agents.Ada
 // routingGuidanceOptions carries OpenCode's caller-resolved effective settings
 // authority into the routing-guidance adapter. Routing remains global because
 // OpenCode does not load workspace-scoped orchestrator guidance; other agents
-// retain their existing targetDir-derived routing path. Every runtime receives
-// the review contract source its orchestrator render needs.
+// retain their existing targetDir-derived routing path.
 func routingGuidanceOptions(homeDir, workspaceDir string, adapter agents.Adapter) agentguidance.RoutingOptions {
-	options := agentguidance.RoutingOptions{ReviewContract: routingReviewContract}
+	options := agentguidance.RoutingOptions{}
 	if adapter.Agent() == model.AgentOpenCode {
 		options.SettingsPath = effectiveOpenCodeSettingsPath(homeDir, workspaceDir, ScopeGlobal, adapter)
 	}

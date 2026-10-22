@@ -23,7 +23,6 @@ import (
 	"github.com/Santiago1809/teicos/internal/components/filemerge"
 	"github.com/Santiago1809/teicos/internal/components/opencodedefault"
 	"github.com/Santiago1809/teicos/internal/components/opencoderuntimeplugins"
-	"github.com/Santiago1809/teicos/internal/components/reviewassets"
 	"github.com/Santiago1809/teicos/internal/components/skills"
 	"github.com/Santiago1809/teicos/internal/components/telemetryruntime"
 	"github.com/Santiago1809/teicos/internal/components/theme"
@@ -647,7 +646,7 @@ func (s *Service) retireClaudeGlobalModules(result *Result) error {
 	if err != nil || paths == nil {
 		return err
 	}
-	retired, err := agentguidance.RetireClaudeGlobalModules(s.homeDir, reviewassets.ReviewExecutionContractFor)
+	retired, err := agentguidance.RetireClaudeGlobalModules(s.homeDir)
 	return reportClaudeModuleRetirement(result, paths, retired, err)
 }
 

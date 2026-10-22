@@ -40,12 +40,12 @@ func ClaudeGlobalModulePaths(homeDir string) ([]string, error) {
 // It runs the install transaction with nothing referenced, so the monolith is
 // published before any module is removed and a failure restores the core
 // before any module; the same limits apply (see commitOrchestratorCore).
-func RetireClaudeGlobalModules(homeDir string, contract ReviewContractSource) (Result, error) {
+func RetireClaudeGlobalModules(homeDir string) (Result, error) {
 	configDir, present, err := claudeGlobalModuleLedger(homeDir)
 	if err != nil || !present {
 		return Result{}, err
 	}
-	monolith, err := RenderOrchestratorWithSource(model.AgentClaudeCode, contract, "")
+	monolith, err := RenderOrchestrator(model.AgentClaudeCode, "")
 	if err != nil {
 		return Result{}, err
 	}

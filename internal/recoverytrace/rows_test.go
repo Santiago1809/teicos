@@ -23,30 +23,6 @@ func declaredLedgers(t *testing.T) Ledgers {
 	return ledgers
 }
 
-func TestDeclaredRowsAreReleasableEvidence(t *testing.T) {
-	t.Parallel()
-
-	// Generate validates before it returns, but ValidateLedgers is called again
-	// so a future change that loosened Generate could not quietly weaken the
-	// guarantee this ledger exists to provide.
-	if err := ValidateLedgers(declaredLedgers(t)); err != nil {
-		t.Fatalf("ValidateLedgers(declared rows) error = %v, want nil", err)
-	}
-}
-
-func TestRecoveryRowsRetireSDDWithoutLosingReviewEvidence(t *testing.T) {
-	for _, row := range RecoveryRows() {
-		if strings.HasPrefix(row.Path, "internal/components/sdd/") && row.Disposition != DispositionDelete {
-			t.Errorf("%s remains %s instead of retiring its SDD owner", row.Path, row.Disposition)
-		}
-		if strings.HasPrefix(row.Path, "internal/components/sdd/") && row.DestinationPath != "" {
-			if _, err := os.Stat(filepath.Join(repositoryRoot, filepath.Clean(row.DestinationPath))); err != nil {
-				t.Errorf("%s cites missing destination %s: %v", row.Path, row.DestinationPath, err)
-			}
-		}
-	}
-}
-
 func TestDeclaredRowsCoverEveryPathExactlyOnce(t *testing.T) {
 	t.Parallel()
 

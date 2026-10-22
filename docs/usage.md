@@ -128,12 +128,6 @@ The uninstall flow is also available from the TUI menu. It lets you:
 
 Before any managed file is modified, `gentle-ai` creates a backup snapshot so the configuration can be restored later if needed.
 
-### Receipt-Driven Development during installation
-
-Before the final installation confirmation, the customizable installer explains Receipt-Driven Development (RDD) and asks you to choose **RDD ON** or **RDD OFF**. RDD records bounded, independent review evidence for a frozen change candidate and supports a bounded correction process. It can add review time and model cost.
-
-The selection defaults to ON when no global preference exists; choose **Disable RDD** to opt out. An existing explicit global OFF remains selected. You can return from the confirmation screen to revise it. Gentle AI saves the selected global setting only after installation succeeds; an interrupted or failed installation leaves it unchanged. Existing clone-local overrides remain unchanged, so a clone's effective mode can differ from the global setting. RDD evidence does not authorize commits, pushes, pull requests, or releases; ordinary repository policy still governs delivery.
-
 ### Disable TUI spinner animation
 
 Set `GENTLE_AI_NO_ANIMATION=1` to keep TUI spinner frames static:
@@ -371,7 +365,6 @@ gentle-ai -v
 |---------|---------|------|
 | `restore [--list \| latest \| <id>] [--yes]` | Restore managed config from a backup snapshot | [Rollback](rollback.md) |
 | `telemetry` | Manage telemetry consent (`status`, `enable`, `disable`) and runtime events | [Telemetry](telemetry.md) |
-| `review` | Receipt-Driven Development review lifecycle, including `review assess` and `review mode` | [Review Integration](review-integration.md) |
 | `codegraph init --cwd <project-root>` | Validate a project root, initialize its CodeGraph index (used by generated agent guidance), and add `.codegraph/` to the worktree's local Git exclude file | [Components](components.md) |
 | `codegraph [--help\|-h]`, `codegraph init [--help\|-h]` | Show local CodeGraph initialization help and exit successfully without initializing an index; other CodeGraph commands are not forwarded | |
 | `skill-registry list [--json]` | List the resolved, deduplicated skill set | [Skill Registry](skill-registry.md) |

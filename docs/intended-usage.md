@@ -17,7 +17,6 @@ Test-first development is the default when a relevant runnable deterministic tes
 
 ## Review is a separate choice
 
-Receipt-Driven Development (RDD) checks an exact change candidate when enabled. The user controls the switch with `gentle-ai review mode status`, `gentle-ai review mode enable`, and `gentle-ai review mode disable`. Review risk, consent, and authority come from the native review contract, not task checkboxes or model guesses. Disabling RDD leaves ordinary checks and repository delivery policy intact; a review result does not authorize commit, push, or release. See [Review](review-integration.md).
 
 ## Delegation and skills
 

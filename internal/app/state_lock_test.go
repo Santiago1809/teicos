@@ -4,8 +4,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Santiago1809/teicos/internal/filecoord"
 	"github.com/Santiago1809/teicos/internal/model"
-	"github.com/Santiago1809/teicos/internal/reviewtransaction"
 	"github.com/Santiago1809/teicos/internal/state"
 	"github.com/Santiago1809/teicos/internal/statecoord"
 )
@@ -13,13 +13,13 @@ import (
 // holdCanonicalInstallStateLock acquires the real canonical install-state lock
 // for home so a subsequent write site fails fast on contention, mirroring the
 // contention shape used by internal/cli/install_state_lock_test.go.
-func holdCanonicalInstallStateLock(t *testing.T, home string) *reviewtransaction.AuthorityFileLock {
+func holdCanonicalInstallStateLock(t *testing.T, home string) *filecoord.AuthorityFileLock {
 	t.Helper()
 	lockPath, err := statecoord.LockPath(home)
 	if err != nil {
 		t.Fatalf("install state lock path: %v", err)
 	}
-	held, err := reviewtransaction.AcquireAuthorityFileLock(lockPath)
+	held, err := filecoord.AcquireAuthorityFileLock(lockPath)
 	if err != nil {
 		t.Fatalf("acquire install state lock for contention: %v", err)
 	}
@@ -36,7 +36,7 @@ func TestClearPendingSyncAfterDeferredSyncReReadsLatestStateUnderLock(t *testing
 	if err := clearPendingSyncAfterDeferredSync(home, state.InstallState{PendingSync: true}); err == nil || !strings.Contains(err.Error(), "acquire install state lock") {
 		t.Fatalf("contended deferred-sync clear error = %v, want lock acquisition failure", err)
 	}
-	if err := state.Write(home, state.InstallState{PendingSync: true, RDDMode: "on", Persona: "concurrent"}); err != nil {
+	if err := state.Write(home, state.InstallState{PendingSync: true, Persona: "concurrent"}); err != nil {
 		t.Fatal(err)
 	}
 	if err := held.Release(); err != nil {
@@ -53,7 +53,7 @@ func TestClearPendingSyncAfterDeferredSyncReReadsLatestStateUnderLock(t *testing
 	if got.PendingSync {
 		t.Errorf("PendingSync = true, want false after deferred sync")
 	}
-	if got.RDDMode != "on" || got.Persona != "concurrent" {
+	if got.Persona != "concurrent" {
 		t.Fatalf("concurrent writer state was clobbered: %#v", got)
 	}
 }
@@ -71,7 +71,7 @@ func TestPersistAssignmentsReReadsLatestStateUnderLock(t *testing.T) {
 	if err := persistAssignments(home, selection); err == nil || !strings.Contains(err.Error(), "acquire install state lock") {
 		t.Fatalf("contended persistAssignments error = %v, want lock acquisition failure", err)
 	}
-	if err := state.Write(home, state.InstallState{RDDMode: "on", Persona: "concurrent"}); err != nil {
+	if err := state.Write(home, state.InstallState{Persona: "concurrent"}); err != nil {
 		t.Fatal(err)
 	}
 	if err := held.Release(); err != nil {
@@ -88,7 +88,7 @@ func TestPersistAssignmentsReReadsLatestStateUnderLock(t *testing.T) {
 	if got.CodexCarrilModelAssignments["sdd-strong"] != "test-model" {
 		t.Fatalf("assignments were not persisted: %#v", got.CodexCarrilModelAssignments)
 	}
-	if got.RDDMode != "on" || got.Persona != "concurrent" {
+	if got.Persona != "concurrent" {
 		t.Fatalf("concurrent writer state was clobbered: %#v", got)
 	}
 }
@@ -103,7 +103,7 @@ func TestMarkPendingSyncAfterSelfUpdateReReadsLatestStateUnderLock(t *testing.T)
 	if err := markPendingSyncAfterSelfUpdate(home); err == nil || !strings.Contains(err.Error(), "acquire install state lock") {
 		t.Fatalf("contended self-update PendingSync set error = %v, want lock acquisition failure", err)
 	}
-	if err := state.Write(home, state.InstallState{RDDMode: "on", Persona: "concurrent"}); err != nil {
+	if err := state.Write(home, state.InstallState{Persona: "concurrent"}); err != nil {
 		t.Fatal(err)
 	}
 	if err := held.Release(); err != nil {
@@ -120,7 +120,7 @@ func TestMarkPendingSyncAfterSelfUpdateReReadsLatestStateUnderLock(t *testing.T)
 	if !got.PendingSync {
 		t.Errorf("PendingSync = false, want true after self-update")
 	}
-	if got.RDDMode != "on" || got.Persona != "concurrent" {
+	if got.Persona != "concurrent" {
 		t.Fatalf("concurrent writer state was clobbered: %#v", got)
 	}
 }

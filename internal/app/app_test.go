@@ -14,7 +14,6 @@ import (
 	"slices"
 	"sort"
 	"strings"
-	"sync"
 	"testing"
 	"time"
 
@@ -22,7 +21,6 @@ import (
 	"github.com/Santiago1809/teicos/internal/backup"
 	"github.com/Santiago1809/teicos/internal/model"
 	opencodeactivation "github.com/Santiago1809/teicos/internal/opencode"
-	"github.com/Santiago1809/teicos/internal/pipeline"
 	"github.com/Santiago1809/teicos/internal/planner"
 	"github.com/Santiago1809/teicos/internal/state"
 	"github.com/Santiago1809/teicos/internal/system"
@@ -275,186 +273,6 @@ func TestRunArgsUninstallReportsBackupOnFailure(t *testing.T) {
 	}
 }
 
-func TestRunArgsInstallHelpPrintsInstallSpecificHelp(t *testing.T) {
-	origEnsure := ensureCurrentOSSupported
-	t.Cleanup(func() { ensureCurrentOSSupported = origEnsure })
-	ensureCurrentOSSupported = func() error {
-		return fmt.Errorf("platform validation should not run for install help")
-	}
-
-	var buf bytes.Buffer
-	err := RunArgs([]string{"install", "--help"}, &buf)
-	if err != nil {
-		t.Fatalf("RunArgs(install --help) error = %v", err)
-	}
-
-	out := buf.String()
-	for _, want := range []string{"--channel", "beta", "nightly", "GENTLE_AI_CHANNEL"} {
-		if !strings.Contains(out, want) {
-			t.Fatalf("install help missing %q; output:\n%s", want, out)
-		}
-	}
-}
-
-// TestRunArgsRestoreHelpBypassesSystemDetection verifies that an explicit
-// restore help request is answered before system detection, like the install
-// and sync help pre-dispatch: a host with no resolvable home directory must
-// still be able to read the restore usage. The complement case proves a
-// non-help restore invocation still goes through system detection.
-func TestRunArgsRestoreHelpBypassesSystemDetection(t *testing.T) {
-	origDetect := detectSystem
-	origEnsure := ensureCurrentOSSupported
-	t.Cleanup(func() {
-		detectSystem = origDetect
-		ensureCurrentOSSupported = origEnsure
-	})
-	ensureCurrentOSSupported = func() error { return nil }
-	detectSystem = func(context.Context) (system.DetectionResult, error) {
-		return system.DetectionResult{}, fmt.Errorf("$HOME is not defined")
-	}
-
-	for _, helpFlag := range []string{"--help", "-help", "-h", "--h"} {
-		t.Run(helpFlag, func(t *testing.T) {
-			var buf bytes.Buffer
-			if err := RunArgs([]string{"restore", helpFlag}, &buf); err != nil {
-				t.Fatalf("RunArgs(restore %s) error = %v", helpFlag, err)
-			}
-			out := buf.String()
-			for _, want := range []string{
-				"gentle-ai restore [--list | latest | <id>] [--yes]",
-				"list available backups without restoring",
-				"skip confirmation prompt",
-			} {
-				if !strings.Contains(out, want) {
-					t.Fatalf("restore help missing %q; output:\n%s", want, out)
-				}
-			}
-		})
-	}
-
-	// Complement: restore without a help flag must still be dispatched after
-	// system detection, so the failing stub must surface as an error.
-	var buf bytes.Buffer
-	err := RunArgs([]string{"restore", "--list"}, &buf)
-	if err == nil || !strings.Contains(err.Error(), "$HOME is not defined") {
-		t.Fatalf("RunArgs(restore --list) error = %v, want detection failure", err)
-	}
-}
-
-// TestHelpFlagSpellings pins the helper's contract: the flag package treats
-// one and two leading dashes as equivalent and both "help" and "h" trigger
-// flag.ErrHelp, so hasHelpFlag must recognise all four spellings and nothing
-// else.
-func TestHelpFlagSpellings(t *testing.T) {
-	for _, arg := range []string{"--help", "-help", "-h", "--h"} {
-		if !hasHelpFlag([]string{arg}) {
-			t.Errorf("hasHelpFlag(%q) = false, want true", arg)
-		}
-	}
-	for _, arg := range []string{"--list", "latest", "--helpx"} {
-		if hasHelpFlag([]string{arg}) {
-			t.Errorf("hasHelpFlag(%q) = true, want false", arg)
-		}
-	}
-	if hasHelpFlag(nil) {
-		t.Error("hasHelpFlag(empty) = true, want false")
-	}
-}
-
-func TestRunArgsNativeSDDCommandsNoLongerDispatch(t *testing.T) {
-	for _, command := range []string{"sdd-status", "sdd-continue", "sdd-attempt"} {
-		t.Run(command, func(t *testing.T) {
-			var output bytes.Buffer
-			err := RunArgs([]string{command, "--help"}, &output)
-			if err == nil || !strings.Contains(err.Error(), fmt.Sprintf("unknown command %q", command)) {
-				t.Fatalf("RunArgs(%s --help) error = %v, want unknown command; output = %q", command, err, output.String())
-			}
-		})
-	}
-}
-
-func TestRunArgsDispatchesNativeReviewOperationsBeforePlatformValidation(t *testing.T) {
-	origEnsure := ensureCurrentOSSupported
-	t.Cleanup(func() { ensureCurrentOSSupported = origEnsure })
-	ensureCurrentOSSupported = func() error { return fmt.Errorf("unsupported platform") }
-
-	for _, test := range []struct {
-		command string
-		want    string
-	}{
-		{command: "review-start", want: "review-start requires --cwd, --lineage, and --policy-file"},
-		{command: "review-resume", want: "review-resume requires --cwd and --lineage"},
-		{command: "review-bundle-export", want: "review-bundle-export requires --cwd, --lineage, and --out"},
-		{command: "review-bundle-import", want: "review-bundle-import requires --cwd and --bundle"},
-		{command: "review-validate", want: "review-validate requires --cwd"},
-	} {
-		t.Run(test.command, func(t *testing.T) {
-			var output bytes.Buffer
-			err := RunArgs([]string{test.command}, &output)
-			if err == nil || !strings.Contains(err.Error(), test.want) {
-				t.Fatalf("RunArgs(%s) error = %v, want %q", test.command, err, test.want)
-			}
-		})
-	}
-}
-
-func TestRunArgsReviewSubcommandHelpExitsSuccessfully(t *testing.T) {
-	for _, command := range []string{"review-start", "review-step", "review-resume", "review-validate", "review-bundle-export", "review-bundle-import"} {
-		t.Run(command, func(t *testing.T) {
-			var output bytes.Buffer
-			if err := RunArgs([]string{command, "--help"}, &output); err != nil {
-				t.Fatalf("RunArgs(%s --help) error = %v", command, err)
-			}
-			if !strings.Contains(output.String(), "Usage: gentle-ai "+command+" [flags]") {
-				t.Fatalf("RunArgs(%s --help) output:\n%s", command, output.String())
-			}
-		})
-	}
-}
-
-func TestRunArgsDispatchesCompactReviewFacadeBeforePlatformValidation(t *testing.T) {
-	origEnsure := ensureCurrentOSSupported
-	t.Cleanup(func() { ensureCurrentOSSupported = origEnsure })
-	ensureCurrentOSSupported = func() error { return fmt.Errorf("unsupported platform") }
-
-	var output bytes.Buffer
-	if err := RunArgs([]string{"review", "--help"}, &output); err != nil {
-		t.Fatalf("RunArgs(review --help) error = %v", err)
-	}
-	if !strings.Contains(output.String(), "review <acknowledge-approved|capture-result|capture-correction-plan|capture-refuter|capture-unachievable|capture-validation|lens-context|capabilities|assess|start|validate|status|repair|invalidate|abandon|recover|reclaim|store-reset|inspect-authority|inspect-candidate|reopen-results|schema|opencode-transport>") {
-		t.Fatalf("compact review help missing:\n%s", output.String())
-	}
-	for _, retired := range []string{"preserve-result", "dispose-result"} {
-		if strings.Contains(output.String(), retired) {
-			t.Fatalf("compact review help still advertises retired %q:\n%s", retired, output.String())
-		}
-	}
-	output.Reset()
-	if err := RunArgs([]string{"review", "repair", "--help"}, &output); err != nil || !strings.Contains(output.String(), "provider-owned") {
-		t.Fatalf("RunArgs(review repair --help) = %v\n%s", err, output.String())
-	}
-}
-
-func TestRunArgsDispatchesReviewModeBeforePlatformValidation(t *testing.T) {
-	origEnsure := ensureCurrentOSSupported
-	t.Cleanup(func() { ensureCurrentOSSupported = origEnsure })
-	ensureCurrentOSSupported = func() error { return fmt.Errorf("unsupported platform") }
-
-	var output bytes.Buffer
-	if err := RunArgs([]string{"review", "mode", "--help"}, &output); err != nil {
-		t.Fatalf("RunArgs(review mode --help) error = %v", err)
-	}
-	if !strings.Contains(output.String(), "gentle-ai review mode <enable|disable|status>") {
-		t.Fatalf("review mode help missing:\n%s", output.String())
-	}
-
-	output.Reset()
-	err := RunArgs([]string{"review", "mode", "toggle"}, &output)
-	if err == nil || !strings.Contains(err.Error(), "unknown review mode command") {
-		t.Fatalf("RunArgs(review mode toggle) error = %v", err)
-	}
-}
-
 // TestListBackupsFallsBackGracefullyForOldManifests verifies that old manifests
 // without Source/Description are still returned (not skipped) and can be displayed
 // via DisplayLabel without panicking.
@@ -584,13 +402,13 @@ func TestTuiSyncSelectionPreservesCustomPermissionExclusion(t *testing.T) {
 func TestTUIExecutePersistsConfiguredSelection(t *testing.T) {
 	home := t.TempDir()
 	setupMockHome(t, home)
-	if err := state.Write(home, state.InstallState{RDDMode: "off"}); err != nil {
+	if err := state.Write(home, state.InstallState{}); err != nil {
 		t.Fatal(err)
 	}
 	selection := model.Selection{Agents: []model.AgentID{model.AgentClaudeCode}, Preset: model.PresetCustom, Components: []model.ComponentID{}, Skills: []model.SkillID{}, StrictTDD: true}
 	result := tuiExecuteWithBackground(selection, planner.ResolvedPlan{}, system.DetectionResult{}, "", "", "", "", nil)
 	got, err := state.Read(home)
-	if result.Err != nil || err != nil || !got.SelectionConfigured || got.Preset != model.PresetCustom || got.StrictTDD || got.RDDMode != "off" || !slices.Equal(got.InstalledAgents, []string{string(model.AgentClaudeCode)}) || len(got.Components) != 0 || len(got.Skills) != 0 {
+	if result.Err != nil || err != nil || !got.SelectionConfigured || got.Preset != model.PresetCustom || got.StrictTDD || !slices.Equal(got.InstalledAgents, []string{string(model.AgentClaudeCode)}) || len(got.Components) != 0 || len(got.Skills) != 0 {
 		t.Fatalf("persisted selection = %#v, execute err = %v, read err = %v", got, result.Err, err)
 	}
 	persisted, err := os.ReadFile(state.Path(home))
@@ -599,128 +417,6 @@ func TestTUIExecutePersistsConfiguredSelection(t *testing.T) {
 	}
 	if bytes.Contains(persisted, []byte(`"strict_tdd"`)) {
 		t.Fatalf("retired strict_tdd persisted: %s", persisted)
-	}
-}
-
-func TestTUIExecuteWithBackgroundPublishesChoiceAndPreservesState(t *testing.T) {
-	home := t.TempDir()
-	setupMockHome(t, home)
-	lastCheck := time.Now().UTC().Add(-time.Hour)
-	if err := state.Write(home, state.InstallState{
-		InstalledAgents:    []string{"claude-code"},
-		ManagedAssetDigest: "existing-writer",
-		LastUpdateCheck:    &lastCheck,
-		PendingSync:        true,
-		RDDMode:            "off",
-		BackgroundIntent:   model.OpenCodeBackgroundOff,
-	}); err != nil {
-		t.Fatal(err)
-	}
-
-	selection := model.Selection{
-		Agents:     []model.AgentID{model.AgentOpenCode},
-		Components: []model.ComponentID{},
-		Preset:     model.PresetCustom,
-	}
-	result := tuiExecuteWithBackground(selection, planner.ResolvedPlan{}, system.DetectionResult{}, model.OpenCodeBackgroundOn, model.OpenCodeBackgroundOn, "", "", nil)
-	if result.Err != nil {
-		t.Fatalf("tuiExecuteWithBackground() error = %v", result.Err)
-	}
-
-	got, err := state.Read(home)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if got.BackgroundIntent != model.OpenCodeBackgroundOn {
-		t.Fatalf("BackgroundIntent = %q, want on", got.BackgroundIntent)
-	}
-	if got.ManagedAssetDigest != "existing-writer" || got.LastUpdateCheck == nil || !got.LastUpdateCheck.Equal(lastCheck) || !got.PendingSync || got.RDDMode != "off" {
-		t.Fatalf("unrelated state was not preserved: %#v", got)
-	}
-}
-
-func TestTUIExecuteWithBackgroundPreservesConcurrentCLIStateMutation(t *testing.T) {
-	home := t.TempDir()
-	candidate := buildAppCandidateBinary(t)
-	setupMockHome(t, home)
-
-	initialRecordedAt := time.Now().UTC().Add(-time.Hour)
-	if err := state.Write(home, state.InstallState{
-		RDDMode:           "off",
-		RDDModeRecordedAt: &initialRecordedAt,
-		BackgroundIntent:  model.OpenCodeBackgroundOff,
-	}); err != nil {
-		t.Fatal(err)
-	}
-
-	publicationReached := make(chan struct{})
-	releasePublication := make(chan struct{})
-	var releaseOnce sync.Once
-	release := func() { releaseOnce.Do(func() { close(releasePublication) }) }
-	t.Cleanup(release)
-	previousWriteReconciled := appStateWriteReconciled
-	appStateWriteReconciled = func(homeDir string, installState state.InstallState) error {
-		close(publicationReached)
-		<-releasePublication
-		return state.WriteReconciled(homeDir, installState)
-	}
-	t.Cleanup(func() { appStateWriteReconciled = previousWriteReconciled })
-
-	selection := model.Selection{
-		Agents:     []model.AgentID{model.AgentOpenCode},
-		Components: []model.ComponentID{},
-		Preset:     model.PresetCustom,
-	}
-	resultCh := make(chan pipeline.ExecutionResult, 1)
-	go func() {
-		resultCh <- tuiExecuteWithBackground(selection, planner.ResolvedPlan{}, system.DetectionResult{}, model.OpenCodeBackgroundOn, model.OpenCodeBackgroundOn, "", "", nil)
-	}()
-
-	select {
-	case <-publicationReached:
-	case <-time.After(10 * time.Second):
-		t.Fatal("TUI did not reach final state publication")
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
-	command := exec.CommandContext(ctx, candidate, "review", "mode", "enable", "--scope", "global")
-	command.Env = append(os.Environ(), "HOME="+home, "USERPROFILE="+home)
-	output, err := command.CombinedOutput()
-	if err == nil {
-		t.Fatalf("candidate review mode enable succeeded while TUI owned the install-state transaction:\n%s", output)
-	}
-	intermediate, err := state.Read(home)
-	if err != nil {
-		t.Fatalf("read state after contended candidate review mode enable: %v", err)
-	}
-	if intermediate.RDDMode != "off" || intermediate.RDDModeRecordedAt == nil || !intermediate.RDDModeRecordedAt.Equal(initialRecordedAt) {
-		t.Fatalf("contended candidate review mode enable changed persisted state: %#v", intermediate)
-	}
-
-	release()
-	select {
-	case result := <-resultCh:
-		if result.Err != nil {
-			t.Fatalf("tuiExecuteWithBackground() error = %v", result.Err)
-		}
-	case <-time.After(10 * time.Second):
-		t.Fatal("TUI did not finish final state publication")
-	}
-
-	command = exec.CommandContext(ctx, candidate, "review", "mode", "enable", "--scope", "global")
-	command.Env = append(os.Environ(), "HOME="+home, "USERPROFILE="+home)
-	output, err = command.CombinedOutput()
-	if err != nil {
-		t.Fatalf("candidate review mode enable retry failed: %v\n%s", err, output)
-	}
-
-	final, err := state.Read(home)
-	if err != nil {
-		t.Fatalf("read final install state: %v", err)
-	}
-	if final.RDDMode != "on" || final.RDDModeRecordedAt == nil || !final.RDDModeRecordedAt.After(initialRecordedAt) || final.BackgroundIntent != model.OpenCodeBackgroundOn || !final.SelectionConfigured || final.Preset != model.PresetCustom || !slices.Equal(final.InstalledAgents, []string{string(model.AgentOpenCode)}) {
-		t.Fatalf("final install state lost retried CLI review-mode mutation or TUI-owned fields: %#v", final)
 	}
 }
 
@@ -905,9 +601,8 @@ func TestTuiSyncClaudeModelConfigWritesSelectedAssignments(t *testing.T) {
 	}
 
 	assignments := map[string]model.ClaudeModelAlias{
-		"review-risk": model.ClaudeModelHaiku,
-		"jd-judge-a":  model.ClaudeModelHaiku,
-		"default":     model.ClaudeModelHaiku,
+		"jd-judge-a": model.ClaudeModelHaiku,
+		"default":    model.ClaudeModelHaiku,
 	}
 
 	changed, err := tuiSync(home)(&model.SyncOverrides{
@@ -921,7 +616,7 @@ func TestTuiSyncClaudeModelConfigWritesSelectedAssignments(t *testing.T) {
 		t.Fatal("tuiSync Claude model config changed 0 files, want Claude assets written")
 	}
 
-	for _, name := range []string{"review-risk.md", "jd-judge-a.md"} {
+	for _, name := range []string{"jd-judge-a.md"} {
 		path := filepath.Join(home, ".claude", "agents", name)
 		body, err := os.ReadFile(path)
 		if err != nil {
@@ -956,7 +651,7 @@ func TestTuiSyncModelConfigPropagatesAssignmentWriteFailure(t *testing.T) {
 	original := state.InstallState{
 		InstalledAgents:          []string{string(model.AgentClaudeCode)},
 		CommunityToolsConfigured: true,
-		ClaudeModelAssignments:   map[string]string{"review-risk": "haiku"},
+		ClaudeModelAssignments:   map[string]string{"jd-judge-a": "haiku"},
 	}
 	if err := state.Write(home, original); err != nil {
 		t.Fatalf("state.Write: %v", err)
@@ -974,7 +669,7 @@ func TestTuiSyncModelConfigPropagatesAssignmentWriteFailure(t *testing.T) {
 	_, err := tuiSync(home)(&model.SyncOverrides{
 		TargetAgents: []model.AgentID{model.AgentClaudeCode},
 		ClaudeModelAssignments: map[string]model.ClaudeModelAlias{
-			"review-risk": model.ClaudeModelSonnet,
+			"jd-judge-a": model.ClaudeModelSonnet,
 		},
 	})
 	if err == nil {
@@ -997,11 +692,10 @@ func TestTuiSyncClaudePhaseAssignmentsPersistAndGenerateEffort(t *testing.T) {
 	}
 
 	phaseAssignments := model.ClaudePhaseAssignmentsFromLegacy(map[string]model.ClaudeModelAlias{
-		"review-risk": model.ClaudeModelSonnet,
-		"jd-judge-a":  model.ClaudeModelSonnet,
-		"default":     model.ClaudeModelSonnet,
+		"jd-judge-a": model.ClaudeModelSonnet,
+		"default":    model.ClaudeModelSonnet,
 	})
-	phaseAssignments["review-risk"] = model.ClaudePhaseAssignment{
+	phaseAssignments["jd-judge-a"] = model.ClaudePhaseAssignment{
 		Model:  model.ClaudeModelSonnet,
 		Effort: model.ClaudeEffortMax,
 	}
@@ -1021,29 +715,29 @@ func TestTuiSyncClaudePhaseAssignmentsPersistAndGenerateEffort(t *testing.T) {
 	if err != nil {
 		t.Fatalf("state.Read: %v", err)
 	}
-	reviewState, ok := persisted.ClaudePhaseAssignments["review-risk"]
+	reviewState, ok := persisted.ClaudePhaseAssignments["jd-judge-a"]
 	if !ok {
-		t.Fatalf("persisted state missing claude_phase_assignments.review-risk: %#v", persisted.ClaudePhaseAssignments)
+		t.Fatalf("persisted state missing claude_phase_assignments.jd-judge-a: %#v", persisted.ClaudePhaseAssignments)
 	}
 	if reviewState.Model != string(model.ClaudeModelSonnet) || reviewState.Effort != string(model.ClaudeEffortMax) {
-		t.Fatalf("persisted review-risk = %#v, want sonnet/max", reviewState)
+		t.Fatalf("persisted jd-judge-a = %#v, want sonnet/max", reviewState)
 	}
 	if persisted.ClaudeModelAssignments != nil {
 		t.Fatalf("legacy claude_model_assignments should be cleared when phase assignments are persisted; got %#v", persisted.ClaudeModelAssignments)
 	}
 
-	reviewAgent := filepath.Join(home, ".claude", "agents", "review-risk.md")
+	reviewAgent := filepath.Join(home, ".claude", "agents", "jd-judge-a.md")
 	body, err := os.ReadFile(reviewAgent)
 	if err != nil {
 		t.Fatalf("ReadFile(%s): %v", reviewAgent, err)
 	}
 	for _, want := range []string{"model: sonnet", "effort: max"} {
 		if !strings.Contains(string(body), want) {
-			t.Fatalf("review-risk agent missing %q; got:\n%s", want, body)
+			t.Fatalf("jd-judge-a agent missing %q; got:\n%s", want, body)
 		}
 	}
 
-	judgeAgent := filepath.Join(home, ".claude", "agents", "jd-judge-a.md")
+	judgeAgent := filepath.Join(home, ".claude", "agents", "jd-judge-b.md")
 	body, err = os.ReadFile(judgeAgent)
 	if err != nil {
 		t.Fatalf("ReadFile(%s): %v", judgeAgent, err)

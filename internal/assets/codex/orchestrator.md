@@ -225,4 +225,4 @@ After every delegation that returns a result, check the `skill_resolution` field
 This is a self-correction mechanism. Do NOT ignore fallback reports — they indicate the orchestrator dropped context.
 ### ODD worker-class assignments
 
-These are worker classes, not installed named agents. Use `odd-explorer`, `odd-worker`, and `odd-verify` to describe bounded work. The installed Codex AGENTS.md routing section carries their selected model and reasoning_effort table. When spawning an ODD worker, pass the table's exact model and reasoning_effort to `spawn_agent` with `fork_turns: "none"`. RDD model choices belong to the native adapter, not ODD delegation.
+These are worker classes, not installed named agents. Use `odd-explorer`, `odd-worker`, and `odd-verify` to describe bounded work. The installed Codex AGENTS.md routing section carries their selected model and reasoning_effort table. When spawning an ODD worker, pass the table's exact model and reasoning_effort to `spawn_agent` with `fork_turns: "none"`. Model choices belong to the native adapter, not ODD delegation.

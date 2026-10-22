@@ -151,13 +151,13 @@ func TestUninstallLegacyMarkedAgents(t *testing.T) {
 				t.Fatal(err)
 			}
 			agents := root["agent"].(map[string]any)
-			for _, name := range []string{"gentle-orchestrator", "jd-judge-a", "review-risk", "review-refuter"} {
+			for _, name := range []string{"gentle-orchestrator", "jd-judge-a"} {
 				if agents[name] != nil {
 					t.Errorf("legacy %s retained: %s", name, body)
 				}
 			}
 			if tc.agent == model.AgentOpenCode {
-				for _, name := range []string{"general", "explore", "review-validator"} {
+				for _, name := range []string{"general", "explore"} {
 					if agents[name] != nil {
 						t.Errorf("legacy %s retained: %s", name, body)
 					}

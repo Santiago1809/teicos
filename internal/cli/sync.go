@@ -25,12 +25,12 @@ import (
 	"github.com/Santiago1809/teicos/internal/components/engram"
 	"github.com/Santiago1809/teicos/internal/components/filemerge"
 	"github.com/Santiago1809/teicos/internal/components/mcp"
+	"github.com/Santiago1809/teicos/internal/components/nativeagents"
 	"github.com/Santiago1809/teicos/internal/components/opencodedefault"
 	"github.com/Santiago1809/teicos/internal/components/opencodeplugin"
 	"github.com/Santiago1809/teicos/internal/components/opencoderuntimeplugins"
 	"github.com/Santiago1809/teicos/internal/components/permissions"
 	"github.com/Santiago1809/teicos/internal/components/persona"
-	"github.com/Santiago1809/teicos/internal/components/reviewassets"
 	"github.com/Santiago1809/teicos/internal/components/skills"
 	"github.com/Santiago1809/teicos/internal/components/telemetryruntime"
 	"github.com/Santiago1809/teicos/internal/components/theme"
@@ -792,9 +792,9 @@ func syncBackupTargetsScoped(homeDir, workspaceDir string, scope InstallScope, s
 		}
 	}
 	for _, adapter := range adapters {
-		if names := reviewassets.NativeAgentFileNames(adapter.Agent()); len(names) > 0 {
+		if names := nativeagents.NativeAgentFileNames(adapter.Agent()); len(names) > 0 {
 			dir := adapter.SubAgentsDir(componentInjectionDirScoped(homeDir, workspaceDir, scope, adapter))
-			paths[filepath.Join(dir, reviewassets.OwnershipLedgerFilename)] = struct{}{}
+			paths[filepath.Join(dir, nativeagents.OwnershipLedgerFilename)] = struct{}{}
 			for _, name := range names {
 				paths[filepath.Join(dir, name)] = struct{}{}
 			}

@@ -177,13 +177,8 @@ func TestClaudeModulePipelineRollbackRestoresPilotAndUserSettingsAfterLaterFailu
 	for _, planned := range claudeModulePlanners {
 		t.Run(planned.name, func(t *testing.T) {
 			home := t.TempDir()
-			// Seed the pilot with an earlier contract revision so the routing
-			// step genuinely republishes the core with the current contract.
-			prior := func(agent model.AgentID) (string, error) {
-				contract, err := routingReviewContract(agent)
-				return contract + "\nPrior contract revision.\n", err
-			}
-			options := agentguidance.RoutingOptions{ClaudeGlobalModules: true, ReviewContract: prior}
+			// Seed the pilot so the routing step genuinely republishes the core.
+			options := agentguidance.RoutingOptions{ClaudeGlobalModules: true}
 			if _, err := agentguidance.InjectRoutingWithOptions(home, model.AgentClaudeCode, options); err != nil {
 				t.Fatalf("seed Claude module pilot: %v", err)
 			}
@@ -209,9 +204,8 @@ func TestClaudeModulePipelineRollbackRestoresPilotAndUserSettingsAfterLaterFailu
 			if len(result.Apply.Steps) != 3 || result.Apply.Steps[1].Status != pipeline.StepStatusSucceeded {
 				t.Fatalf("routing step must succeed before the later failure: %#v", result.Apply.Steps)
 			}
-			// Both writers really ran: the hooks merged into the user settings
-			// and the core was republished with the current contract.
-			for _, path := range []string{settings, paths[0]} {
+			// The hooks merged into the user settings.
+			for _, path := range []string{settings} {
 				if !slices.Contains(changed, path) {
 					t.Fatalf("routing step reported %v; want a write to %q before the later failure", changed, path)
 				}

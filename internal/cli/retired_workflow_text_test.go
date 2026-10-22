@@ -23,8 +23,7 @@ func TestCLIHelpShowsNoRetiredWorkflowText(t *testing.T) {
 		"dry-run": RenderDryRun(InstallResult{}),
 	}
 	for name, run := range map[string]func(*bytes.Buffer) error{
-		"telemetry --help":          func(out *bytes.Buffer) error { return RunTelemetry([]string{"--help"}, out) },
-		"review store-reset --help": func(out *bytes.Buffer) error { return RunReviewStoreReset([]string{"--help"}, out) },
+		"telemetry --help": func(out *bytes.Buffer) error { return RunTelemetry([]string{"--help"}, out) },
 	} {
 		var out bytes.Buffer
 		if err := run(&out); err != nil {

@@ -1,22 +1,21 @@
 package cli
 
 import (
-	"bytes"
 	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
 	"testing"
 
+	"github.com/Santiago1809/teicos/internal/filecoord"
 	"github.com/Santiago1809/teicos/internal/model"
-	"github.com/Santiago1809/teicos/internal/reviewtransaction"
 	"github.com/Santiago1809/teicos/internal/state"
 	"github.com/Santiago1809/teicos/internal/statecoord"
 )
 
 func TestPersistSyncManagedAssetStateReReadsLatestStateAfterLockContention(t *testing.T) {
 	home := t.TempDir()
-	held, err := reviewtransaction.AcquireAuthorityFileLock(mustInstallStateLockPath(t, home))
+	held, err := filecoord.AcquireAuthorityFileLock(mustInstallStateLockPath(t, home))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -53,7 +52,7 @@ func TestPersistSyncManagedAssetStateRefusesCorruptLatestState(t *testing.T) {
 
 func TestPersistInstallStateMergesExplicitAgentsFromLatestState(t *testing.T) {
 	home := t.TempDir()
-	held, err := reviewtransaction.AcquireAuthorityFileLock(mustInstallStateLockPath(t, home))
+	held, err := filecoord.AcquireAuthorityFileLock(mustInstallStateLockPath(t, home))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -79,30 +78,6 @@ func TestPersistInstallStateMergesExplicitAgentsFromLatestState(t *testing.T) {
 // O_NOFOLLOW component walk was handed the unresolved path. The lock must be
 // taken on the resolved real path so the no-follow property still holds and
 // the state lands under the real directory.
-func TestInstallStateLockAcceptsSymlinkedHome(t *testing.T) {
-	if runtime.GOOS == "windows" {
-		t.Skip("directory symlinks need elevated privileges on Windows")
-	}
-	real := t.TempDir()
-	link := filepath.Join(t.TempDir(), "home-link")
-	if err := os.Symlink(real, link); err != nil {
-		t.Fatal(err)
-	}
-	t.Setenv("HOME", link)
-	t.Setenv("USERPROFILE", link)
-
-	var output bytes.Buffer
-	if err := RunReviewMode([]string{"enable", "--cwd", t.TempDir(), "--scope", "global", "--json"}, &output); err != nil {
-		t.Fatalf("global enable under a symlinked home: %v\n%s", err, output.String())
-	}
-	persisted, err := state.Read(real)
-	if err != nil {
-		t.Fatalf("read state under the real home: %v", err)
-	}
-	if persisted.RDDMode != string(reviewtransaction.RDDModeOn) || persisted.RDDModeRecordedAt == nil {
-		t.Fatalf("symlinked-home enable did not persist under the real home: %#v", persisted)
-	}
-}
 
 func mustInstallStateLockPath(t *testing.T, home string) string {
 	t.Helper()

@@ -72,9 +72,9 @@ func TestMain(m *testing.M) {
 	// The default fake is V1; an inherited host declaration must not override
 	// it, including in stand-in subprocesses. V2 tests set their own declaration.
 	// The un-stubbed real-host E2E keeps both for its relay stand-in (below).
-	inheritedRelayDeclaration, relayDeclared := os.LookupEnv(openCodeRelayContractEnvironment)
+	inheritedRelayDeclaration, relayDeclared := os.LookupEnv("GENTLE_AI_OPENCODE_RELAY_CONTRACT")
 	realVersionRunner := runtimeopencode.VersionRunnerOverride
-	if err := os.Unsetenv(openCodeRelayContractEnvironment); err != nil {
+	if err := os.Unsetenv("GENTLE_AI_OPENCODE_RELAY_CONTRACT"); err != nil {
 		panic(err)
 	}
 	runtimeopencode.VersionRunnerOverride = func(context.Context, runtimeopencode.Command) (runtimeopencode.CommandOutput, error) {
@@ -116,15 +116,16 @@ func TestMain(m *testing.M) {
 			// GENTLE_AI_TEST_STANDIN_REAL_CAPABILITY_GATE=1 the stand-in restores
 			// the plugin's inherited declaration and the production version
 			// runner, so the real gate decides against the real V2 host binary.
-			if os.Getenv(openCodeV2StandInRealGateEnvironment) == "1" {
+			if os.Getenv("GENTLE_AI_TEST_STANDIN_REAL_CAPABILITY_GATE") == "1" {
 				if relayDeclared {
-					if err := os.Setenv(openCodeRelayContractEnvironment, inheritedRelayDeclaration); err != nil {
+					if err := os.Setenv("GENTLE_AI_OPENCODE_RELAY_CONTRACT", inheritedRelayDeclaration); err != nil {
 						panic(err)
 					}
 				}
 				runtimeopencode.VersionRunnerOverride = realVersionRunner
 			}
-			err = RunReview(args[1:], os.Stdout)
+			fmt.Fprintf(os.Stderr, "stand-in: unsupported CLI arguments %q\n", args)
+			os.Exit(1)
 		default:
 			fmt.Fprintf(os.Stderr, "stand-in: unsupported CLI arguments %q\n", args)
 			os.Exit(1)

@@ -25,7 +25,6 @@ var additionalSkillLabels = map[model.SkillID]string{
 	model.SkillCognitiveDoc:        "Cognitive Doc Design",
 	model.SkillCommentWriter:       "Comment Writer",
 	model.SkillWorkUnitCommits:     "Work Unit Commits",
-	model.SkillRDDDefectWorkflow:   "RDD Defect Workflow",
 	model.SkillSystemicIssueTriage: "Systemic Issue Triage",
 	model.SkillGentleAIBench:       "Gentle AI Bench",
 	model.SkillSecurity:            "Security Context",

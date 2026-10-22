@@ -19,11 +19,11 @@ func TestRunDoctor_AssetVersionRemediation(t *testing.T) {
 	t.Setenv(engramHealthEnvVar, "")
 	origExec, origLook := osExecutableDoctor, lookPathFn
 	origHome, origDirs, origAvail := osUserHomeDirDoctor, pathDirsFn, availableBytesFn
-	origGOOS := reviewManagedAssetsGOOS
+	origGOOS := managedAssetsGOOS
 	t.Cleanup(func() {
 		osExecutableDoctor, lookPathFn = origExec, origLook
 		osUserHomeDirDoctor, pathDirsFn, availableBytesFn = origHome, origDirs, origAvail
-		reviewManagedAssetsGOOS = origGOOS
+		managedAssetsGOOS = origGOOS
 	})
 
 	home := t.TempDir()
@@ -77,7 +77,7 @@ func TestRunDoctor_AssetVersionRemediation(t *testing.T) {
 				}
 				return filepath.Join(home, name), nil
 			}
-			reviewManagedAssetsGOOS = tc.goos
+			managedAssetsGOOS = tc.goos
 			var output bytes.Buffer
 			if err := RunDoctor(context.Background(), &output); err != nil {
 				t.Fatalf("RunDoctor: %v", err)

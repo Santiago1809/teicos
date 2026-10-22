@@ -21,11 +21,9 @@ const (
 	testModuleContract = "Fake native review execution contract for module tests."
 )
 
-func fakeModuleContract(model.AgentID) (string, error) { return testModuleContract, nil }
-
 func buildClaudeTestModules(t *testing.T) orchestratorModuleBundle {
 	t.Helper()
-	bundle, err := buildOrchestratorModules(model.AgentClaudeCode, fakeModuleContract, testModuleDir)
+	bundle, err := buildOrchestratorModules(model.AgentClaudeCode, testModuleDir)
 	if err != nil {
 		t.Fatalf("buildOrchestratorModules(claude) error = %v", err)
 	}
@@ -34,7 +32,7 @@ func buildClaudeTestModules(t *testing.T) orchestratorModuleBundle {
 
 func TestBuildOrchestratorModulesReconstructsPublicRender(t *testing.T) {
 	bundle := buildClaudeTestModules(t)
-	public, err := RenderOrchestratorWithSource(model.AgentClaudeCode, fakeModuleContract, "")
+	public, err := RenderOrchestrator(model.AgentClaudeCode, "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -48,7 +46,7 @@ func TestBuildOrchestratorModulesReconstructsPublicRender(t *testing.T) {
 	if got != public {
 		t.Fatalf("reconstructed core and modules differ from the public render (%d vs %d bytes)", len(got), len(public))
 	}
-	annotated, err := renderOrchestrator(model.AgentClaudeCode, fakeModuleContract, "", true)
+	annotated, err := renderOrchestrator(model.AgentClaudeCode, "", true)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -138,9 +136,9 @@ func TestOrchestratorModuleCoreKeepsAuthorityAndSafety(t *testing.T) {
 	core := buildClaudeTestModules(t).core
 	for _, required := range []string{
 		"### Identity Contract", "### Lossless Blocking Prompts (MANDATORY)",
-		"#### Gentle AI Provider Defect Handoff (MANDATORY)", "When delegating, forward this contract",
+		"When delegating, forward this contract",
 		"#### Delegation Triggers", "#### Delegated Verification Gate (MANDATORY)", // S9 C4 renamed the heading
-		"#### Native Checking Contract", "#### Review Execution Contract\n\n" + testModuleContract,
+		"#### Native Checking Contract",
 		"#### 1. Inline Direct", "Inline evidence uses one parallel batch", "#### 2. Simple Delegation",
 		"### Allowed edit surfaces (MANDATORY)", "### Delivery strategy",
 		"### Safety", "Ask before destructive git operations", "### Skill Registry Protocol",
@@ -184,8 +182,8 @@ func TestOrchestratorModuleCoreKeepsCriticalPolicy(t *testing.T) {
 		// or off, but no longer the native tier alone (only a named item adds a
 		// verifier), so its opening clause changed.
 		{"Delegated Verification Gate", sharedOrchestratorSection(shared, "Delegated Verification Gate (MANDATORY)"), []string{
-			"follows the same rule whether receipt-driven development (RDD) is on or off", "**Risk tier**",
-			"**RDD on**", "never replaces or skips the tier's verification", "**Verify handoff**", "The writer receives `## Verification`",
+			"Verification of a delegated writer's work is proportionate to the risk of the change", "**Medium**: writer self-verification",
+			"**Verify handoff**", "The writer receives `## Verification`",
 		}},
 		{"Simple Delegation", strings.TrimSpace(routing[start:end]), []string{
 			"The delegation trigger stays mandatory", "requires one read-only explorer", "parent-context backstop",
@@ -217,7 +215,7 @@ func TestOrchestratorModuleCoreKeepsCriticalPolicy(t *testing.T) {
 
 func TestBuildOrchestratorModulesAcceptsNativeAbsoluteBinding(t *testing.T) {
 	dir := filepath.Join(t.TempDir(), ".claude", "gentle-ai", "orchestrator")
-	bundle, err := buildOrchestratorModules(model.AgentClaudeCode, fakeModuleContract, dir)
+	bundle, err := buildOrchestratorModules(model.AgentClaudeCode, dir)
 	if err != nil {
 		t.Fatalf("buildOrchestratorModules(native absolute path) error = %v", err)
 	}
@@ -252,7 +250,7 @@ func TestBuildOrchestratorModulesRejectsUnsupportedBindings(t *testing.T) {
 		{"backtick binding", model.AgentClaudeCode, "~/.claude/`x`", errInvalidOrchestratorModuleDir},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			bundle, err := buildOrchestratorModules(tc.agent, fakeModuleContract, tc.dir)
+			bundle, err := buildOrchestratorModules(tc.agent, tc.dir)
 			if !errors.Is(err, tc.want) {
 				t.Fatalf("error = %v, want %v", err, tc.want)
 			}
@@ -263,8 +261,8 @@ func TestBuildOrchestratorModulesRejectsUnsupportedBindings(t *testing.T) {
 	}
 
 	// The public renderer of an unsupported runtime is unchanged and unmarked.
-	codex, err := RenderOrchestratorWithSource(model.AgentCodex, fakeModuleContract, "")
-	if err != nil || strings.Contains(codex, orchestratorFragmentMarkerToken) || !strings.Contains(codex, testModuleContract) {
+	codex, err := RenderOrchestrator(model.AgentCodex, "")
+	if err != nil || strings.Contains(codex, orchestratorFragmentMarkerToken) {
 		t.Fatalf("public Codex render changed: err=%v", err)
 	}
 }

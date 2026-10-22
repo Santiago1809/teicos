@@ -252,17 +252,6 @@ jobs:
       # / resume sequence; the crashes in #4081, #4128 and #4152 were a Go
       # runtime fault on that path at roughly one launch in four, so the lane
       # bursts real launches instead of trusting a single green run.
-      - name: Run native Windows git process tree tests
-        shell: pwsh
-        timeout-minutes: 6
-        run: |
-          $selector = '^(TestStartGitProcessTreeSurvivesRepeatedLaunches|TestStartGitProcessTreeKillsUnboundChildOnFailure|TestRunGitStartsWithoutAttachedConsole|TestRequireNoAttachedConsoleRejectsAttachedConsole)$'
-          $selected = @(go test ./internal/reviewtransaction -list $selector | Where-Object { $_ -match '^Test' })
-          if ($LASTEXITCODE -ne 0) { throw 'Could not list native Windows git process tree tests' }
-          if ($selected.Count -ne 4) { throw "Missing native Windows git process tree tests: $($selected -join ', ')" }
-          go test -v ./internal/reviewtransaction -count=1 -run $selector
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-
       - name: Build native test binary
         shell: pwsh
         run: go build -trimpath -ldflags="-s -w -X main.version=ci" -o "$env:RUNNER_TEMP\teicos.exe" ./cmd/teicos
@@ -274,7 +263,7 @@ jobs:
           GENTLE_AI_TEST_BINARY: ${{ runner.temp }}\teicos.exe
           GENTLE_AI_REQUIRE_DISTINCT_WINDOWS_TOKEN_OWNER: "1"
         run: |
-          $packages = @('./internal/cli', './internal/reviewtransaction', './internal/components/engram')
+          $packages = @('./internal/cli', './internal/components/engram')
           $expected = @(
             'TestRARSharedOwnerAcceptsOnlyCurrentWindowsPrincipals',
             'TestRARPrivateOwnerRemainsTokenUserOnly',
@@ -317,9 +306,6 @@ jobs:
           go test -v $packages -run $selector -count=1 -timeout=8m
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-      - name: Stress repository-context sharing retry
-        shell: pwsh
-        run: go test ./internal/reviewtransaction -count=100 -timeout=10m -run '^(TestReadReviewRepositoryContextRetriesTransientWindowsSharingViolation|TestReviewRepositoryContextPublicationConvergesAndRejectsUnsafeEntries)$'
 
       # PR runs the release-blocker subset only; the full Windows suite runs
       # in the separate, honestly-named "Windows Full Suite" workflow.

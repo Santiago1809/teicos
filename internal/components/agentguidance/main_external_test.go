@@ -4,8 +4,6 @@ import (
 	"os"
 	"testing"
 
-	"github.com/Santiago1809/teicos/internal/components/agentguidance"
-	"github.com/Santiago1809/teicos/internal/components/reviewassets"
 	"github.com/Santiago1809/teicos/internal/testenv"
 )
 
@@ -17,6 +15,5 @@ import (
 // would otherwise redirect these tests into the real ~/.pi.
 func TestMain(m *testing.M) {
 	testenv.Isolate()
-	agentguidance.SetReviewContractSource(reviewassets.ReviewExecutionContractFor)
 	os.Exit(m.Run())
 }

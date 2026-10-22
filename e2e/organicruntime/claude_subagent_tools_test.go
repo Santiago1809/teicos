@@ -16,7 +16,7 @@ import (
 	"time"
 
 	"github.com/Santiago1809/teicos/internal/agents"
-	"github.com/Santiago1809/teicos/internal/components/reviewassets"
+	"github.com/Santiago1809/teicos/internal/components/nativeagents"
 	"github.com/Santiago1809/teicos/internal/model"
 )
 
@@ -54,7 +54,7 @@ func TestClaudeMarkdownSubagentsEnforceEmptyTools(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			if _, err := reviewassets.InstallNativeAgents(home, adapter, reviewassets.InstallOptions{}); err != nil {
+			if _, err := nativeagents.InstallNativeAgents(home, adapter, nativeagents.InstallOptions{}); err != nil {
 				t.Fatal(err)
 			}
 			if tc.canRead {

@@ -16,11 +16,11 @@ import (
 	"github.com/Santiago1809/teicos/internal/cli"
 	"github.com/Santiago1809/teicos/internal/components/communitytool"
 	componentuninstall "github.com/Santiago1809/teicos/internal/components/uninstall"
+	"github.com/Santiago1809/teicos/internal/filecoord"
 	"github.com/Santiago1809/teicos/internal/model"
 	"github.com/Santiago1809/teicos/internal/opencode"
 	"github.com/Santiago1809/teicos/internal/pipeline"
 	"github.com/Santiago1809/teicos/internal/planner"
-	"github.com/Santiago1809/teicos/internal/reviewtransaction"
 	"github.com/Santiago1809/teicos/internal/state"
 	"github.com/Santiago1809/teicos/internal/statecoord"
 	"github.com/Santiago1809/teicos/internal/system"
@@ -802,330 +802,6 @@ func TestNewModelPiOnlyDetectionDefaultsToEngramOnly(t *testing.T) {
 	}
 }
 
-func TestPiCombinedWithOtherAgentKeepsGenericFlow(t *testing.T) {
-	m := NewModel(system.DetectionResult{}, "dev")
-	m.Screen = ScreenAgents
-	m.Selection.Agents = []model.AgentID{model.AgentPi, model.AgentOpenCode}
-	m.Cursor = len(screensAgentOptions())
-
-	updated, _ := m.Update(tea.KeyMsg{Type: tea.KeyEnter})
-	state := updated.(Model)
-
-	if state.Screen != ScreenPersona {
-		t.Fatalf("screen = %v, want %v", state.Screen, ScreenPersona)
-	}
-}
-
-func TestPiCombinedWithOtherAgentsTUIInstallKeepsAllAgentsInPlan(t *testing.T) {
-	t.Setenv(cli.PiBackgroundSubagentsEnv, "")
-	// Pin the host: OpenCode detection and the SDK proposal read `opencode
-	// --version` and the user's config, so a runner without OpenCode would
-	// otherwise stop on the Review screen instead of installing.
-	home := t.TempDir()
-	t.Setenv("HOME", home)
-	t.Setenv("USERPROFILE", home)
-	t.Setenv("XDG_CONFIG_HOME", filepath.Join(home, "xdg"))
-	oldVersion := opencode.VersionRunnerOverride
-	t.Cleanup(func() { opencode.VersionRunnerOverride = oldVersion })
-	opencode.VersionRunnerOverride = func(context.Context, opencode.Command) (opencode.CommandOutput, error) {
-		return opencode.CommandOutput{Stdout: []byte("1.18.30")}, nil
-	}
-	m := NewModel(system.DetectionResult{}, "dev")
-	m.Screen = ScreenAgents
-	m.InstallFlowActive = true
-	m.Selection.Agents = []model.AgentID{model.AgentPi, model.AgentOpenCode, model.AgentClaudeCode}
-	m.Cursor = len(screensAgentOptions())
-
-	updated, _ := m.Update(tea.KeyMsg{Type: tea.KeyEnter})
-	state := updated.(Model)
-	if state.Screen != ScreenPersona {
-		t.Fatalf("after agents screen = %v, want %v", state.Screen, ScreenPersona)
-	}
-
-	state.Cursor = 0
-	updated, _ = state.Update(tea.KeyMsg{Type: tea.KeyEnter})
-	state = updated.(Model)
-	if state.Screen != ScreenPreset {
-		t.Fatalf("after persona screen = %v, want %v", state.Screen, ScreenPreset)
-	}
-
-	state.Cursor = 2 // Minimal preset: Engram only, no model detours.
-	updated, _ = state.Update(tea.KeyMsg{Type: tea.KeyEnter})
-	state = updated.(Model)
-	if state.Screen != ScreenCommunityTools {
-		t.Fatalf("after preset screen = %v, want %v", state.Screen, ScreenCommunityTools)
-	}
-
-	updated, _ = state.Update(tea.KeyMsg{Type: tea.KeySpace})
-	state = updated.(Model)
-	if !state.Selection.HasCommunityTool(model.CommunityToolCodeGraph) {
-		t.Fatalf("community tools = %v, want CodeGraph selected", state.Selection.CommunityTools)
-	}
-
-	state.Cursor = len(communityToolDefinitions()) * 2
-	updated, _ = state.Update(tea.KeyMsg{Type: tea.KeyEnter})
-	state = updated.(Model)
-	if state.Screen != ScreenDependencyTree {
-		t.Fatalf("after community tools screen = %v, want %v", state.Screen, ScreenDependencyTree)
-	}
-
-	wantAgents := []model.AgentID{model.AgentPi, model.AgentOpenCode, model.AgentClaudeCode}
-	if !reflect.DeepEqual(state.DependencyPlan.Agents, wantAgents) {
-		t.Fatalf("dependency agents = %v, want %v", state.DependencyPlan.Agents, wantAgents)
-	}
-	// Minimal preset + Gentleman persona now includes ComponentPersona (persona is the source of truth).
-	wantComponents := []model.ComponentID{model.ComponentPersona, model.ComponentEngram}
-	if !reflect.DeepEqual(state.DependencyPlan.OrderedComponents, wantComponents) {
-		t.Fatalf("dependency components = %v, want %v", state.DependencyPlan.OrderedComponents, wantComponents)
-	}
-
-	state.ReviewModeCwdFn = func() (string, error) { return "/isolated-repo", nil }
-	state.ReviewModeStatusFn = func(context.Context, string) (reviewtransaction.RDDModeStatus, error) {
-		return reviewtransaction.RDDModeStatus{Schema: reviewtransaction.RDDModeStatusSchema, Global: reviewtransaction.RDDModeUnset}, nil
-	}
-	state.ReviewModeSetGlobalFn = func(context.Context, string, bool) (reviewtransaction.RDDModeStatus, error) {
-		return reviewtransaction.RDDModeStatus{Schema: reviewtransaction.RDDModeStatusSchema, Global: reviewtransaction.RDDModeOff}, nil
-	}
-	state.Cursor = 0
-	updated, load := state.Update(tea.KeyMsg{Type: tea.KeyEnter})
-	state = updated.(Model)
-	if state.Screen != ScreenInstallReviewMode || load == nil {
-		t.Fatalf("after dependency tree screen = %v, want loaded ScreenInstallReviewMode", state.Screen)
-	}
-	updated, _ = state.Update(load())
-	state = updated.(Model)
-	state.Cursor = 1 // RDD OFF
-	updated, _ = state.Update(tea.KeyMsg{Type: tea.KeyEnter})
-	state = updated.(Model)
-	if state.Screen != ScreenReview {
-		t.Fatalf("after RDD choice screen = %v, want %v", state.Screen, ScreenReview)
-	}
-
-	var gotSelection model.Selection
-	var gotPlan planner.ResolvedPlan
-	state.ExecuteFn = func(selection model.Selection, resolved planner.ResolvedPlan, _ system.DetectionResult, _ model.OpenCodeBackgroundIntent, _ model.OpenCodeBackgroundIntent, _, _ model.PiBackgroundIntent, _ pipeline.ProgressFunc) pipeline.ExecutionResult {
-		gotSelection = selection
-		gotPlan = resolved
-		return pipeline.ExecutionResult{
-			Prepare: pipeline.StageResult{Success: true},
-			Apply:   pipeline.StageResult{Success: true},
-		}
-	}
-
-	// Both OpenCode and Pi remain selected, so resolve each background prompt
-	// before executing the combined installation.
-	updated, _ = state.Update(tea.KeyMsg{Type: tea.KeyEnter})
-	state = updated.(Model)
-	if state.Screen != ScreenOpenCodeBackground {
-		t.Fatalf("after review screen = %v, want %v", state.Screen, ScreenOpenCodeBackground)
-	}
-	state.Cursor = 1 // Keep OpenCode foreground.
-	updated, _ = state.Update(tea.KeyMsg{Type: tea.KeyEnter})
-	state = updated.(Model)
-	if state.Screen != ScreenPiBackground {
-		t.Fatalf("after OpenCode background screen = %v, want %v", state.Screen, ScreenPiBackground)
-	}
-	state.Cursor = 1 // Keep Pi foreground.
-	updated, cmd := state.Update(tea.KeyMsg{Type: tea.KeyEnter})
-	state = updated.(Model)
-	if state.Screen != ScreenInstalling {
-		t.Fatalf("after pi background screen = %v, want %v", state.Screen, ScreenInstalling)
-	}
-	if cmd == nil {
-		t.Fatal("start installing command = nil")
-	}
-	msg := cmd()
-	if batch, ok := msg.(tea.BatchMsg); ok {
-		for _, innerCmd := range batch {
-			if innerCmd == nil {
-				continue
-			}
-			if _, ok := innerCmd().(PipelineDoneMsg); ok {
-				break
-			}
-		}
-	}
-
-	if !reflect.DeepEqual(gotSelection.Agents, wantAgents) {
-		t.Fatalf("execute selection agents = %v, want %v", gotSelection.Agents, wantAgents)
-	}
-	if !gotSelection.HasCommunityTool(model.CommunityToolCodeGraph) {
-		t.Fatalf("execute selection community tools = %v, want CodeGraph", gotSelection.CommunityTools)
-	}
-	if !slices.ContainsFunc(state.Progress.Items, func(item ProgressItem) bool { return item.Label == "community-tool:codegraph" }) {
-		t.Fatalf("progress items = %v, want community-tool:codegraph", state.Progress.Items)
-	}
-	if !reflect.DeepEqual(gotPlan.Agents, wantAgents) {
-		t.Fatalf("execute plan agents = %v, want %v", gotPlan.Agents, wantAgents)
-	}
-	if !reflect.DeepEqual(gotPlan.OrderedComponents, wantComponents) {
-		t.Fatalf("execute plan components = %v, want %v", gotPlan.OrderedComponents, wantComponents)
-	}
-}
-
-func TestReviewToInstallingInitializesProgress(t *testing.T) {
-	m := NewModel(system.DetectionResult{}, "dev")
-	m.Screen = ScreenReview
-	m.BackgroundIntent = model.OpenCodeBackgroundOff
-	m.PiBackgroundIntent = model.PiBackgroundOff
-
-	updated, _ := m.Update(tea.KeyMsg{Type: tea.KeyEnter})
-	state := updated.(Model)
-
-	if state.Screen != ScreenInstalling {
-		t.Fatalf("screen = %v, want %v", state.Screen, ScreenInstalling)
-	}
-
-	if state.Progress.Current != 0 {
-		t.Fatalf("progress current = %d, want 0", state.Progress.Current)
-	}
-}
-
-func TestInstallReviewModeSelectionPreservesExplicitOff(t *testing.T) {
-	for _, tt := range []struct {
-		name   string
-		global reviewtransaction.RDDMode
-		cursor int
-	}{
-		{"unset", reviewtransaction.RDDModeUnset, 0},
-		{"on", reviewtransaction.RDDModeOn, 0},
-		{"off", reviewtransaction.RDDModeOff, 1},
-	} {
-		t.Run(tt.name, func(t *testing.T) {
-			m := NewModel(system.DetectionResult{}, "dev")
-			m.Screen = ScreenInstallReviewMode
-			updated, cmd := m.Update(InstallReviewModeLoadedMsg{Status: reviewtransaction.RDDModeStatus{Global: tt.global}})
-			state := updated.(Model)
-			if state.Cursor != tt.cursor || state.InstallReviewModeChoiceSet || cmd != nil {
-				t.Fatalf("loading must select %d without choosing or persisting: cursor=%d choice=%t command=%t", tt.cursor, state.Cursor, state.InstallReviewModeChoiceSet, cmd != nil)
-			}
-		})
-	}
-}
-
-func TestInstallReviewModeChoicePrecedesReviewAndPersistsOnlyAfterSuccess(t *testing.T) {
-	m := NewModel(system.DetectionResult{}, "dev")
-	m.Screen = ScreenDependencyTree
-	m.Cursor = 0
-	m.ReviewModeCwdFn = func() (string, error) { return "/repo", nil }
-	m.ReviewModeStatusFn = func(context.Context, string) (reviewtransaction.RDDModeStatus, error) {
-		return reviewtransaction.RDDModeStatus{Schema: reviewtransaction.RDDModeStatusSchema, Global: reviewtransaction.RDDModeUnset}, nil
-	}
-	setCalls := 0
-	m.ReviewModeSetGlobalFn = func(_ context.Context, repo string, enabled bool) (reviewtransaction.RDDModeStatus, error) {
-		setCalls++
-		if repo != "/repo" || !enabled {
-			t.Fatalf("SetGlobalReviewMode(%q, %t), want /repo, true", repo, enabled)
-		}
-		return reviewtransaction.RDDModeStatus{Schema: reviewtransaction.RDDModeStatusSchema, Global: reviewtransaction.RDDModeOn}, nil
-	}
-
-	updated, load := m.Update(tea.KeyMsg{Type: tea.KeyEnter})
-	state := updated.(Model)
-	if state.Screen != ScreenInstallReviewMode || load == nil {
-		t.Fatalf("after dependency confirmation = screen %v, command %v; want install review mode with loader", state.Screen, load != nil)
-	}
-	updated, _ = state.Update(load())
-	state = updated.(Model)
-	if state.Cursor != 0 {
-		t.Fatalf("fresh global RDD cursor = %d, want RDD ON at 0", state.Cursor)
-	}
-	// Confirm the default selection explicitly before installation.
-	updated, _ = state.Update(tea.KeyMsg{Type: tea.KeyEnter})
-	state = updated.(Model)
-	if state.Screen != ScreenReview || !state.InstallReviewModeChoiceSet || !state.InstallReviewModeEnabled {
-		t.Fatalf("after RDD ON = screen %v, choice set/enabled %t/%t; want review/true/true", state.Screen, state.InstallReviewModeChoiceSet, state.InstallReviewModeEnabled)
-	}
-	if !strings.Contains(state.View(), "RDD ON") {
-		t.Fatalf("review summary does not show selected RDD ON:\n%s", state.View())
-	}
-	if setCalls != 0 {
-		t.Fatalf("global mode changed before installation succeeded: %d calls", setCalls)
-	}
-
-	state.Cursor = 1 // Back
-	updated, _ = state.Update(tea.KeyMsg{Type: tea.KeyEnter})
-	state = updated.(Model)
-	if state.Screen != ScreenInstallReviewMode {
-		t.Fatalf("review Back screen = %v, want ScreenInstallReviewMode", state.Screen)
-	}
-	state.Cursor = 0 // Keep the selected RDD ON choice after revisiting the screen.
-	updated, _ = state.Update(tea.KeyMsg{Type: tea.KeyEnter})
-	state = updated.(Model)
-	if state.Screen != ScreenReview || !state.InstallReviewModeEnabled {
-		t.Fatalf("revised confirmation = screen %v, enabled %t; want review/true", state.Screen, state.InstallReviewModeEnabled)
-	}
-
-	state.Screen = ScreenInstalling
-	state.pipelineRunning = true
-	updated, persist := state.Update(PipelineDoneMsg{Result: pipeline.ExecutionResult{Apply: pipeline.StageResult{Success: true}}})
-	state = updated.(Model)
-	if persist == nil || setCalls != 0 {
-		t.Fatalf("successful pipeline = persistence command %t, calls %d; want queued command and no synchronous mutation", persist != nil, setCalls)
-	}
-	updated, _ = state.Update(persist())
-	state = updated.(Model)
-	if setCalls != 1 || state.InstallReviewModePersistErr != nil {
-		t.Fatalf("persist result = calls %d, error %v; want one successful global update", setCalls, state.InstallReviewModePersistErr)
-	}
-}
-
-func TestInstallReviewModePersistenceFailureReportsActionableRecovery(t *testing.T) {
-	m := NewModel(system.DetectionResult{}, "dev")
-	m.Screen = ScreenInstalling
-	m.InstallReviewModePersisting = true
-	m.Execution = pipeline.ExecutionResult{Apply: pipeline.StageResult{Success: true}}
-
-	updated, _ := m.Update(InstallReviewModePersistedMsg{Err: errors.New("write global mode")})
-	state := updated.(Model)
-	if state.InstallReviewModePersisting || state.InstallReviewModePersistErr == nil {
-		t.Fatalf("persisting/error = %t/%v, want false/non-nil", state.InstallReviewModePersisting, state.InstallReviewModePersistErr)
-	}
-	if len(state.Execution.ManualActions) != 1 || !strings.Contains(state.Execution.ManualActions[0], "review mode enable --scope global") {
-		t.Fatalf("manual actions = %v, want actionable global-mode recovery", state.Execution.ManualActions)
-	}
-}
-
-func TestInstallReviewModeReadFailureDoesNotChooseOff(t *testing.T) {
-	m := NewModel(system.DetectionResult{}, "dev")
-	m.Screen = ScreenDependencyTree
-	m.Cursor = 0
-	m.ReviewModeCwdFn = func() (string, error) { return "/repo", nil }
-	m.ReviewModeStatusFn = func(context.Context, string) (reviewtransaction.RDDModeStatus, error) {
-		return reviewtransaction.RDDModeStatus{}, errors.New("cannot read mode")
-	}
-
-	updated, load := m.Update(tea.KeyMsg{Type: tea.KeyEnter})
-	state := updated.(Model)
-	updated, _ = state.Update(load())
-	state = updated.(Model)
-	if state.InstallReviewModeChoiceSet || state.InstallReviewModeEnabled {
-		t.Fatalf("unreadable status chose a mode: set/enabled = %t/%t", state.InstallReviewModeChoiceSet, state.InstallReviewModeEnabled)
-	}
-	updated, _ = state.Update(tea.KeyMsg{Type: tea.KeyEnter})
-	if got := updated.(Model).Screen; got != ScreenDependencyTree {
-		t.Fatalf("status-error Enter screen = %v, want ScreenDependencyTree", got)
-	}
-}
-
-func TestInstallReviewModeDoesNotPersistAfterFailedInstallation(t *testing.T) {
-	m := NewModel(system.DetectionResult{}, "dev")
-	m.Screen = ScreenInstalling
-	m.pipelineRunning = true
-	m.InstallReviewModeChoiceSet = true
-	m.InstallReviewModeEnabled = false
-	m.ReviewModeSetGlobalFn = func(context.Context, string, bool) (reviewtransaction.RDDModeStatus, error) {
-		t.Fatal("failed installation must not persist RDD mode")
-		return reviewtransaction.RDDModeStatus{}, nil
-	}
-
-	updated, cmd := m.Update(PipelineDoneMsg{Result: pipeline.ExecutionResult{Err: errors.New("install failed")}})
-	state := updated.(Model)
-	if cmd != nil || state.InstallReviewModePersisting {
-		t.Fatalf("failed pipeline queued review-mode persistence: command %t, persisting %t", cmd != nil, state.InstallReviewModePersisting)
-	}
-}
-
 func updateModel(m Model, msg tea.Msg) Model { next, _ := m.Update(msg); return next.(Model) }
 func installingModel(labels []string, runID uint64) Model {
 	m := NewModel(system.DetectionResult{}, "dev")
@@ -1383,20 +1059,12 @@ func TestEscBlockedWhileInstallReviewModePersists(t *testing.T) {
 		t.Run(testCase.name, func(t *testing.T) {
 			m := NewModel(system.DetectionResult{}, "dev")
 			m.Screen = ScreenInstalling
-			m.InstallReviewModePersisting = true
 
 			state := updateModel(m, tea.KeyMsg{Type: tea.KeyEsc})
 			if state.Screen != ScreenInstalling {
 				t.Fatalf("screen = %v, want ScreenInstalling while RDD mode persists", state.Screen)
 			}
 
-			state = updateModel(state, InstallReviewModePersistedMsg{Err: testCase.err})
-			if state.InstallReviewModePersisting {
-				t.Fatal("persistence result was discarded after blocked esc")
-			}
-			if (state.InstallReviewModePersistErr != nil) != (testCase.err != nil) {
-				t.Fatalf("persist error = %v, want %v", state.InstallReviewModePersistErr, testCase.err)
-			}
 		})
 	}
 }
@@ -4092,8 +3760,8 @@ func TestCustomPresetClaudeSkipsInstallerPhasePicker(t *testing.T) {
 	m.Selection.Components = []model.ComponentID{model.ComponentContext7}
 	m.Cursor = len(screens.AllComponents())
 	updated, cmd := m.Update(tea.KeyMsg{Type: tea.KeyEnter})
-	if got := updated.(Model).Screen; got != ScreenInstallReviewMode || cmd == nil {
-		t.Fatalf("screen/load = %v/%t, want loaded RDD choice", got, cmd != nil)
+	if got := updated.(Model).Screen; got != ScreenReview || cmd != nil {
+		t.Fatalf("screen/load = %v/%t, want the review screen", got, cmd != nil)
 	}
 }
 
@@ -4115,35 +3783,18 @@ func TestCustomPresetContinueGoesToSkillPickerOrReview(t *testing.T) {
 	}
 
 	// Case 2: No Skills → load RDD, explicitly choose OFF, then review.
-	m2 := installReviewModeTestModel(t, NewModel(system.DetectionResult{}, "dev"))
+	m2 := NewModel(system.DetectionResult{}, "dev")
 	m2.Screen = ScreenDependencyTree
 	m2.Selection.Preset = model.PresetCustom
 	m2.Selection.Agents = []model.AgentID{model.AgentCursor}
 	m2.Selection.Components = []model.ComponentID{model.ComponentContext7} // no Skills
 	m2.Cursor = len(screens.AllComponents())
 
-	updated2, load := m2.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	updated2, _ := m2.Update(tea.KeyMsg{Type: tea.KeyEnter})
 	state2 := updated2.(Model)
-	if state2.Screen != ScreenInstallReviewMode || load == nil {
-		t.Fatalf("case no Skills: screen/load = %v/%t, want loaded ScreenInstallReviewMode", state2.Screen, load != nil)
-	}
-	updated2, _ = state2.Update(load())
-	state2 = updated2.(Model)
-	state2.Cursor = 1 // RDD OFF
-	updated2, _ = state2.Update(tea.KeyMsg{Type: tea.KeyEnter})
-	state2 = updated2.(Model)
 	if state2.Screen != ScreenReview {
-		t.Fatalf("case no Skills: screen = %v, want ScreenReview after an explicit RDD choice", state2.Screen)
+		t.Fatalf("case no Skills: screen = %v, want ScreenReview", state2.Screen)
 	}
-}
-
-func installReviewModeTestModel(t *testing.T, m Model) Model {
-	t.Helper()
-	m.ReviewModeCwdFn = func() (string, error) { return "/isolated-repo", nil }
-	m.ReviewModeStatusFn = func(context.Context, string) (reviewtransaction.RDDModeStatus, error) {
-		return reviewtransaction.RDDModeStatus{Schema: reviewtransaction.RDDModeStatusSchema, Global: reviewtransaction.RDDModeUnset}, nil
-	}
-	return m
 }
 
 // Custom skill selection returns directly to components.
@@ -7392,7 +7043,7 @@ func TestPickerBackRowRegression(t *testing.T) {
 				m.Cursor = len(screens.AllComponents()) // "Continue" row
 				return m
 			},
-			wantScreen: ScreenInstallReviewMode,
+			wantScreen: ScreenReview,
 		},
 		{
 			name: "custom Codex-only DependencyTree Continue loads RDD",
@@ -7405,7 +7056,7 @@ func TestPickerBackRowRegression(t *testing.T) {
 				m.Cursor = len(screens.AllComponents()) // "Continue" row
 				return m
 			},
-			wantScreen: ScreenInstallReviewMode,
+			wantScreen: ScreenReview,
 		},
 	}
 
@@ -7426,7 +7077,7 @@ func TestPickerBackRowRegression(t *testing.T) {
 
 func TestGoBackCustomSkipsRetiredModelPicker(t *testing.T) {
 	m := NewModel(system.DetectionResult{}, "dev")
-	m.Screen, m.Selection.Preset = ScreenInstallReviewMode, model.PresetCustom
+	m.Screen, m.Selection.Preset = ScreenReview, model.PresetCustom
 	m.Selection.Agents = []model.AgentID{model.AgentOpenCode}
 	m.Selection.Components = []model.ComponentID{model.ComponentEngram, model.ComponentContext7}
 	updated, cmd := m.Update(tea.KeyMsg{Type: tea.KeyEsc})
@@ -7459,7 +7110,7 @@ func TestDependencyTreeForward(t *testing.T) {
 		{
 			name: "custom no OpenCode no Skills loads RDD before Review",
 			setup: func(t *testing.T) Model {
-				m := installReviewModeTestModel(t, NewModel(system.DetectionResult{}, "dev"))
+				m := NewModel(system.DetectionResult{}, "dev")
 				m.Screen = ScreenDependencyTree
 				m.Selection.Preset = model.PresetCustom
 				m.Selection.Agents = []model.AgentID{model.AgentCursor}
@@ -7494,7 +7145,7 @@ func TestDependencyTreeForward(t *testing.T) {
 				m.Cursor = len(screens.AllComponents())
 				return m
 			},
-			wantScreen: ScreenInstallReviewMode,
+			wantScreen: ScreenReview,
 		},
 	}
 
@@ -7504,8 +7155,8 @@ func TestDependencyTreeForward(t *testing.T) {
 			updated, cmd := m.Update(tea.KeyMsg{Type: tea.KeyEnter})
 			got := updated.(Model)
 			if tt.confirmRDD {
-				if got.Screen != ScreenInstallReviewMode || cmd == nil {
-					t.Fatalf("screen/load = %v/%t, want loaded ScreenInstallReviewMode", got.Screen, cmd != nil)
+				if got.Screen != ScreenReview || cmd == nil {
+					t.Fatalf("screen/load = %v/%t, want loaded ScreenReview", got.Screen, cmd != nil)
 				}
 				updated, _ = got.Update(cmd())
 				got = updated.(Model)
@@ -7687,20 +7338,19 @@ func TestMarkPendingSyncUnderLockReReadsLatestStateAfterLockContention(t *testin
 	if err != nil {
 		t.Fatalf("install state lock path: %v", err)
 	}
-	held, err := reviewtransaction.AcquireAuthorityFileLock(lockPath)
+	held, err := filecoord.AcquireAuthorityFileLock(lockPath)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if err := state.Write(home, state.InstallState{
 		InstalledAgents: []string{"opencode"},
-		RDDMode:         string(reviewtransaction.RDDModeOn),
 	}); err != nil {
 		t.Fatal(err)
 	}
 	// Contended run: the helper must fail fast and leave the state untouched.
 	markPendingSyncUnderLock(home)
 	contended, err := state.Read(home)
-	if err != nil || contended.PendingSync || contended.RDDMode != string(reviewtransaction.RDDModeOn) {
+	if err != nil || contended.PendingSync {
 		t.Fatalf("state after contended run = %#v, err = %v", contended, err)
 	}
 	if err := held.Release(); err != nil {
@@ -7719,7 +7369,5 @@ func TestMarkPendingSyncUnderLockReReadsLatestStateAfterLockContention(t *testin
 	if len(got.InstalledAgents) != 1 || got.InstalledAgents[0] != "opencode" {
 		t.Fatalf("InstalledAgents = %v, want [opencode]", got.InstalledAgents)
 	}
-	if got.RDDMode != string(reviewtransaction.RDDModeOn) {
-		t.Fatalf("concurrent RDDMode clobbered: got %q, want %q", got.RDDMode, reviewtransaction.RDDModeOn)
-	}
+
 }

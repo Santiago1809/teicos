@@ -45,7 +45,6 @@ func TestMVPSkillsIncludeRequestedBundledSkillsWithCanonicalNames(t *testing.T) 
 		model.SkillJudgmentDay:         "judgment-day",
 		model.SkillGoTesting:           "go-testing",
 		model.SkillImprover:            "skill-improver",
-		model.SkillRDDDefectWorkflow:   "rdd-defect-workflow",
 		model.SkillSystemicIssueTriage: "systemic-issue-triage",
 		model.SkillGentleAIBench:       "gentle-ai-bench",
 	}

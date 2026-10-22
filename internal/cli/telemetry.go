@@ -1,7 +1,6 @@
 package cli
 
 import (
-	"context"
 	"errors"
 	"flag"
 	"fmt"
@@ -127,7 +126,7 @@ func runTelemetryPolicy(args []string, stdout io.Writer) error {
 		}
 	}
 	if *emitJSON {
-		return encodeReviewJSON(stdout, result)
+		return encodeJSON(stdout, result)
 	}
 	_, err := fmt.Fprintf(stdout, "telemetry policy: %s (source: %s, reason: %s)\n", enabledWord(result.Enabled), result.Source, result.Reason)
 	return err
@@ -190,7 +189,7 @@ func runTelemetryStateCommand(operation string, args []string, stdout io.Writer)
 	}
 
 	if *emitJSON {
-		return encodeReviewJSON(stdout, result)
+		return encodeJSON(stdout, result)
 	}
 	_, _ = fmt.Fprintf(stdout, "telemetry: %s (source: %s)\n", enabledWord(result.Enabled), result.Source)
 	_, _ = fmt.Fprintf(stdout, "install_id: %s\n", result.InstallID)
@@ -315,16 +314,11 @@ func telemetryInstalledSelection(homeDir string) ([]string, []string, error) {
 	return append([]string(nil), persisted.InstalledAgents...), components, nil
 }
 
-// telemetryRDDEnabled reads the effective receipt-driven-development mode
-// through the same read-only reader `gentle-ai review mode status` uses. A
-// resolution failure (e.g. cwd is not a repository) is reported as disabled
-// rather than failing the caller: telemetry must never block on this.
-func telemetryRDDEnabled(cwd string) bool {
-	status, err := ReviewModeStatus(context.Background(), cwd)
-	if err != nil {
-		return false
-	}
-	return status.Enabled()
+// telemetryRDDEnabled reports whether receipt-driven development is on.
+// Teicos ships ODD only, so the answer is always false; the field stays in
+// the published telemetry contract, which still carries it as required.
+func telemetryRDDEnabled(string) bool {
+	return false
 }
 
 // telemetryEnabledHomeDir resolves the home directory only if telemetry is
@@ -424,7 +418,7 @@ func runTelemetryTriggerCommand(args []string, stdout io.Writer) error {
 	}
 	result := TelemetryTriggerResult{Schema: TelemetryTriggerSchema, Decision: string(outcome.Decision), Source: string(source)}
 	if *emitJSON {
-		return encodeReviewJSON(stdout, result)
+		return encodeJSON(stdout, result)
 	}
 	_, _ = fmt.Fprintf(stdout, "telemetry trigger: %s (source: %s)\n", result.Decision, result.Source)
 	return nil

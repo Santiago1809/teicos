@@ -154,7 +154,7 @@ var runtimeAssetDirs = map[string]string{"1.18.30": "opencode/plugins/", "2.0.4"
 // runtime majors, whichever asset directory they came from.
 func TestInstallUpgradesPreviouslyReleasedPluginBytes(t *testing.T) {
 	for version, assetDir := range runtimeAssetDirs {
-		for _, fixture := range []string{"v3.7.0/plugins/opencode-review-transport.ts", "v3.7.0/plugins-v2/opencode-review-transport.ts"} {
+		for _, fixture := range []string{"v3.7.0/plugins/sdd-task-result-artifacts.ts", "v3.7.0/plugins-v2/sdd-task-result-artifacts.ts"} {
 			t.Run(version+"/"+fixture, func(t *testing.T) {
 				useRuntime(t, version)
 				home := t.TempDir()
@@ -164,10 +164,9 @@ func TestInstallUpgradesPreviouslyReleasedPluginBytes(t *testing.T) {
 					t.Fatal(err)
 				}
 				for name, data := range map[string][]byte{
-					"opencode-review-transport.ts": releasedFixture(t, fixture),
 					"background-agents.ts":         releasedFixture(t, "v1.7.19/plugins/background-agents.ts"),
 					LegacyOpenCodeReviewPluginName: releasedFixture(t, "v2.1.7/plugins/review-result-artifacts.ts"),
-					"sdd-task-result-artifacts.ts": releasedFixture(t, strings.Replace(fixture, "opencode-review-transport.ts", "sdd-task-result-artifacts.ts", 1)),
+					"sdd-task-result-artifacts.ts": releasedFixture(t, fixture),
 				} {
 					if err := os.WriteFile(filepath.Join(dir, name), data, 0644); err != nil {
 						t.Fatal(err)

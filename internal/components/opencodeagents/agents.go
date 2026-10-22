@@ -24,22 +24,6 @@ var parity = []Spec{
 	{"jd-judge-a", "Judgment Day blind adversarial reviewer A. Read-only; reports findings and does not fix code.", map[string]any{"write": "deny", "edit": "deny", "task": "deny"}},
 	{"jd-judge-b", "Judgment Day blind adversarial reviewer B. Read-only; independently reports findings and does not fix code.", map[string]any{"write": "deny", "edit": "deny", "task": "deny"}},
 	{"jd-fix-agent", "Judgment Day surgical fix agent for confirmed findings. Can edit code and run focused tests.", map[string]any{"task": "deny"}},
-	{"review-risk", "R1 Risk reviewer — security, privilege boundaries, data exposure, dependency risks, and merge-blocking vulnerabilities.", map[string]any{"write": "deny", "edit": "deny", "bash": "deny", "task": "deny"}},
-	{"review-readability", "R2 Readability reviewer — naming, complexity, intention, maintainability, review size, and context clarity.", map[string]any{"write": "deny", "edit": "deny", "bash": "deny", "task": "deny"}},
-	{"review-reliability", "R3 Reliability reviewer — behavior-first tests, coverage value, edge cases, determinism, contracts, and regressions.", map[string]any{"write": "deny", "edit": "deny", "bash": "deny", "task": "deny"}},
-	{"review-resilience", "R4 Resilience reviewer — fallbacks, retry/backoff, graceful degradation, observability, load, rollback, and SLO risks.", map[string]any{"write": "deny", "edit": "deny", "bash": "deny", "task": "deny"}},
-}
-
-var reviewNames = []string{"review-risk", "review-readability", "review-reliability", "review-resilience", "review-refuter", "review-validator"}
-
-func ReviewNames() []string { return append([]string(nil), reviewNames...) }
-func IsReview(name string) bool {
-	for _, candidate := range reviewNames {
-		if candidate == name {
-			return true
-		}
-	}
-	return false
 }
 
 func Parity(agent model.AgentID) []Spec {
@@ -48,7 +32,7 @@ func Parity(agent model.AgentID) []Spec {
 	}
 	var specs []Spec
 	for _, spec := range parity {
-		if strings.HasPrefix(spec.Name, "gentle-ai-") || (!model.SupportsReceiptDrivenDevelopment(agent) && IsReview(spec.Name)) {
+		if strings.HasPrefix(spec.Name, "gentle-ai-") {
 			continue
 		}
 		specs = append(specs, spec)
@@ -58,9 +42,6 @@ func Parity(agent model.AgentID) []Spec {
 
 func Roles(agent model.AgentID) []string {
 	var names []string
-	if model.SupportsReceiptDrivenDevelopment(agent) {
-		names = append(names, "review-refuter")
-	}
 	if agent == model.AgentOpenCode {
 		names = append(names, "review-validator")
 	}
@@ -81,7 +62,7 @@ func LegacyOwned(agent model.AgentID, name string) bool {
 			return true
 		}
 	}
-	return !model.SupportsReceiptDrivenDevelopment(agent) && IsReview(name)
+	return false
 }
 
 // UninstallRole recognizes current runtime roles and retired Kilo review roles.
@@ -92,7 +73,7 @@ func UninstallRole(agent model.AgentID, name string) bool {
 			return true
 		}
 	}
-	return agent == model.AgentKilocode && IsReview(name) && name != "review-validator"
+	return false
 }
 
 func Entry(spec Spec) (map[string]any, error) {
@@ -134,43 +115,17 @@ func GentlemanShape(agent model.AgentID, entry map[string]any) (bool, error) {
 	return bytes.Equal(got, expected), nil
 }
 
-// ReviewShape returns the entry installed for a managed review role.
-func ReviewShape(name string) (map[string]any, bool) {
-	if !IsReview(name) {
-		return nil, false
-	}
-	switch name {
-	case "review-refuter":
-		return Refuter(), true
-	case "review-validator":
-		return Validator(), true
-	default:
-		for _, spec := range parity {
-			if spec.Name == name {
-				entry, err := Entry(spec)
-				return entry, err == nil
-			}
-		}
-	}
-	return nil, false
-}
-
 // Shape accepts user-selected model and variant, but no other deviations.
 func Shape(name string, entry map[string]any) (bool, error) {
 	var want map[string]any
-	switch name {
-	case "review-refuter", "review-validator":
-		want, _ = ReviewShape(name)
-	default:
-		for _, spec := range parity {
-			if spec.Name == name {
-				var err error
-				want, err = Entry(spec)
-				if err != nil {
-					return false, err
-				}
-				break
+	for _, spec := range parity {
+		if spec.Name == name {
+			var err error
+			want, err = Entry(spec)
+			if err != nil {
+				return false, err
 			}
+			break
 		}
 	}
 	if want == nil {

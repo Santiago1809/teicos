@@ -709,3 +709,13 @@ func TestRunSyncWorkspaceScopeWritesProjectOpenCodeSettings(t *testing.T) {
 		})
 	}
 }
+
+// containsString reports whether values holds want.
+func containsString(values []string, want string) bool {
+	for _, value := range values {
+		if value == want {
+			return true
+		}
+	}
+	return false
+}

@@ -343,31 +343,8 @@ func newDocumentedInvocationSandbox(t *testing.T) string {
 	return repo
 }
 
-// registrySurfaceViolation cross-checks a documented negotiated review verb
 // against the operation registry's declared flag surface. --contract is the
 // facade's own routing flag and is declared on the FlagSets, not the rows.
-func registrySurfaceViolation(words []string) string {
-	if len(words) < 3 || words[1] != "review" {
-		return ""
-	}
-	surface, found := cli.ReviewOperationFlagSurface(words[2])
-	if !found {
-		return ""
-	}
-	for _, word := range words[3:] {
-		if !strings.HasPrefix(word, "--") {
-			continue
-		}
-		name := strings.TrimPrefix(word, "--")
-		if index := strings.Index(name, "="); index >= 0 {
-			name = name[:index]
-		}
-		if name != "contract" && !surface[name] {
-			return fmt.Sprintf("documents --%s, which the operation registry does not declare for review %s", name, words[2])
-		}
-	}
-	return ""
-}
 
 // --- the guard ------------------------------------------------------------
 
@@ -462,9 +439,7 @@ func TestDocumentedInvocationsRunAsDocumented(t *testing.T) {
 		}
 		t.Run(string(tier)+"/"+strings.Join(words[1:min(3, len(words))], " "), func(t *testing.T) {
 			failure := ""
-			if violation := registrySurfaceViolation(words); violation != "" {
-				failure = violation
-			} else {
+			{
 				sandbox := newDocumentedInvocationSandbox(t)
 				for index, arg := range args {
 					args[index] = strings.ReplaceAll(arg, repo, sandbox)

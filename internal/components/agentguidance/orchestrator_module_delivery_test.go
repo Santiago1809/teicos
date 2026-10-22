@@ -17,7 +17,7 @@ import (
 // #5256 U2a covers the default-off Claude global module option of the routing
 // injector. No CLI, sync, upgrade or uninstall caller sets it yet.
 
-var claudeModuleOptions = RoutingOptions{ClaudeGlobalModules: true, ReviewContract: fakeModuleContract}
+var claudeModuleOptions = RoutingOptions{ClaudeGlobalModules: true}
 
 // plannedClaudeModulePaths is the complete backup plan for a Claude config
 // directory: the core, every known module name and the ledger.
@@ -84,7 +84,7 @@ func TestClaudeModuleDeliveryInjectsCoreModulesAndLedger(t *testing.T) {
 	corePath := filepath.Join(configDir, "CLAUDE.md")
 	writeModuleTestFile(t, corePath, coreTransactionUserCore, 0o600)
 	moduleDir := filepath.Join(configDir, "gentle-ai", "orchestrator")
-	bundle, err := buildOrchestratorModules(model.AgentClaudeCode, fakeModuleContract, moduleDir)
+	bundle, err := buildOrchestratorModules(model.AgentClaudeCode, moduleDir)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -205,11 +205,11 @@ func TestClaudeModuleDeliveryLeavesDefaultAndOtherAgentsMonolithic(t *testing.T)
 
 	home := t.TempDir()
 	corePath := filepath.Join(home, ".claude", "CLAUDE.md")
-	result, err := InjectRoutingWithOptions(home, model.AgentClaudeCode, RoutingOptions{ReviewContract: fakeModuleContract})
+	result, err := InjectRoutingWithOptions(home, model.AgentClaudeCode, RoutingOptions{})
 	if err != nil || !reflect.DeepEqual(result.Files, []string{corePath}) {
 		t.Fatalf("default inject = %+v, %v; want only %s", result, err, corePath)
 	}
-	public, err := RenderOrchestratorWithSource(model.AgentClaudeCode, fakeModuleContract, "")
+	public, err := RenderOrchestrator(model.AgentClaudeCode, "")
 	if err != nil {
 		t.Fatal(err)
 	}

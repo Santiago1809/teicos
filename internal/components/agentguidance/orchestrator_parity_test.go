@@ -165,8 +165,6 @@ func TestInstalledOrchestratorDelegatesForReason(t *testing.T) {
 				// S1 writer by reason.
 				"**Write rule**: a small task's writes stay inline, even across files; delegate a writer only for a named reason",
 				"Never for size, a large task alone, file count, or a price ratio; without a reason the parent writes inline, following its logbook.",
-				"Write a large (tracked) task with no Write rule reason",
-				"Write a unit with a Write rule reason",
 				"one bounded writer per unit",
 				"implementing a unit with a writer reason (writer)",
 				// S2 parallel writers.
@@ -191,7 +189,7 @@ func TestInstalledOrchestratorDelegatesForReason(t *testing.T) {
 				"silently ignoring an explicit option with success, or changing existing output nobody asked to change, is always a blocker",
 				"The writer commits the probes as regression tests.",
 			}
-			if model.SupportsReceiptDrivenDevelopment(agent) {
+			if false {
 				// Native RDD review allows exactly one correction attempt
 				// (reviewtransaction.MaxCompactCorrectionAttempts); the
 				// same-blocker second correction applies to the verifier only.

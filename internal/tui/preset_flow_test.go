@@ -1,12 +1,10 @@
 package tui
 
 import (
-	"context"
 	"strings"
 	"testing"
 
 	"github.com/Santiago1809/teicos/internal/model"
-	"github.com/Santiago1809/teicos/internal/reviewtransaction"
 	"github.com/Santiago1809/teicos/internal/system"
 	"github.com/Santiago1809/teicos/internal/tui/screens"
 	tea "github.com/charmbracelet/bubbletea"
@@ -87,17 +85,16 @@ func TestCustomPresetPostComponentFlowMatrix(t *testing.T) {
 		components []model.ComponentID
 		want       Screen
 	}{
-		{"OpenCode Engram", model.AgentOpenCode, []model.ComponentID{model.ComponentEngram}, ScreenInstallReviewMode},
+		{"OpenCode Engram", model.AgentOpenCode, []model.ComponentID{model.ComponentEngram}, ScreenReview},
 		{"OpenCode Skills", model.AgentOpenCode, []model.ComponentID{model.ComponentSkills}, ScreenSkillPicker},
 		{"Cursor Skills", model.AgentCursor, []model.ComponentID{model.ComponentSkills}, ScreenSkillPicker},
-		{"Cursor Engram", model.AgentCursor, []model.ComponentID{model.ComponentEngram}, ScreenInstallReviewMode},
+		{"Cursor Engram", model.AgentCursor, []model.ComponentID{model.ComponentEngram}, ScreenReview},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			m := NewModel(system.DetectionResult{}, "dev")
 			m.Screen, m.Selection.Preset = ScreenDependencyTree, model.PresetCustom
 			m.Selection.Agents, m.Selection.Components = []model.AgentID{tt.agent}, tt.components
 			m.Cursor = len(screens.AllComponents())
-			m = installReviewModeStatusFixture(m)
 			state := applyFlowAction(t, m, flowAction{key: tea.KeyMsg{Type: tea.KeyEnter}})
 			if state.Screen != tt.want {
 				t.Fatalf("screen = %v, want %v", state.Screen, tt.want)
@@ -108,7 +105,7 @@ func TestCustomPresetPostComponentFlowMatrix(t *testing.T) {
 				assertInstallerView(t, state, "Receipt-Driven Development")
 				assertViewSections(t, state.View(), "RDD is ON by default", "Enable RDD", "Disable RDD", "Back")
 			}
-			if tt.want == ScreenInstallReviewMode {
+			if tt.want == ScreenReview {
 				state = applyFlowAction(t, state, flowAction{key: tea.KeyMsg{Type: tea.KeyEsc}})
 				if state.Screen != ScreenDependencyTree {
 					t.Fatalf("back screen = %v, want DependencyTree", state.Screen)
@@ -199,26 +196,26 @@ func TestPiOnlyDependencyTreeBackReturnsToAgentSelection(t *testing.T) {
 }
 
 func TestCustomEngramRDDChoiceReviewBack(t *testing.T) {
-	m := installReviewModeStatusFixture(NewModel(system.DetectionResult{}, "dev"))
+	m := NewModel(system.DetectionResult{}, "dev")
 	m.Screen, m.Selection.Preset = ScreenDependencyTree, model.PresetCustom
 	m.Selection.Agents = []model.AgentID{model.AgentCursor}
 	m.Selection.Components = []model.ComponentID{model.ComponentEngram}
 	m.Cursor = len(screens.AllComponents())
 	state := applyFlowAction(t, m, flowAction{key: tea.KeyMsg{Type: tea.KeyEnter}, runCmd: true})
-	if state.Screen != ScreenInstallReviewMode {
+	if state.Screen != ScreenReview {
 		t.Fatalf("component continue = %v, want RDD choice", state.Screen)
 	}
 	assertViewSections(t, state.View(), "Receipt-Driven Development", "Enable RDD", "Disable RDD", "Back")
 	state = applyFlowAction(t, state, flowAction{key: tea.KeyMsg{Type: tea.KeyEnter}, cursor: 1, setCursor: true})
-	if state.Screen != ScreenReview || !state.InstallReviewModeChoiceSet || state.InstallReviewModeEnabled {
-		t.Fatalf("RDD OFF choice = screen %v, set %v, enabled %v; want Review and OFF", state.Screen, state.InstallReviewModeChoiceSet, state.InstallReviewModeEnabled)
+	if state.Screen != ScreenReview {
+		t.Fatalf("review screen = %v, want ScreenReview", state.Screen)
 	}
 	assertViewSections(t, state.View(), "Review and Confirm", "Receipt-Driven Development", "RDD OFF", "engram", "Install", "Back")
 	if strings.Contains(state.View(), "Strict TDD") {
 		t.Fatalf("removed choice appeared in review:\n%s", state.View())
 	}
 	state = applyFlowAction(t, state, flowAction{key: tea.KeyMsg{Type: tea.KeyEsc}})
-	if state.Screen != ScreenInstallReviewMode || state.Cursor != 1 {
+	if state.Screen != ScreenReview || state.Cursor != 1 {
 		t.Fatalf("review Esc = screen %v cursor %d, want RDD choice with OFF selected", state.Screen, state.Cursor)
 	}
 	state = applyFlowAction(t, state, flowAction{key: tea.KeyMsg{Type: tea.KeyEnter}})
@@ -229,14 +226,6 @@ func TestCustomEngramRDDChoiceReviewBack(t *testing.T) {
 	if state.Screen != ScreenDependencyTree {
 		t.Fatalf("review Back = %v, want component selection", state.Screen)
 	}
-}
-
-func installReviewModeStatusFixture(state Model) Model {
-	state.ReviewModeCwdFn = func() (string, error) { return "/isolated-repo", nil }
-	state.ReviewModeStatusFn = func(context.Context, string) (reviewtransaction.RDDModeStatus, error) {
-		return reviewtransaction.RDDModeStatus{Schema: reviewtransaction.RDDModeStatusSchema, Global: reviewtransaction.RDDModeUnset}, nil
-	}
-	return state
 }
 
 func applyFlowAction(t *testing.T, state Model, action flowAction) Model {

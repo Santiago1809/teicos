@@ -56,7 +56,6 @@ func TestSkillsForPresetFullIncludesAll(t *testing.T) {
 		model.SkillBranchPR:            true,
 		model.SkillIssueCreation:       true,
 		model.SkillCommentWriter:       true,
-		model.SkillRDDDefectWorkflow:   true,
 		model.SkillSystemicIssueTriage: true,
 	}
 	if len(selectableOnly) != len(contributorOnly) {
@@ -74,7 +73,6 @@ func TestSkillsForPresetExcludesContributorSkills(t *testing.T) {
 		model.SkillBranchPR,
 		model.SkillIssueCreation,
 		model.SkillSystemicIssueTriage,
-		model.SkillRDDDefectWorkflow,
 		model.SkillGentleAIBench,
 		model.SkillCommentWriter,
 	}

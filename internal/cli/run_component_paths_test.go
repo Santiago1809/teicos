@@ -15,8 +15,8 @@ import (
 	"github.com/Santiago1809/teicos/internal/backup"
 	"github.com/Santiago1809/teicos/internal/components/agentguidance"
 	"github.com/Santiago1809/teicos/internal/components/filemerge"
+	"github.com/Santiago1809/teicos/internal/components/nativeagents"
 	"github.com/Santiago1809/teicos/internal/components/opencodedefault"
-	"github.com/Santiago1809/teicos/internal/components/reviewassets"
 	"github.com/Santiago1809/teicos/internal/components/telemetryruntime"
 	"github.com/Santiago1809/teicos/internal/model"
 	"github.com/Santiago1809/teicos/internal/pipeline"
@@ -44,10 +44,10 @@ func TestNativeReviewPostApplyErrorsRestoreDeduplicatedSnapshot(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			if _, err := reviewassets.InstallNativeAgents(home, adapter, reviewassets.InstallOptions{CodeGraphGuidanceMarkdown: "previous guidance"}); err != nil {
+			if _, err := nativeagents.InstallNativeAgents(home, adapter, nativeagents.InstallOptions{CodeGraphGuidanceMarkdown: "previous guidance"}); err != nil {
 				t.Fatal(err)
 			}
-			targets := []string{filepath.Join(adapter.SubAgentsDir(home), reviewassets.OwnershipLedgerFilename), filepath.Join(adapter.SubAgentsDir(home), "jd-judge-a.md")}
+			targets := []string{filepath.Join(adapter.SubAgentsDir(home), nativeagents.OwnershipLedgerFilename), filepath.Join(adapter.SubAgentsDir(home), "jd-judge-a.md")}
 			before := make(map[string][]byte)
 			for _, path := range targets {
 				before[path], err = os.ReadFile(path)
@@ -153,10 +153,10 @@ func TestTUIDeduplicatedNativeReviewSnapshotSurvivesPostApplyRollback(t *testing
 			if err != nil {
 				t.Fatal(err)
 			}
-			if _, err := reviewassets.InstallNativeAgents(home, adapter, reviewassets.InstallOptions{CodeGraphGuidanceMarkdown: "previous guidance"}); err != nil {
+			if _, err := nativeagents.InstallNativeAgents(home, adapter, nativeagents.InstallOptions{CodeGraphGuidanceMarkdown: "previous guidance"}); err != nil {
 				t.Fatal(err)
 			}
-			ledger := filepath.Join(adapter.SubAgentsDir(home), reviewassets.OwnershipLedgerFilename)
+			ledger := filepath.Join(adapter.SubAgentsDir(home), nativeagents.OwnershipLedgerFilename)
 			agent := filepath.Join(adapter.SubAgentsDir(home), "jd-judge-a.md")
 			targets := []string{ledger, agent}
 			before := make(map[string][]byte)
@@ -256,7 +256,7 @@ func assertRetainedOpenCodePluginPaths(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, plugin := range []string{"model-variants.ts", "opencode-review-transport.ts", "skill-registry.ts", "telemetry-runtime.ts"} {
+	for _, plugin := range []string{"model-variants.ts", "skill-registry.ts", "telemetry-runtime.ts"} {
 		want := filepath.Join(home, ".config", "opencode", "plugins", plugin)
 		if !containsPath(targets, want) {
 			t.Errorf("ODD install snapshot missing retained plugin %s", want)
@@ -730,7 +730,7 @@ func TestInstallRetainedAgentsWithoutSDD(t *testing.T) {
 			run()
 			adapter := resolveAdapters([]model.AgentID{agent})[0]
 			first := map[string]string{}
-			for _, name := range reviewassets.NativeAgentManifest[agent] {
+			for _, name := range nativeagents.NativeAgentManifest[agent] {
 				path := filepath.Join(adapter.SubAgentsDir(home), name)
 				body := readTextFile(t, path)
 				if strings.HasPrefix(name, "review-") && name != "review-refuter.md" && strings.HasSuffix(name, ".md") && !strings.Contains(body, "GENTLE_AI_") {

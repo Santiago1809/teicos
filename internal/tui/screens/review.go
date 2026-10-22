@@ -12,8 +12,7 @@ func ReviewOptions() []string {
 	return []string{"Install", "Back"}
 }
 
-// RenderReview adds the installer-only, deferred RDD selection to the final
-// confirmation when reviewMode is non-empty.
+// RenderReview renders the final confirmation of the planned installation.
 func RenderReview(payload planner.ReviewPayload, cursor int, reviewMode string) string {
 	var b strings.Builder
 
@@ -29,7 +28,7 @@ func RenderReview(payload planner.ReviewPayload, cursor int, reviewMode string) 
 	b.WriteString("  " + styles.HeadingStyle.Render("Persona") + "  " + styles.UnselectedStyle.Render(reviewPersonaLabel(payload.Persona)) + "\n")
 	b.WriteString("  " + styles.HeadingStyle.Render("Preset") + "  " + styles.UnselectedStyle.Render(reviewPresetLabel(payload.Preset)) + "\n")
 	if reviewMode != "" {
-		b.WriteString("  " + styles.HeadingStyle.Render("Receipt-Driven Development") + "  " + styles.UnselectedStyle.Render(reviewMode) + "\n")
+		b.WriteString("  " + styles.HeadingStyle.Render("Review") + "  " + styles.UnselectedStyle.Render(reviewMode) + "\n")
 	}
 	b.WriteString("\n")
 

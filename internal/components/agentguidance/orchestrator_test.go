@@ -1,7 +1,6 @@
 package agentguidance
 
 import (
-	"errors"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -76,7 +75,7 @@ func advertisesReviewTransport(t *testing.T, agent model.AgentID) bool {
 }
 
 func TestRenderGenericOrchestratorModelVariants(t *testing.T) {
-	content, err := RenderOrchestratorWithSource(model.AgentOpenClaw, nil, "")
+	content, err := RenderOrchestrator(model.AgentOpenClaw, "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -198,11 +197,11 @@ func TestRenderExplicitOrchestratorsIgnoreModelCapability(t *testing.T) {
 			continue
 		}
 		t.Run(string(agent), func(t *testing.T) {
-			want, err := RenderOrchestratorWithSource(agent, nil, "")
+			want, err := RenderOrchestrator(agent, "")
 			if err != nil {
 				t.Fatal(err)
 			}
-			got, err := RenderOrchestratorWithSource(agent, nil, "small")
+			got, err := RenderOrchestrator(agent, "small")
 			if err != nil || got != want {
 				t.Fatal("generic capability changed explicit runtime output", err)
 			}
@@ -223,7 +222,7 @@ func TestInjectRoutingInstallsOrchestratorForEveryRuntime(t *testing.T) {
 			}
 			prompt := deliveredGuidance(t, result.Files[0])
 
-			rendered, err := RenderOrchestrator(agent)
+			rendered, err := RenderOrchestrator(agent, "")
 			if err != nil {
 				t.Fatalf("RenderOrchestrator(%q) error = %v", agent, err)
 			}
@@ -264,7 +263,7 @@ func TestInjectRoutingInstallsOrchestratorForEveryRuntime(t *testing.T) {
 			// review lifecycle, whose placeholder section every other runtime
 			// loses.
 			wantReview := 0
-			if model.SupportsReceiptDrivenDevelopment(agent) {
+			if false {
 				wantReview = 1
 			}
 			for _, heading := range []string{
@@ -434,7 +433,7 @@ func TestInjectRoutingDeliversKimiOrchestratorThroughIncludedModule(t *testing.T
 func TestRenderOrchestratorRejectsPi(t *testing.T) {
 	t.Parallel()
 
-	if _, err := RenderOrchestrator(model.AgentPi); err == nil {
+	if _, err := RenderOrchestrator(model.AgentPi, ""); err == nil {
 		t.Fatal("RenderOrchestrator(pi) error = nil; Pi's prompt is owned by Gentle Shell")
 	}
 }
@@ -442,35 +441,18 @@ func TestRenderOrchestratorRejectsPi(t *testing.T) {
 func TestRenderOrchestratorOpenCodeCarriesConsentV3QuestionRoute(t *testing.T) {
 	t.Parallel()
 
-	opencode, err := RenderOrchestrator(model.AgentOpenCode)
+	opencode, err := RenderOrchestrator(model.AgentOpenCode, "")
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !strings.Contains(opencode, "For `gentle-ai.review-integration.consent/v3`: Display labels") {
+	if !strings.Contains(opencode, "Native route: Display labels and provider-owned answer tokens may differ") {
 		t.Fatal("OpenCode orchestrator lost the consent-v3 native question route")
 	}
-	kilo, err := RenderOrchestrator(model.AgentKilocode)
+	kilo, err := RenderOrchestrator(model.AgentKilocode, "")
 	if err != nil {
 		t.Fatal(err)
 	}
-	if strings.Contains(kilo, "For `gentle-ai.review-integration.consent/v3`: Display labels") {
+	if strings.Contains(kilo, "Native route: Display labels and provider-owned answer tokens may differ") {
 		t.Fatal("Kilo must keep the shared OpenCode question route, as in v3.7.0")
-	}
-}
-
-// Not parallel: it swaps the package-level contract source and restores it
-// before any parallel test resumes.
-func TestRenderOrchestratorFailsClosedWithoutReviewContractSource(t *testing.T) {
-	reviewContractMu.RLock()
-	original := reviewContractSource
-	reviewContractMu.RUnlock()
-	t.Cleanup(func() { SetReviewContractSource(original) })
-
-	SetReviewContractSource(nil)
-	if _, err := RenderOrchestrator(model.AgentClaudeCode); !errors.Is(err, ErrMissingReviewContract) {
-		t.Fatalf("RenderOrchestrator(claude) error = %v, want ErrMissingReviewContract", err)
-	}
-	if _, err := RenderOrchestrator(model.AgentGeminiCLI); err != nil {
-		t.Fatalf("RenderOrchestrator(gemini) error = %v; a runtime without review transport needs no contract", err)
 	}
 }

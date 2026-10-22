@@ -25,9 +25,9 @@ import (
 	"github.com/Santiago1809/teicos/internal/components/opencodedefault"
 	"github.com/Santiago1809/teicos/internal/components/skills"
 	"github.com/Santiago1809/teicos/internal/components/telemetryruntime"
+	"github.com/Santiago1809/teicos/internal/filecoord"
 	"github.com/Santiago1809/teicos/internal/model"
 	opencodeactivation "github.com/Santiago1809/teicos/internal/opencode"
-	"github.com/Santiago1809/teicos/internal/reviewtransaction"
 	"github.com/Santiago1809/teicos/internal/state"
 	"github.com/Santiago1809/teicos/internal/statecoord"
 )
@@ -164,7 +164,7 @@ func TestCompleteUninstallLegacyOpenCodeDefaultOwnership(t *testing.T) {
 // review and Judgment Day agent files survive uninstall without a dedicated
 // retention allowlist: uninstall only inspects the retired SDD agent files
 // of the sub-agents directory, so these permanently-installed native agents
-// (installed unconditionally by reviewassets.InstallNativeAgents,
+// (installed unconditionally by nativeagents.InstallNativeAgents,
 // independent of any removable component) are never touched.
 func TestCompleteUninstallPreservesNativeReviewAndJudgmentDayAgents(t *testing.T) {
 	home := t.TempDir()
@@ -1923,13 +1923,12 @@ func TestUpdateStateAfterUninstallReReadsLatestStateAfterLockContention(t *testi
 	if err != nil {
 		t.Fatalf("install state lock path: %v", err)
 	}
-	held, err := reviewtransaction.AcquireAuthorityFileLock(lockPath)
+	held, err := filecoord.AcquireAuthorityFileLock(lockPath)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if err := state.Write(home, state.InstallState{
 		InstalledAgents: []string{string(model.AgentOpenCode), "claude-code"},
-		RDDMode:         string(reviewtransaction.RDDModeOn),
 	}); err != nil {
 		t.Fatal(err)
 	}
@@ -1937,7 +1936,7 @@ func TestUpdateStateAfterUninstallReReadsLatestStateAfterLockContention(t *testi
 		t.Fatalf("contended uninstall state update error = %v", err)
 	}
 	contended, err := state.Read(home)
-	if err != nil || len(contended.InstalledAgents) != 2 || contended.RDDMode != string(reviewtransaction.RDDModeOn) {
+	if err != nil || len(contended.InstalledAgents) != 2 {
 		t.Fatalf("state after contended run = %#v, err = %v", contended, err)
 	}
 	if err := held.Release(); err != nil {
@@ -1958,9 +1957,7 @@ func TestUpdateStateAfterUninstallReReadsLatestStateAfterLockContention(t *testi
 	if len(got.InstalledAgents) != 1 || got.InstalledAgents[0] != "claude-code" {
 		t.Fatalf("InstalledAgents = %v, want [claude-code]", got.InstalledAgents)
 	}
-	if got.RDDMode != string(reviewtransaction.RDDModeOn) {
-		t.Fatalf("concurrent RDDMode clobbered: got %q, want %q", got.RDDMode, reviewtransaction.RDDModeOn)
-	}
+
 	if got.BackgroundIntent != "" {
 		t.Fatalf("BackgroundIntent = %q, want cleared after opencode removal", got.BackgroundIntent)
 	}

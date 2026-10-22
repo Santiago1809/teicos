@@ -51,7 +51,7 @@ func TestRetireClaudeGlobalModulesRestoresMonolith(t *testing.T) {
 		t.Fatalf("ClaudeGlobalModulePaths = %v, %v; want the nine planned paths", paths, err)
 	}
 
-	result, err := RetireClaudeGlobalModules(home, fakeModuleContract)
+	result, err := RetireClaudeGlobalModules(home)
 	want := []string{corePath}
 	for _, module := range buildClaudeTestModules(t).modules {
 		want = append(want, filepath.Join(moduleDir, module.file))
@@ -60,7 +60,7 @@ func TestRetireClaudeGlobalModulesRestoresMonolith(t *testing.T) {
 	if err != nil || !result.Changed || !reflect.DeepEqual(result.Files, want) {
 		t.Fatalf("retire = %+v, %v; want changed files %v", result, err, want)
 	}
-	monolith, err := RenderOrchestratorWithSource(model.AgentClaudeCode, fakeModuleContract, "")
+	monolith, err := RenderOrchestrator(model.AgentClaudeCode, "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -75,7 +75,7 @@ func TestRetireClaudeGlobalModulesRestoresMonolith(t *testing.T) {
 	assertModuleFile(t, filepath.Join(configDir, "agents", "review-risk.md"), claudeNativeAgentSentinel, 0o600)
 
 	before := snapshotModuleTree(t, home)
-	again, err := RetireClaudeGlobalModules(home, fakeModuleContract)
+	again, err := RetireClaudeGlobalModules(home)
 	if paths, _ := ClaudeGlobalModulePaths(home); err != nil || again.Changed || len(again.Files) != 0 || paths != nil {
 		t.Fatalf("second retire = %+v, %v (paths %v); want a no-op", again, err, paths)
 	}
@@ -100,7 +100,7 @@ func TestRetireClaudeGlobalModulesKeepsFilesItDoesNotOwn(t *testing.T) {
 	writeModuleTestFile(t, unowned, "user module\n", 0o644)
 	writeModuleTestFile(t, unknown, "user notes\n", 0o644)
 
-	result, err := RetireClaudeGlobalModules(home, fakeModuleContract)
+	result, err := RetireClaudeGlobalModules(home)
 	if err != nil || !result.Changed || slices.Contains(result.Files, modified) || slices.Contains(result.Files, unowned) {
 		t.Fatalf("retire = %+v, %v; want kept files unreported", result, err)
 	}
@@ -118,7 +118,7 @@ func TestRetireClaudeGlobalModulesKeepsFilesItDoesNotOwn(t *testing.T) {
 
 func TestRetireClaudeGlobalModulesWithoutLedgerChangesNothing(t *testing.T) {
 	home := t.TempDir()
-	if _, err := InjectRoutingWithOptions(home, model.AgentClaudeCode, RoutingOptions{ReviewContract: fakeModuleContract}); err != nil {
+	if _, err := InjectRoutingWithOptions(home, model.AgentClaudeCode, RoutingOptions{}); err != nil {
 		t.Fatal(err)
 	}
 	// A module-named file without a ledger is never claimed.
@@ -127,7 +127,7 @@ func TestRetireClaudeGlobalModulesWithoutLedgerChangesNothing(t *testing.T) {
 	before := snapshotModuleTree(t, home)
 
 	paths, pathsErr := ClaudeGlobalModulePaths(home)
-	result, err := RetireClaudeGlobalModules(home, fakeModuleContract)
+	result, err := RetireClaudeGlobalModules(home)
 	if paths != nil || pathsErr != nil || err != nil || result.Changed || len(result.Files) != 0 {
 		t.Fatalf("paths %v, %v; retire = %+v, %v; want a no-op", paths, pathsErr, result, err)
 	}
@@ -151,7 +151,7 @@ func TestClaudeGlobalModulesUserFileAncestorMeansNoLedger(t *testing.T) {
 			home := t.TempDir()
 			writeModuleTestFile(t, filepath.Join(home, ".claude", "CLAUDE.md"), coreTransactionUserCore, 0o600)
 			if tc.managed {
-				if _, err := InjectRoutingWithOptions(home, model.AgentClaudeCode, RoutingOptions{ReviewContract: fakeModuleContract}); err != nil {
+				if _, err := InjectRoutingWithOptions(home, model.AgentClaudeCode, RoutingOptions{}); err != nil {
 					t.Fatal(err)
 				}
 			}
@@ -159,7 +159,7 @@ func TestClaudeGlobalModulesUserFileAncestorMeansNoLedger(t *testing.T) {
 			before := snapshotModuleTree(t, home)
 
 			paths, pathsErr := ClaudeGlobalModulePaths(home)
-			result, err := RetireClaudeGlobalModules(home, fakeModuleContract)
+			result, err := RetireClaudeGlobalModules(home)
 			if paths != nil || pathsErr != nil || err != nil || result.Changed || len(result.Files) != 0 {
 				t.Fatalf("paths %v, %v; retire = %+v, %v; want a no-op", paths, pathsErr, result, err)
 			}
@@ -190,7 +190,7 @@ func TestRetireClaudeGlobalModulesFailsClosedBeforeAnyWrite(t *testing.T) {
 			home, _, moduleDir := installClaudeModulePilot(t)
 			corrupt(t, moduleDir)
 			before := snapshotModuleTree(t, home)
-			result, err := RetireClaudeGlobalModules(home, fakeModuleContract)
+			result, err := RetireClaudeGlobalModules(home)
 			if err == nil || result.Changed {
 				t.Fatalf("retire = %+v, %v; want a failure without changes", result, err)
 			}
@@ -199,7 +199,7 @@ func TestRetireClaudeGlobalModulesFailsClosedBeforeAnyWrite(t *testing.T) {
 			}
 		})
 	}
-	if _, err := RetireClaudeGlobalModules("relative-home", fakeModuleContract); !errors.Is(err, ErrInvalidTarget) {
+	if _, err := RetireClaudeGlobalModules("relative-home"); !errors.Is(err, ErrInvalidTarget) {
 		t.Fatalf("relative home error = %v, want ErrInvalidTarget", err)
 	}
 }

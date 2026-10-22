@@ -12,8 +12,8 @@ import (
 	"github.com/Santiago1809/teicos/internal/components/agentguidance"
 	"github.com/Santiago1809/teicos/internal/components/communitytool"
 	"github.com/Santiago1809/teicos/internal/components/engram"
+	"github.com/Santiago1809/teicos/internal/components/nativeagents"
 	"github.com/Santiago1809/teicos/internal/components/persona"
-	"github.com/Santiago1809/teicos/internal/components/reviewassets"
 	"github.com/Santiago1809/teicos/internal/model"
 )
 
@@ -75,9 +75,9 @@ func TestRenderedGuidanceHasNoRetiredWorkflowReferences(t *testing.T) {
 				}
 				assertRenderedFilesClean(t, files)
 				if agent.ID != model.AgentPi {
-					rendered, err := agentguidance.RenderOrchestratorWithSource(agent.ID, reviewassets.ReviewExecutionContractFor, capability)
+					rendered, err := agentguidance.RenderOrchestrator(agent.ID, capability)
 					if err != nil {
-						t.Fatalf("RenderOrchestratorWithSource(capability=%q): %v", capability, err)
+						t.Fatalf("RenderOrchestrator(capability=%q): %v", capability, err)
 					}
 					assertNoRetiredWorkflowReference(t, "orchestrator capability="+capability, rendered)
 					// Shared-section markers bind the composer only; they never ship.
@@ -107,9 +107,9 @@ func TestRenderedGuidanceHasNoRetiredWorkflowReferences(t *testing.T) {
 				assertRenderedFilesClean(t, result.Files)
 			}
 
-			if reviewassets.NativeAgentsSupported(agent.ID) {
+			if nativeagents.NativeAgentsSupported(agent.ID) {
 				home := t.TempDir()
-				result, err := reviewassets.InstallNativeAgents(home, adapter, reviewassets.InstallOptions{CodeGraphGuidanceMarkdown: codeGraph})
+				result, err := nativeagents.InstallNativeAgents(home, adapter, nativeagents.InstallOptions{CodeGraphGuidanceMarkdown: codeGraph})
 				if err != nil {
 					t.Fatalf("InstallNativeAgents: %v", err)
 				}

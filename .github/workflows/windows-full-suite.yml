@@ -41,7 +41,7 @@ jobs:
   # change in one package fails a ratchet or contract test that lives in
   # another.
   #
-  # Split by measured cost: internal/cli and internal/reviewtransaction are
+  # Split by measured cost: internal/cli and the heavier packages are
   # ~44% and ~33% of total test time. internal/cli alone exceeded the 30m
   # go-test timeout, so it takes six shards. `rest` is derived from `go list`
   # rather than listed, so a new package is covered the day it is added.
@@ -107,15 +107,6 @@ jobs:
           - name: cli-r-other
             packages: ./internal/cli
             run: ^TestR[A-Da-d]|^TestRe[A-Ua-u]|^TestRevi[N-Zn-z]|^TestR[F-Zf-z]
-          - name: reviewtransaction-a-c
-            packages: ./internal/reviewtransaction
-            run: ^Test[A-C]
-          - name: reviewtransaction-d-k
-            packages: ./internal/reviewtransaction
-            run: ^Test[D-K]
-          - name: reviewtransaction-l-z
-            packages: ./internal/reviewtransaction
-            run: ^Test[L-Z]
           - name: rest
             packages: ""
             run: ""
@@ -157,7 +148,7 @@ jobs:
             $packages = @('${{ matrix.shard.packages }}')
           } else {
             $packages = go list ./... | Where-Object {
-              $_ -notmatch '/internal/cli$' -and $_ -notmatch '/internal/reviewtransaction$'
+              $_ -notmatch '/internal/cli$'
             }
           }
           if (-not $packages) { throw 'shard resolved to no packages' }

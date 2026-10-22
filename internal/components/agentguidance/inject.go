@@ -58,18 +58,12 @@ type templateBootstrapper interface {
 // RoutingOptions supplies a caller-resolved settings path for adapters whose
 // guidance is delivered through a managed orchestrator definition. The adapter
 // retains its normal targetDir-derived path when SettingsPath is empty.
-//
-// ReviewContract renders the native review execution contract embedded in the
-// orchestrator of a receipt-driven development runtime. It takes precedence
-// over the package-level fallback (SetReviewContractSource); installers must
-// always set it.
 type RoutingOptions struct {
 	// OrchestratorCapability selects only generic instruction text. "small"
 	// explicitly opts into the small variant; empty or unknown uses capable.
 	// Runtime-specific assets ignore this hint. It does not configure models.
 	OrchestratorCapability      string
 	SettingsPath                string
-	ReviewContract              ReviewContractSource
 	CodexPhaseModelAssignments  map[string]string
 	CodexModelAssignments       map[string]model.CodexEffort
 	CodexCarrilModelAssignments map[string]string
@@ -137,13 +131,13 @@ func InjectRoutingWithOptions(targetDir string, agent model.AgentID, options Rou
 	switch {
 	case delivery.kind == deliveryClaudeModules:
 		// Pointers name the absolute directory of the planned module paths.
-		bundle, err := buildOrchestratorModules(agent, options.ReviewContract, filepath.Dir(delivery.paths[1]))
+		bundle, err := buildOrchestratorModules(agent, filepath.Dir(delivery.paths[1]))
 		if err != nil {
 			return Result{}, err
 		}
 		orchestrator, modules = bundle.core, bundle.modules
 	case agent != model.AgentPi:
-		orchestrator, err = RenderOrchestratorWithSource(agent, options.ReviewContract, options.OrchestratorCapability)
+		orchestrator, err = RenderOrchestrator(agent, options.OrchestratorCapability)
 		if err != nil {
 			return Result{}, err
 		}

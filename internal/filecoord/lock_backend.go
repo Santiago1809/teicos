@@ -3,23 +3,19 @@ package filecoord
 import (
 	"errors"
 	"os"
-
-	"github.com/Santiago1809/teicos/internal/reviewtransaction"
 )
 
 // acquireCooperativeLock backs the cooperative contract with the hardened
 // authority-lock primitive instead of a second platform implementation:
-// reviewtransaction.AcquireAuthorityFileLock owns the secure no-follow open
-// walk (O_NOFOLLOW per component on POSIX, reparse-safe NtCreateFile on
-// Windows) and kernel advisory locking (flock / LockFileEx), and never treats
-// lock-file residue as ownership. Symlinked roots and lock paths are rejected
-// by that walk, so callers must pass canonical lock roots. A later refactor
-// may move the primitive into this package and flip the dependency; reusing
-// it in place keeps one lock mechanism in the product (#3632).
+// AcquireAuthorityFileLock owns the secure no-follow open walk (O_NOFOLLOW
+// per component on POSIX, reparse-safe NtCreateFile on Windows) and kernel
+// advisory locking (flock / LockFileEx), and never treats lock-file residue
+// as ownership. Symlinked roots and lock paths are rejected by that walk, so
+// callers must pass canonical lock roots.
 func acquireCooperativeLock(path string) (*Lease, error) {
-	authority, err := reviewtransaction.AcquireAuthorityFileLock(path)
+	authority, err := AcquireAuthorityFileLock(path)
 	if err != nil {
-		if errors.Is(err, reviewtransaction.ErrStoreLockContended) {
+		if errors.Is(err, ErrLockContended) {
 			return nil, &BusyError{Cause: err}
 		}
 		return nil, &OperationalError{Cause: err}

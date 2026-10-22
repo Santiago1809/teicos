@@ -27,7 +27,6 @@ import (
 	"github.com/Santiago1809/teicos/internal/opencode"
 	"github.com/Santiago1809/teicos/internal/pipeline"
 	"github.com/Santiago1809/teicos/internal/planner"
-	"github.com/Santiago1809/teicos/internal/reviewtransaction"
 	"github.com/Santiago1809/teicos/internal/state"
 	"github.com/Santiago1809/teicos/internal/statecoord"
 	"github.com/Santiago1809/teicos/internal/system"
@@ -450,49 +449,6 @@ type AgentBuilderInstallDoneMsg struct {
 	Err     error
 }
 
-// ReviewStoreResetSurveyedMsg carries the read-only survey of the review
-// store. Err is non-nil when the store could not be read at all, which is
-// itself a reason to show the screen rather than fail silently.
-type ReviewStoreResetSurveyedMsg struct {
-	Report reviewtransaction.StoreResetReport
-	Err    error
-}
-
-// ReviewStoreResetDoneMsg carries the outcome of an applied reset. Report is
-// populated even when Err is non-nil, because a partial run has to be able to
-// say which categories went away.
-type ReviewStoreResetDoneMsg struct {
-	Report reviewtransaction.StoreResetReport
-	Err    error
-}
-
-// ReviewModeLoadedMsg carries a read-only review-mode status resolution.
-type ReviewModeLoadedMsg struct {
-	Status reviewtransaction.RDDModeStatus
-	Err    error
-}
-
-// ReviewModeUpdatedMsg carries the resolved status after a global mode mutation.
-type ReviewModeUpdatedMsg struct {
-	Status reviewtransaction.RDDModeStatus
-	Err    error
-}
-
-// InstallReviewModeLoadedMsg carries the read-only global mode status used by
-// the installer-only RDD choice. It is separate from ScreenReviewMode because
-// installation must not mutate state before the pipeline succeeds.
-type InstallReviewModeLoadedMsg struct {
-	Status reviewtransaction.RDDModeStatus
-	Err    error
-}
-
-// InstallReviewModePersistedMsg reports the deferred global-mode update after
-// a successful installation pipeline.
-type InstallReviewModePersistedMsg struct {
-	Status reviewtransaction.RDDModeStatus
-	Err    error
-}
-
 type CommunityToolInstallationDoneMsg struct {
 	Results []communitytool.Result
 	Err     error
@@ -558,11 +514,6 @@ type ExecuteSDKFunc func(model.Selection, planner.ResolvedPlan, system.Detection
 type RestoreFunc func(manifest backup.Manifest) error
 
 // DeleteBackupFunc deletes the entire backup directory.
-// ReviewStoreResetFunc surveys or applies a clone-scoped review store reset.
-// Both directions share one signature because both answer the same question:
-// what is in the store, and what happened to it.
-type ReviewStoreResetFunc func() (reviewtransaction.StoreResetReport, error)
-
 type DeleteBackupFunc func(manifest backup.Manifest) error
 
 // RenameBackupFunc updates the backup's Description field in its manifest file.
@@ -589,7 +540,6 @@ const (
 	ScreenCommunityToolResult
 	ScreenDependencyTree
 	ScreenSkillPicker
-	ScreenInstallReviewMode
 	ScreenReview
 	ScreenOpenCodeBackground
 	ScreenPiBackground
@@ -625,13 +575,7 @@ const (
 	ScreenUpdatePrompt
 	// ScreenReviewStoreResetConfirm shows the read-only survey of this
 	// clone's review store and asks before removing any of it. It is the
-	// only place the TUI can start an irreversible review-store removal.
-	ScreenReviewStoreResetConfirm
 	// ScreenReviewStoreResetResult reports what was actually removed,
-	// including a partial run, and returns to Welcome on Enter.
-	ScreenReviewStoreResetResult
-	// ScreenReviewMode displays and changes the global review-mode switch.
-	ScreenReviewMode
 )
 
 type Model struct {
@@ -827,43 +771,12 @@ type Model struct {
 
 	InstallFlowActive bool
 
-	// ReviewStoreResetSurveyFn reports what a review store reset would
-	// remove, without removing anything. Injected so the TUI never has to
-	// know how a repository is resolved.
-	ReviewStoreResetSurveyFn ReviewStoreResetFunc
-	// ReviewStoreResetFn applies the reset. It is only ever reached from an
-	// explicit confirmation on ScreenReviewStoreResetConfirm.
-	ReviewStoreResetFn ReviewStoreResetFunc
-	// ReviewStoreResetReport holds the most recent survey or result.
-	ReviewStoreResetReport reviewtransaction.StoreResetReport
-	// ReviewStoreResetSurveyErr records a survey that could not be read.
-	ReviewStoreResetSurveyErr error
-	// ReviewStoreResetErr records the outcome of an applied reset.
-	ReviewStoreResetErr error
-	// ReviewModeCwdFn, ReviewModeStatusFn, and ReviewModeSetGlobalFn are injected
-	// so the screen can be tested without filesystem state or CLI process calls.
-	ReviewModeCwdFn       func() (string, error)
-	ReviewModeStatusFn    func(context.Context, string) (reviewtransaction.RDDModeStatus, error)
-	ReviewModeSetGlobalFn func(context.Context, string, bool) (reviewtransaction.RDDModeStatus, error)
-	ReviewModeStatus      reviewtransaction.RDDModeStatus
-	ReviewModeErr         error
-
-	// InstallReviewMode* carries the installer-only choice. It never reuses the
-	// standalone settings screen because that screen intentionally mutates
-	// immediately, while this choice is saved only after installation succeeds.
-	InstallReviewModeStatus     reviewtransaction.RDDModeStatus
-	InstallReviewModeLoadErr    error
-	InstallReviewModeLoading    bool
-	InstallReviewModeChoiceSet  bool
-	InstallReviewModeEnabled    bool
-	InstallReviewModePersisting bool
-	InstallReviewModePersistErr error
-	CommunityToolsStandalone    bool
-	CommunityToolStatusLoading  bool
-	CommunityToolStatuses       []communitytool.Status
-	CommunityToolStatusErr      error
-	CommunityToolResults        []communitytool.Result
-	CommunityToolErr            error
+	CommunityToolsStandalone   bool
+	CommunityToolStatusLoading bool
+	CommunityToolStatuses      []communitytool.Status
+	CommunityToolStatusErr     error
+	CommunityToolResults       []communitytool.Result
+	CommunityToolErr           error
 }
 
 // NewModel constructs the initial TUI model for the given detection result.
@@ -897,18 +810,15 @@ func NewModel(detection system.DetectionResult, version string, installState ...
 	}
 
 	return Model{
-		Screen:                ScreenWelcome,
-		Version:               version,
-		Selection:             selection,
-		Detection:             detection,
-		BackgroundIntent:      s.BackgroundIntent,
-		PiBackgroundIntent:    s.PiBackgroundIntent,
-		UninstallAgents:       agents,
-		UninstallComponents:   defaultUninstallComponents(),
-		UninstallEngramScope:  model.EngramUninstallScopeGlobal,
-		ReviewModeCwdFn:       os.Getwd,
-		ReviewModeStatusFn:    cli.ReviewModeStatus,
-		ReviewModeSetGlobalFn: cli.SetGlobalReviewMode,
+		Screen:               ScreenWelcome,
+		Version:              version,
+		Selection:            selection,
+		Detection:            detection,
+		BackgroundIntent:     s.BackgroundIntent,
+		PiBackgroundIntent:   s.PiBackgroundIntent,
+		UninstallAgents:      agents,
+		UninstallComponents:  defaultUninstallComponents(),
+		UninstallEngramScope: model.EngramUninstallScopeGlobal,
 		Progress: NewProgressState([]string{
 			"Install dependencies",
 			"Configure selected agents",
@@ -1093,80 +1003,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.AgentBuilder.InstallErr = nil
 			m.setScreen(ScreenAgentBuilderComplete)
 		}
-		return m, nil
-	case ReviewStoreResetSurveyedMsg:
-		if m.Screen != ScreenReviewStoreResetConfirm {
-			return m, nil
-		}
-		m.OperationRunning = false
-		m.ReviewStoreResetReport = msg.Report
-		m.ReviewStoreResetSurveyErr = msg.Err
-		// The cursor lands on the non-destructive option. Reaching this
-		// screen already costs one Enter from the main menu, so a cursor
-		// resting on "Delete permanently" would make an irreversible
-		// clone-wide removal the second keystroke of a two-keystroke
-		// sequence -- while the CLI equivalent requires typing --confirm.
-		m.Cursor = screens.ReviewStoreResetConfirmDefaultCursor(msg.Report, msg.Err)
-		return m, nil
-	case ReviewModeLoadedMsg:
-		if m.Screen != ScreenReviewMode {
-			return m, nil
-		}
-		m.OperationRunning = false
-		m.ReviewModeStatus = msg.Status
-		m.ReviewModeErr = msg.Err
-		if msg.Err != nil {
-			m.ReviewModeStatus = reviewtransaction.RDDModeStatus{}
-		}
-		return m, nil
-	case ReviewModeUpdatedMsg:
-		if m.Screen != ScreenReviewMode {
-			return m, nil
-		}
-		m.OperationRunning = false
-		m.ReviewModeErr = msg.Err
-		if msg.Err != nil {
-			return m, nil
-		}
-		m.ReviewModeStatus = msg.Status
-		m.setScreen(ScreenWelcome)
-		return m, nil
-	case InstallReviewModeLoadedMsg:
-		if m.Screen != ScreenInstallReviewMode {
-			return m, nil
-		}
-		m.InstallReviewModeLoading = false
-		m.InstallReviewModeStatus = msg.Status
-		m.InstallReviewModeLoadErr = msg.Err
-		if msg.Err == nil {
-			m.Cursor = 0 // Unset defaults to ON; preserve an explicit global OFF choice.
-			if msg.Status.Global == reviewtransaction.RDDModeOff {
-				m.Cursor = 1
-			}
-		}
-		return m, nil
-	case InstallReviewModePersistedMsg:
-		if m.Screen != ScreenInstalling {
-			return m, nil
-		}
-		m.InstallReviewModePersisting = false
-		m.InstallReviewModePersistErr = msg.Err
-		if msg.Err != nil {
-			m.Progress.AppendLog("FAILED: save global RDD mode — %s", msg.Err)
-			m.Execution.ManualActions = append(m.Execution.ManualActions,
-				"RDD mode was not saved. Retry with `gentle-ai review mode enable --scope global` or `gentle-ai review mode disable --scope global`.")
-		}
-		return m, nil
-	case ReviewStoreResetDoneMsg:
-		// Deliberately not guarded on the current screen. This message reports
-		// an irreversible removal that has already happened; dropping it
-		// because the model moved on would leave the user with a destroyed
-		// store and no statement that anything occurred, which is the one
-		// outcome this flow must never produce.
-		m.OperationRunning = false
-		m.ReviewStoreResetReport = msg.Report
-		m.ReviewStoreResetErr = msg.Err
-		m.setScreen(ScreenReviewStoreResetResult)
 		return m, nil
 	case CommunityToolInstallationDoneMsg:
 		if m.Screen != ScreenCommunityToolInstalling {
@@ -1425,11 +1261,6 @@ func (m Model) handlePipelineDone(msg PipelineDoneMsg) (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 	m.Progress.AppendLog("pipeline completed successfully")
-	if m.InstallReviewModeChoiceSet {
-		m.InstallReviewModePersisting = true
-		m.Progress.AppendLog("saving selected global RDD mode")
-		return m, m.persistInstallReviewMode()
-	}
 
 	return m, nil
 }
@@ -1514,10 +1345,8 @@ func (m Model) View() string {
 		return screens.RenderDependencyTree(m.DependencyPlan, m.Selection, m.Cursor)
 	case ScreenSkillPicker:
 		return screens.RenderSkillPicker(m.SkillPicker, m.Cursor, m.Height)
-	case ScreenInstallReviewMode:
-		return screens.RenderInstallReviewMode(m.InstallReviewModeStatus, m.InstallReviewModeLoadErr, m.Cursor)
 	case ScreenReview:
-		out := screens.RenderReview(m.Review, m.Cursor, m.installReviewModeSummary())
+		out := screens.RenderReview(m.Review, m.Cursor, "")
 		if m.Err != nil {
 			label := "Error: "
 			var sdkErr openCodeSDKError
@@ -1558,22 +1387,6 @@ func (m Model) View() string {
 		return screens.RenderRestoreConfirm(m.SelectedBackup, m.Cursor)
 	case ScreenRestoreResult:
 		return screens.RenderRestoreResult(m.SelectedBackup, m.RestoreErr)
-	case ScreenReviewStoreResetConfirm:
-		if m.OperationRunning {
-			detail := "Surveying the review store..."
-			if m.ReviewStoreResetReport.Schema != "" {
-				detail = "Removing review store state..."
-			}
-			return screens.RenderOperationRunning("Reset Review Store", detail, m.SpinnerFrame)
-		}
-		return screens.RenderReviewStoreResetConfirm(m.ReviewStoreResetReport, m.ReviewStoreResetSurveyErr, m.Cursor)
-	case ScreenReviewStoreResetResult:
-		return screens.RenderReviewStoreResetResult(m.ReviewStoreResetReport, m.ReviewStoreResetErr)
-	case ScreenReviewMode:
-		if m.OperationRunning {
-			return screens.RenderOperationRunning("Receipt-Driven Development", "Loading review mode...", m.SpinnerFrame)
-		}
-		return screens.RenderReviewMode(m.ReviewModeStatus, m.ReviewModeErr, m.Cursor)
 	case ScreenDeleteConfirm:
 		return screens.RenderDeleteConfirm(m.SelectedBackup, m.Cursor)
 	case ScreenDeleteResult:
@@ -1881,8 +1694,8 @@ func (m Model) handleKeyPress(key tea.KeyMsg) (tea.Model, tea.Cmd) {
 		}
 		return m, nil
 	case "esc":
-		// Don't allow leaving while the pipeline or its selected RDD mode is running.
-		if (m.Screen == ScreenInstalling && (m.pipelineRunning || m.InstallReviewModePersisting)) || m.Screen == ScreenCommunityToolInstalling {
+		// Don't allow leaving while the pipeline is running.
+		if (m.Screen == ScreenInstalling && m.pipelineRunning) || m.Screen == ScreenCommunityToolInstalling {
 			return m, nil
 		}
 		if _, ok := m.GentleAIUpgradeVersion(); ok {
@@ -2033,16 +1846,6 @@ func (m Model) confirmSelection() (tea.Model, tea.Cmd) {
 			if m.Cursor == next {
 				m.setScreen(ScreenBackups)
 				return m, nil
-			}
-			next++
-
-			if m.Cursor == next {
-				return m.startReviewStoreResetSurvey()
-			}
-			next++
-
-			if m.Cursor == next {
-				return m.startReviewModeLoad()
 			}
 			next++
 
@@ -2458,7 +2261,8 @@ func (m Model) confirmSelection() (tea.Model, tea.Cmd) {
 					return m, nil
 				}
 				m.Review = planner.BuildReviewPayload(m.Selection, m.DependencyPlan)
-				return m.startInstallReviewModeLoad()
+				m.setScreen(ScreenReview)
+				return m, nil
 			default:
 				m.setScreen(ScreenPreset)
 			}
@@ -2466,7 +2270,8 @@ func (m Model) confirmSelection() (tea.Model, tea.Cmd) {
 		}
 		if m.Cursor == 0 {
 			m.Review = planner.BuildReviewPayload(m.Selection, m.DependencyPlan)
-			return m.startInstallReviewModeLoad()
+			m.setScreen(ScreenReview)
+			return m, nil
 		}
 		// Non-custom Back: mirrors goBack (Esc) — isPiOnlyAgents early check,
 		// then optional setup guards (outside the slice), then pickerPreviousScreen.
@@ -2488,11 +2293,12 @@ func (m Model) confirmSelection() (tea.Model, tea.Cmd) {
 		case m.Cursor < len(allSkills):
 			m.toggleCurrentSkill()
 		case m.Cursor == len(allSkills):
-			// "Continue" — store selected skills into Selection and proceed to the RDD choice.
+			// "Continue" — store selected skills into Selection and proceed to the review.
 			m.Selection.Skills = make([]model.SkillID, len(m.SkillPicker))
 			copy(m.Selection.Skills, m.SkillPicker)
 			m.Review = planner.BuildReviewPayload(m.Selection, m.DependencyPlan)
-			return m.startInstallReviewModeLoad()
+			m.setScreen(ScreenReview)
+			return m, nil
 		default:
 			// "Back" — in custom preset, return to the screen that preceded SkillPicker.
 			if m.Selection.Preset == model.PresetCustom {
@@ -2505,20 +2311,6 @@ func (m Model) confirmSelection() (tea.Model, tea.Cmd) {
 				m.setScreen(ScreenDependencyTree)
 			}
 		}
-	case ScreenInstallReviewMode:
-		options := screens.InstallReviewModeOptions(m.InstallReviewModeLoadErr)
-		if m.Cursor >= len(options) || m.Cursor == len(options)-1 {
-			m.setScreen(ScreenDependencyTree)
-			return m, nil
-		}
-		if m.InstallReviewModeLoading || m.InstallReviewModeLoadErr != nil {
-			return m, nil
-		}
-		m.InstallReviewModeChoiceSet = true
-		m.InstallReviewModeEnabled = m.Cursor == 0
-		m.InstallReviewModePersistErr = nil
-		m.setScreen(ScreenReview)
-		return m, nil
 	case ScreenReview:
 		if m.Cursor == 0 {
 			m.Err = nil
@@ -2557,10 +2349,7 @@ func (m Model) confirmSelection() (tea.Model, tea.Cmd) {
 				m.setScreen(ScreenDependencyTree)
 			}
 		} else {
-			m.setScreen(ScreenInstallReviewMode)
-			if m.InstallReviewModeChoiceSet && !m.InstallReviewModeEnabled {
-				m.Cursor = 1
-			}
+			m.setScreen(ScreenReview)
 		}
 	case ScreenOpenCodeBackground:
 		options := screens.OpenCodeBackgroundOptions()
@@ -2604,14 +2393,14 @@ func (m Model) confirmSelection() (tea.Model, tea.Cmd) {
 		m.sdkProposal = nil
 		return m.startInstalling()
 	case ScreenInstalling:
-		if m.Progress.Done() && !m.pipelineRunning && !m.InstallReviewModePersisting {
+		if m.Progress.Done() && !m.pipelineRunning {
 			m.setScreen(ScreenComplete)
 			return m, nil
 		}
 		// If no ExecuteFn, fall back to manual step-through for dev/tests.
 		if m.ExecuteFn == nil && !m.pipelineRunning {
 			m.Progress.Mark(m.Progress.Current, "succeeded")
-			if m.Progress.Done() && !m.InstallReviewModePersisting {
+			if m.Progress.Done() {
 				m.setScreen(ScreenComplete)
 			}
 		}
@@ -2636,30 +2425,6 @@ func (m Model) confirmSelection() (tea.Model, tea.Cmd) {
 		// Enter on the result screen returns to backup selection.
 		// Refresh the backup list to reflect any changes from the restore.
 		m = m.finishBackupResult(false)
-	case ScreenReviewMode:
-		options := screens.ReviewModeOptions(m.ReviewModeStatus, m.ReviewModeErr)
-		if m.Cursor != 0 || len(options) == 1 {
-			m.setScreen(ScreenWelcome)
-			return m, nil
-		}
-		m.OperationRunning = true
-		m.ReviewModeErr = nil
-		enabled := m.ReviewModeStatus.Global != reviewtransaction.RDDModeOn
-		return m, tea.Batch(m.startReviewModeUpdate(enabled), tickCmd())
-	case ScreenReviewStoreResetConfirm:
-		// Cursor 0 is "Delete permanently" only when the survey found
-		// something safe to delete; in every other state the sole option is
-		// "Back", so this cannot destroy an open review by cursor position.
-		options := screens.ReviewStoreResetConfirmOptions(m.ReviewStoreResetReport, m.ReviewStoreResetSurveyErr)
-		if m.Cursor == 0 && len(options) == 2 {
-			m.OperationRunning = true
-			return m, tea.Batch(m.startReviewStoreReset(), tickCmd())
-		}
-		m = m.withResetReviewStoreResetState()
-		m.setScreen(ScreenWelcome)
-	case ScreenReviewStoreResetResult:
-		m = m.withResetReviewStoreResetState()
-		m.setScreen(ScreenWelcome)
 	case ScreenDeleteConfirm:
 		// Cursor 0 = "Delete", Cursor 1 = "Cancel".
 		if m.Cursor == 0 {
@@ -3012,135 +2777,12 @@ func (m Model) startSync(overrides *model.SyncOverrides) tea.Cmd {
 	}
 }
 
-// startReviewStoreResetSurvey moves to the confirmation screen and loads the
-// read-only survey behind a spinner. The screen is entered first on purpose: a
-// survey that fails has to be reportable, and a menu entry that silently does
-// nothing is worse than one that explains itself.
-func (m Model) startInstallReviewModeLoad() (tea.Model, tea.Cmd) {
-	m.InstallReviewModeStatus = reviewtransaction.RDDModeStatus{}
-	m.InstallReviewModeLoadErr = nil
-	m.InstallReviewModeLoading = true
-	m.InstallReviewModeChoiceSet = false
-	m.InstallReviewModePersistErr = nil
-	m.setScreen(ScreenInstallReviewMode)
-	cwd := m.ReviewModeCwdFn
-	load := m.ReviewModeStatusFn
-	return m, func() tea.Msg {
-		repo, err := cwd()
-		if err != nil {
-			return InstallReviewModeLoadedMsg{Err: err}
-		}
-		if load == nil {
-			return InstallReviewModeLoadedMsg{Err: errors.New("review mode status is not available in this build")}
-		}
-		status, err := load(context.Background(), repo)
-		return InstallReviewModeLoadedMsg{Status: status, Err: err}
-	}
-}
-
-func (m Model) persistInstallReviewMode() tea.Cmd {
-	cwd := m.ReviewModeCwdFn
-	update := m.ReviewModeSetGlobalFn
-	enabled := m.InstallReviewModeEnabled
-	return func() tea.Msg {
-		repo, err := cwd()
-		if err != nil {
-			return InstallReviewModePersistedMsg{Err: err}
-		}
-		if update == nil {
-			return InstallReviewModePersistedMsg{Err: errors.New("review mode update is not available in this build")}
-		}
-		status, err := update(context.Background(), repo, enabled)
-		return InstallReviewModePersistedMsg{Status: status, Err: err}
-	}
-}
-
-func (m Model) installReviewModeSummary() string {
-	if !m.InstallReviewModeChoiceSet {
-		return ""
-	}
-	if m.InstallReviewModeEnabled {
-		return "RDD ON (global setting after successful installation)"
-	}
-	return "RDD OFF (global setting after successful installation)"
-}
-
-func (m Model) startReviewModeLoad() (tea.Model, tea.Cmd) {
-	m.OperationRunning = true
-	m.ReviewModeStatus = reviewtransaction.RDDModeStatus{}
-	m.ReviewModeErr = nil
-	m.setScreen(ScreenReviewMode)
-	cwd := m.ReviewModeCwdFn
-	load := m.ReviewModeStatusFn
-	return m, func() tea.Msg {
-		repo, err := cwd()
-		if err != nil {
-			return ReviewModeLoadedMsg{Err: err}
-		}
-		if load == nil {
-			return ReviewModeLoadedMsg{Err: errors.New("review mode status is not available in this build")}
-		}
-		status, err := load(context.Background(), repo)
-		return ReviewModeLoadedMsg{Status: status, Err: err}
-	}
-}
-
-func (m Model) startReviewModeUpdate(enabled bool) tea.Cmd {
-	cwd := m.ReviewModeCwdFn
-	update := m.ReviewModeSetGlobalFn
-	return func() tea.Msg {
-		repo, err := cwd()
-		if err != nil {
-			return ReviewModeUpdatedMsg{Err: err}
-		}
-		if update == nil {
-			return ReviewModeUpdatedMsg{Err: errors.New("review mode update is not available in this build")}
-		}
-		status, err := update(context.Background(), repo, enabled)
-		return ReviewModeUpdatedMsg{Status: status, Err: err}
-	}
-}
-
-func (m Model) startReviewStoreResetSurvey() (tea.Model, tea.Cmd) {
-	m = m.withResetReviewStoreResetState()
-	m.OperationRunning = true
-	m.setScreen(ScreenReviewStoreResetConfirm)
-	survey := m.ReviewStoreResetSurveyFn
-	return m, tea.Batch(func() tea.Msg {
-		if survey == nil {
-			return ReviewStoreResetSurveyedMsg{Err: errors.New("review store survey is not available in this build")}
-		}
-		report, err := survey()
-		return ReviewStoreResetSurveyedMsg{Report: report, Err: err}
-	}, tickCmd())
-}
-
 // startReviewStoreReset applies the reset. It is only reachable from an
 // explicit confirmation, and it never falls back to a default runner: a nil
 // injection means this build cannot perform the removal, and inventing one
 // here would be the wrong kind of helpful.
-func (m Model) startReviewStoreReset() tea.Cmd {
-	reset := m.ReviewStoreResetFn
-	return func() tea.Msg {
-		if reset == nil {
-			return ReviewStoreResetDoneMsg{Err: errors.New("review store reset is not available in this build")}
-		}
-		report, err := reset()
-		return ReviewStoreResetDoneMsg{Report: report, Err: err}
-	}
-}
-
 // withResetReviewStoreResetState clears every field the flow owns, so a second
 // visit never shows the previous run's numbers.
-func (m Model) withResetReviewStoreResetState() Model {
-	m.OperationRunning = false
-	m.ReviewStoreResetReport = reviewtransaction.StoreResetReport{}
-	m.ReviewStoreResetSurveyErr = nil
-	m.ReviewStoreResetErr = nil
-	m.Cursor = 0
-	return m
-}
-
 func (m Model) startCommunityToolInstallation() tea.Cmd {
 	tools := append([]model.CommunityToolID(nil), m.Selection.CommunityTools...)
 	workspaceDir, _ := osGetwdFn()
@@ -3658,13 +3300,10 @@ func (m Model) goBack(cmd *tea.Cmd) Model {
 		}
 	}
 
-	// The final confirmation always returns to the installer RDD choice so the
-	// user can revise it without walking back through the configuration flow.
+	// The final confirmation returns to the dependency tree so the user can
+	// revise the selection without walking back through the whole flow.
 	if m.Screen == ScreenReview {
-		m.setScreen(ScreenInstallReviewMode)
-		if m.InstallReviewModeChoiceSet && !m.InstallReviewModeEnabled {
-			m.Cursor = 1
-		}
+		m.setScreen(ScreenDependencyTree)
 		return m
 	}
 
@@ -3841,8 +3480,6 @@ func (m Model) optionCount() int {
 		return len(screens.DependencyTreeOptions())
 	case ScreenSkillPicker:
 		return screens.SkillPickerOptionCount()
-	case ScreenInstallReviewMode:
-		return len(screens.InstallReviewModeOptions(m.InstallReviewModeLoadErr))
 	case ScreenReview:
 		return len(screens.ReviewOptions())
 	case ScreenOpenCodeBackground:
@@ -3864,12 +3501,6 @@ func (m Model) optionCount() int {
 	case ScreenDeleteConfirm:
 		return 2 // "Delete" + "Cancel"
 	case ScreenDeleteResult:
-		return 0
-	case ScreenReviewStoreResetConfirm:
-		return screens.ReviewStoreResetConfirmOptionCount(m.ReviewStoreResetReport, m.ReviewStoreResetSurveyErr)
-	case ScreenReviewMode:
-		return len(screens.ReviewModeOptions(m.ReviewModeStatus, m.ReviewModeErr))
-	case ScreenReviewStoreResetResult:
 		return 0
 	case ScreenRenameBackup:
 		return 0 // text input mode — no cursor navigation
@@ -4077,7 +3708,7 @@ func (m Model) continueAfterCommunityTools() (tea.Model, tea.Cmd) {
 			m.setScreen(ScreenSkillPicker)
 		} else {
 			m.Review = planner.BuildReviewPayload(m.Selection, m.DependencyPlan)
-			return m.startInstallReviewModeLoad()
+			m.setScreen(ScreenReview)
 		}
 		return m, nil
 	}

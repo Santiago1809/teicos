@@ -15,7 +15,7 @@ import (
 // fragment markers in odd-orchestrator-sections.md, not headings, select what
 // moves; the core keeps one pointer per fragment, and the ordered fragment
 // list reconstructs the public render byte for byte. Only the explicit
-// user-global Claude opt-in installs these files; RenderOrchestratorWithSource
+// user-global Claude opt-in installs these files; RenderOrchestrator
 // and every other runtime and scope stay monolithic. The marker grammar itself is
 // decoded by orchestrator_module_fragments.go.
 
@@ -68,11 +68,11 @@ type orchestratorModuleBundle struct {
 // buildOrchestratorModules splits the rendered orchestrator of agent into a
 // core and on-demand modules referenced under moduleDir, a user-global
 // directory reference such as "~/.claude/gentle-ai/orchestrator".
-func buildOrchestratorModules(agent model.AgentID, source ReviewContractSource, moduleDir string) (orchestratorModuleBundle, error) {
+func buildOrchestratorModules(agent model.AgentID, moduleDir string) (orchestratorModuleBundle, error) {
 	if agent != model.AgentClaudeCode {
 		return orchestratorModuleBundle{}, fmt.Errorf("build orchestrator modules for %q: %w", agent, errOrchestratorModulesUnsupported)
 	}
-	annotated, err := renderOrchestrator(agent, source, "", true)
+	annotated, err := renderOrchestrator(agent, "", true)
 	if err != nil {
 		return orchestratorModuleBundle{}, err
 	}

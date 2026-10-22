@@ -20,7 +20,6 @@ var guardPopulationMarkerPattern = regexp.MustCompile(`^guard:population\s+([a-z
 
 var guardPopulationProductionDirs = []struct{ dir, prefix string }{
 	{".", "internal/cli"},
-	{filepath.Join("..", "reviewtransaction"), "internal/reviewtransaction"},
 }
 
 type guardPopulationDeclaration struct {

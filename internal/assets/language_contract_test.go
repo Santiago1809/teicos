@@ -164,19 +164,6 @@ func TestSupportedAgentODDLanguageMatrix(t *testing.T) {
 	}
 }
 
-func TestShippedReviewAssetsDoNotInstructFixTouchedLineDiscovery(t *testing.T) {
-	// Review and Judgment Day are retained delegated roles. Their prompts do
-	// not repeat the language contract: ODD orchestrators forward it to them.
-	for _, path := range allReviewLifecycleAssetPaths(t) {
-		t.Run(path, func(t *testing.T) {
-			content := MustRead(path)
-			if strings.Contains(content, "MUST review only fix-touched lines") {
-				t.Fatalf("%s retains stale broad post-fix discovery instructions", path)
-			}
-		})
-	}
-}
-
 func TestCommentWriterLanguageContractSources(t *testing.T) {
 	tests := []struct {
 		name    string

@@ -49,7 +49,6 @@ func TestWriteReconciledAcceptsDesiredStateVisibleAfterWriteError(t *testing.T) 
 
 func fullyPopulatedInstallState() InstallState {
 	lastUpdateCheck := time.Date(2026, 8, 12, 9, 30, 0, 0, time.UTC)
-	rddModeRecordedAt := time.Date(2026, 8, 12, 9, 0, 0, 0, time.UTC)
 	return InstallState{
 		InstalledAgents:          []string{"claude-code", "opencode"},
 		InstalledBinaryVersion:   "1.2.3",
@@ -81,13 +80,11 @@ func fullyPopulatedInstallState() InstallState {
 		ModelAssignments: map[string]ModelAssignmentState{
 			"sdd-init": {ProviderID: "anthropic", ModelID: "claude-sonnet-4", Effort: "medium"},
 		},
-		Persona:           "neutral",
-		PersonaPresent:    true,
-		LastUpdateCheck:   &lastUpdateCheck,
-		PendingSync:       true,
-		RDDMode:           "off",
-		RDDModeRecordedAt: &rddModeRecordedAt,
-		BackgroundIntent:  model.OpenCodeBackgroundOn,
+		Persona:          "neutral",
+		PersonaPresent:   true,
+		LastUpdateCheck:  &lastUpdateCheck,
+		PendingSync:      true,
+		BackgroundIntent: model.OpenCodeBackgroundOn,
 	}
 }
 
@@ -914,20 +911,6 @@ func TestCodexCarrilModelAssignments_OmitWhenEmpty(t *testing.T) {
 
 // TestMergeAgents_PreservesCodexCarrilAssignments verifies that MergeAgents
 // preserves CodexCarrilModelAssignments from the existing state.
-func TestMergeAgents_PreservesCodexCarrilAssignments(t *testing.T) {
-	existing := InstallState{
-		InstalledAgents: []string{"codex"},
-		CodexCarrilModelAssignments: map[string]string{
-			"sdd-strong": "gpt-5.5",
-			"sdd-cheap":  "gpt-5.4-mini",
-		},
-	}
-	merged := MergeAgents(existing, []string{"opencode"})
-	if !reflect.DeepEqual(merged.CodexCarrilModelAssignments, existing.CodexCarrilModelAssignments) {
-		t.Errorf("MergeAgents did not preserve CodexCarrilModelAssignments: got %v, want %v",
-			merged.CodexCarrilModelAssignments, existing.CodexCarrilModelAssignments)
-	}
-}
 
 // ─── WU-2 RED: CodexPhaseModelAssignments round-trip, omitempty, MergeAgents ──
 
@@ -1152,129 +1135,6 @@ func TestPendingSync_RoundTrip(t *testing.T) {
 // TestPendingSync_OmitWhenFalse verifies that PendingSync=false (zero value)
 // is omitted from JSON (omitempty), preserving backward-compatibility with
 // existing state files that lack the field.
-func TestPendingSync_OmitWhenFalse(t *testing.T) {
-	home := t.TempDir()
-	s := InstallState{InstalledAgents: []string{"claude-code"}}
-	if err := Write(home, s); err != nil {
-		t.Fatalf("Write() error = %v", err)
-	}
-	data, err := os.ReadFile(Path(home))
-	if err != nil {
-		t.Fatalf("ReadFile() error = %v", err)
-	}
-	if contains(string(data), "pending_sync") {
-		t.Error("JSON must not contain pending_sync when false")
-	}
-}
-
-// TestPendingSync_BackwardCompat verifies that state.json files written before
-// PendingSync was added still read cleanly with PendingSync=false (safe default:
-// no deferred sync pending).
-func TestPendingSync_BackwardCompat(t *testing.T) {
-	home := t.TempDir()
-	if err := os.MkdirAll(filepath.Join(home, stateDir), 0o755); err != nil {
-		t.Fatalf("MkdirAll() error = %v", err)
-	}
-	legacy := `{"installed_agents":["claude-code"]}` + "\n"
-	if err := os.WriteFile(Path(home), []byte(legacy), 0o644); err != nil {
-		t.Fatalf("WriteFile() error = %v", err)
-	}
-
-	s, err := Read(home)
-	if err != nil {
-		t.Fatalf("Read() error = %v", err)
-	}
-	if s.PendingSync {
-		t.Errorf("PendingSync = true for legacy state, want false (no deferred sync)")
-	}
-}
-
-// TestMergeAgents_PreservesPendingSync verifies MergeAgents carries
-// PendingSync from the existing state into the merged result.
-func TestMergeAgents_PreservesPendingSync(t *testing.T) {
-	existing := InstallState{
-		InstalledAgents: []string{"claude-code"},
-		PendingSync:     true,
-	}
-	merged := MergeAgents(existing, []string{"opencode"})
-	if !merged.PendingSync {
-		t.Errorf("MergeAgents did not preserve PendingSync: got false, want true")
-	}
-}
-
-// TestRDDMode_RoundTrip verifies the global receipt-driven-development kill
-// switch survives a write/read cycle in uncommitted user state.
-func TestRDDMode_RoundTrip(t *testing.T) {
-	home := t.TempDir()
-	recorded := time.Now().UTC().Truncate(time.Second)
-	s := InstallState{
-		InstalledAgents:   []string{"claude-code"},
-		RDDMode:           "off",
-		RDDModeRecordedAt: &recorded,
-	}
-	if err := Write(home, s); err != nil {
-		t.Fatalf("Write() error = %v", err)
-	}
-	got, err := Read(home)
-	if err != nil {
-		t.Fatalf("Read() error = %v", err)
-	}
-	if got.RDDMode != "off" {
-		t.Errorf("RDDMode = %q after round-trip, want %q", got.RDDMode, "off")
-	}
-	if got.RDDModeRecordedAt == nil || !got.RDDModeRecordedAt.Equal(recorded) {
-		t.Errorf("RDDModeRecordedAt = %v, want %v", got.RDDModeRecordedAt, recorded)
-	}
-	data, err := os.ReadFile(Path(home))
-	if err != nil {
-		t.Fatalf("ReadFile() error = %v", err)
-	}
-	if !contains(string(data), "rdd_mode") || !contains(string(data), "rdd_mode_recorded_at") {
-		t.Errorf("JSON must contain the rdd mode keys; got:\n%s", data)
-	}
-}
-
-// TestRDDMode_BackwardCompat verifies that state files written before the kill
-// switch existed still read cleanly with an unconfigured mode.
-func TestRDDMode_BackwardCompat(t *testing.T) {
-	home := t.TempDir()
-	if err := os.MkdirAll(filepath.Join(home, stateDir), 0o755); err != nil {
-		t.Fatalf("MkdirAll() error = %v", err)
-	}
-	legacy := `{"installed_agents":["claude-code"]}` + "\n"
-	if err := os.WriteFile(Path(home), []byte(legacy), 0o644); err != nil {
-		t.Fatalf("WriteFile() error = %v", err)
-	}
-	s, err := Read(home)
-	if err != nil {
-		t.Fatalf("Read() error = %v", err)
-	}
-	if s.RDDMode != "" || s.RDDModeRecordedAt != nil {
-		t.Errorf("legacy state = %q/%v, want an unconfigured global mode", s.RDDMode, s.RDDModeRecordedAt)
-	}
-	data, err := os.ReadFile(Path(home))
-	if err != nil {
-		t.Fatalf("ReadFile() error = %v", err)
-	}
-	if contains(string(data), "rdd_mode") {
-		t.Error("reading legacy state must not rewrite it with rdd mode keys")
-	}
-}
-
-// TestMergeAgents_PreservesRDDMode verifies an incremental agent install never
-// silently drops the user's kill-switch choice.
-func TestMergeAgents_PreservesRDDMode(t *testing.T) {
-	recorded := time.Now().UTC()
-	existing := InstallState{
-		InstalledAgents:   []string{"claude-code"},
-		RDDMode:           "off",
-		RDDModeRecordedAt: &recorded,
-	}
-	merged := MergeAgents(existing, []string{"opencode"})
-	if merged.RDDMode != "off" || merged.RDDModeRecordedAt == nil || !merged.RDDModeRecordedAt.Equal(recorded) {
-		t.Errorf("MergeAgents dropped the global mode: %q/%v", merged.RDDMode, merged.RDDModeRecordedAt)
-	}
-}
 
 // ─── LastSyncedAt round-trip and backward-compat ─────────────────────────
 

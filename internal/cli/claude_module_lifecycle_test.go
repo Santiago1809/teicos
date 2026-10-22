@@ -24,7 +24,7 @@ import (
 func seedClaudeModulePilot(t *testing.T, home string) []string {
 	t.Helper()
 
-	options := agentguidance.RoutingOptions{ClaudeGlobalModules: true, ReviewContract: routingReviewContract}
+	options := agentguidance.RoutingOptions{ClaudeGlobalModules: true}
 	if _, err := agentguidance.InjectRoutingWithOptions(home, model.AgentClaudeCode, options); err != nil {
 		t.Fatalf("seed Claude module pilot: %v", err)
 	}

@@ -10,7 +10,6 @@ import (
 	"testing"
 
 	"github.com/Santiago1809/teicos/internal/components/agentguidance"
-	"github.com/Santiago1809/teicos/internal/components/reviewassets"
 	"github.com/Santiago1809/teicos/internal/model"
 )
 
@@ -66,15 +65,6 @@ func TestOrchestratorModuleBudgetClaudeGlobal(t *testing.T) {
 	}
 	want := variants[index]
 
-	contract, err := reviewassets.ReviewExecutionContractFor(model.AgentClaudeCode)
-	if err != nil {
-		t.Fatal(err)
-	}
-	contract = strings.TrimSpace(contract)
-	if len(contract) != want.ContractBytes || sha256Hex(contract) != want.ContractSHA256 {
-		t.Fatalf("Claude review contract is %d bytes, baseline %d; the budget would not measure the baselined contract", len(contract), want.ContractBytes)
-	}
-
 	read := func(path string) string {
 		t.Helper()
 		content, err := os.ReadFile(path)
@@ -86,9 +76,7 @@ func TestOrchestratorModuleBudgetClaudeGlobal(t *testing.T) {
 
 	// The monolith first, exactly as the default install writes it; the
 	// baseline replaces the temporary home with "~" the same way.
-	monoResult, err := agentguidance.InjectRoutingWithOptions(home, model.AgentClaudeCode, agentguidance.RoutingOptions{
-		ReviewContract: reviewassets.ReviewExecutionContractFor,
-	})
+	monoResult, err := agentguidance.InjectRoutingWithOptions(home, model.AgentClaudeCode, agentguidance.RoutingOptions{})
 	if err != nil {
 		t.Fatalf("default InjectRoutingWithOptions error = %v", err)
 	}
@@ -101,7 +89,7 @@ func TestOrchestratorModuleBudgetClaudeGlobal(t *testing.T) {
 	}
 
 	// Then the pilot into the same home, converting that monolith in place.
-	options := agentguidance.RoutingOptions{ReviewContract: reviewassets.ReviewExecutionContractFor, ClaudeGlobalModules: true}
+	options := agentguidance.RoutingOptions{ClaudeGlobalModules: true}
 	planned, err := agentguidance.RoutingPathsWithOptions(home, model.AgentClaudeCode, options)
 	if err != nil {
 		t.Fatal(err)
@@ -118,9 +106,6 @@ func TestOrchestratorModuleBudgetClaudeGlobal(t *testing.T) {
 	}
 
 	core := read(files[0])
-	if got := strings.Count(core, contract); got != 1 {
-		t.Fatalf("pilot core carries the review contract %d times, want 1", got)
-	}
 	allLoaded := len(core)
 	installed := map[string]bool{}
 	for _, module := range files[1 : len(files)-1] {
@@ -147,8 +132,8 @@ func TestOrchestratorModuleBudgetClaudeGlobal(t *testing.T) {
 		t.Fatal(err)
 	}
 	overhead := allLoaded - len(mono)
-	t.Logf("contract %d, monolith %d, core %d, %d modules, all loaded %d, overhead %d bytes; ledger %d bytes not counted",
-		len(contract), len(mono), len(core), len(files)-2, allLoaded, overhead, ledger.Size())
+	t.Logf("monolith %d, core %d, %d modules, all loaded %d, overhead %d bytes; ledger %d bytes not counted",
+		len(mono), len(core), len(files)-2, allLoaded, overhead, ledger.Size())
 	if len(core) >= len(mono) {
 		t.Errorf("pilot core is %d bytes, not smaller than the %d-byte monolith", len(core), len(mono))
 	}
@@ -156,3 +141,7 @@ func TestOrchestratorModuleBudgetClaudeGlobal(t *testing.T) {
 		t.Errorf("core plus modules exceed the monolith by %d bytes, ceiling %d", overhead, claudeModuleOverheadCeiling)
 	}
 }
+
+// reviewContractStub returns an empty contract: the review execution
+// contract no longer exists, so the orchestrator renders without it.
+func reviewContractStub(model.AgentID) (string, error) { return "", nil }

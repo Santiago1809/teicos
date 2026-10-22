@@ -18,8 +18,8 @@ import (
 
 	"github.com/Santiago1809/teicos/internal/components/filemerge"
 	"github.com/Santiago1809/teicos/internal/components/skills"
+	"github.com/Santiago1809/teicos/internal/filecoord"
 	"github.com/Santiago1809/teicos/internal/model"
-	"github.com/Santiago1809/teicos/internal/reviewtransaction"
 	"golang.org/x/sys/windows"
 )
 
@@ -205,7 +205,7 @@ type windowsCompatibilityDirectoryWriter struct {
 // Windows compatibility transaction. Every child open is handle-relative and
 // refuses reparse points before it can resolve through them.
 func openWindowsCompatibilityDirectoryWriter(homeDir, skillDir string) (*windowsCompatibilityDirectoryWriter, bool, error) {
-	home, err := reviewtransaction.OpenPhysicalPath(homeDir, true)
+	home, err := filecoord.OpenPhysicalPath(homeDir, true)
 	if err != nil {
 		return nil, false, fmt.Errorf("open compatibility home directory %q: %w", homeDir, err)
 	}

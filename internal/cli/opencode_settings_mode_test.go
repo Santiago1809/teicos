@@ -56,7 +56,7 @@ func TestOpenCodeFamilySettingsWritersPreservePrivateMode(t *testing.T) {
 					changed, _, err := migrateLegacyOpenCodeAgents(settingsPath, agent)
 					return changed, err
 				}},
-				{"install review provider roles", func() (bool, error) { return installOpenCodeReviewProviderRoles(settingsPath, agent) }},
+				{"install review provider roles", func() (bool, error) { return installOpenCodeOrchestratorRoles(settingsPath, agent) }},
 				{"install parity agents", func() (bool, error) { return installOpenCodeFamilyParityAgents(settingsPath, agent) }},
 				{"share default", func() (bool, error) { return opencodedefault.ApplyShareDefault(settingsPath) }},
 			}

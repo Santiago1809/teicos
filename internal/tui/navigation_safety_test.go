@@ -15,7 +15,7 @@ import (
 func screenName(s Screen) string { return fmt.Sprintf("Screen#%d", int(s)) }
 
 func TestRunningScreensRejectInputAndExposeNoOptions(t *testing.T) {
-	for _, screen := range []Screen{ScreenRestoreConfirm, ScreenSync, ScreenUpgradeSync, ScreenUninstallConfirm, ScreenReviewStoreResetConfirm} {
+	for _, screen := range []Screen{ScreenRestoreConfirm, ScreenSync, ScreenUpgradeSync, ScreenUninstallConfirm, ScreenReview} {
 		t.Run(screenName(screen), func(t *testing.T) {
 			m := NewModel(system.DetectionResult{}, "dev")
 			m.Screen = screen
@@ -37,7 +37,7 @@ func TestRunningScreensRejectInputAndExposeNoOptions(t *testing.T) {
 }
 
 func TestResultScreensDoNotExposePhantomCursorRows(t *testing.T) {
-	for _, screen := range []Screen{ScreenRestoreResult, ScreenDeleteResult, ScreenUninstallResult, ScreenCommunityToolResult, ScreenComplete, ScreenReviewStoreResetResult} {
+	for _, screen := range []Screen{ScreenRestoreResult, ScreenDeleteResult, ScreenUninstallResult, ScreenCommunityToolResult, ScreenComplete, ScreenReview} {
 		m := NewModel(system.DetectionResult{}, "dev")
 		m.Screen = screen
 		if got := m.optionCount(); got != 0 {

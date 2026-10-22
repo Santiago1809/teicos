@@ -32,7 +32,7 @@ func claudeInstallArgs(extra ...string) []string {
 func plannedClaudeModulePaths(t *testing.T, home string) []string {
 	t.Helper()
 
-	options := agentguidance.RoutingOptions{ClaudeGlobalModules: true, ReviewContract: routingReviewContract}
+	options := agentguidance.RoutingOptions{ClaudeGlobalModules: true}
 	paths, err := agentguidance.RoutingPathsWithOptions(home, model.AgentClaudeCode, options)
 	if err != nil || len(paths) != 9 {
 		t.Fatalf("RoutingPathsWithOptions(pilot) = %v, %v; want nine paths", paths, err)

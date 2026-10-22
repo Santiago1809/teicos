@@ -10,7 +10,6 @@ import (
 
 	"github.com/Santiago1809/teicos/internal/backup"
 	"github.com/Santiago1809/teicos/internal/components/agentguidance"
-	"github.com/Santiago1809/teicos/internal/components/reviewassets"
 	"github.com/Santiago1809/teicos/internal/model"
 	"github.com/Santiago1809/teicos/internal/state"
 )
@@ -46,7 +45,7 @@ func claudeModuleUninstallFixture(t *testing.T, modules bool) (*Service, *record
 			t.Fatalf("write %s", path)
 		}
 	}
-	options := agentguidance.RoutingOptions{ClaudeGlobalModules: modules, ReviewContract: reviewassets.ReviewExecutionContractFor}
+	options := agentguidance.RoutingOptions{ClaudeGlobalModules: modules}
 	if _, err := agentguidance.InjectRoutingWithOptions(home, model.AgentClaudeCode, options); err != nil {
 		t.Fatal(err)
 	}
@@ -128,7 +127,7 @@ func TestClaudeUninstallRetiresModulePilotOnlyOnFullRemoval(t *testing.T) {
 	if !snapshots.existed[ledger] || !snapshots.existed[modified] {
 		t.Fatal("uninstall snapshot was taken after the pilot changed")
 	}
-	monolith, err := agentguidance.RenderOrchestratorWithSource(model.AgentClaudeCode, reviewassets.ReviewExecutionContractFor, "")
+	monolith, err := agentguidance.RenderOrchestrator(model.AgentClaudeCode, "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -202,3 +201,7 @@ func TestClaudeUninstallKeepsClaudeInstalledWhenPilotRetirementFails(t *testing.
 		t.Fatal("failed retirement changed the ledger or the core")
 	}
 }
+
+// reviewContractStub returns an empty contract: the review execution
+// contract no longer exists.
+func reviewContractStub(model.AgentID) (string, error) { return "", nil }

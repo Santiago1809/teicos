@@ -1,13 +1,10 @@
 package agentguidance
 
 import (
-	"errors"
 	"fmt"
 	"regexp"
 	"strings"
-	"sync"
 
-	"github.com/Santiago1809/teicos/internal/agents/capabilitymanifest"
 	"github.com/Santiago1809/teicos/internal/assets"
 	"github.com/Santiago1809/teicos/internal/components/filemerge"
 	"github.com/Santiago1809/teicos/internal/model"
@@ -65,51 +62,6 @@ var nonRDDLeakMarkers = []string{
 	"review-integration",
 	"Native Compact Review Orchestration",
 	"Provider Defect Handoff",
-}
-
-// ErrMissingReviewContract fails closed when a runtime that advertises the
-// native review transport would receive an orchestrator without its review
-// execution contract: installing a review lifecycle with no procedure in it is
-// worse than refusing the install.
-var ErrMissingReviewContract = errors.New("review execution contract source is not configured")
-
-// ReviewContractSource renders the runtime-bound native review execution
-// contract. It is reviewassets.ReviewExecutionContractFor in production; the
-// seam exists only because reviewassets already imports this package. Callers
-// pass it through RoutingOptions.ReviewContract or RenderOrchestratorWithSource.
-type ReviewContractSource func(model.AgentID) (string, error)
-
-var (
-	reviewContractMu     sync.RWMutex
-	reviewContractSource ReviewContractSource
-)
-
-// reviewExecutionContract returns the contract for a runtime that receives
-// receipt-driven development, or ok=false for one that does not. A non-nil
-// source wins over the package-level fallback.
-func reviewExecutionContract(agent model.AgentID, source ReviewContractSource) (contract string, ok bool, err error) {
-	if _, err := capabilitymanifest.ForAgent(agent); err != nil {
-		return "", false, err
-	}
-	if !model.SupportsReceiptDrivenDevelopment(agent) {
-		return "", false, nil
-	}
-	if source == nil {
-		reviewContractMu.RLock()
-		source = reviewContractSource
-		reviewContractMu.RUnlock()
-	}
-	if source == nil {
-		return "", false, fmt.Errorf("review contract source was not wired for %q (set RoutingOptions.ReviewContract): %w", agent, ErrMissingReviewContract)
-	}
-	contract, err = source(agent)
-	if err != nil {
-		return "", false, err
-	}
-	if strings.TrimSpace(contract) == "" {
-		return "", false, ErrMissingReviewContract
-	}
-	return contract, true, nil
 }
 
 // sharedOrchestratorSectionPlaceholder matches one {{GENTLE_AI_ODD_SECTION:<name>}}.
@@ -183,18 +135,17 @@ func selectGenericOrchestrator(content, capability string) (string, error) {
 	return content, nil
 }
 
-// RenderOrchestratorWithSource is RenderOrchestrator with an explicit review
-// contract source, which takes precedence over the package-level fallback.
+// RenderOrchestrator renders the orchestrator contract for one runtime.
 // capability selects the generic instruction variant: "small" selects the
 // small-model text and any other value, including empty, selects capable.
-func RenderOrchestratorWithSource(agent model.AgentID, source ReviewContractSource, capability string) (string, error) {
-	return renderOrchestrator(agent, source, capability, false)
+func RenderOrchestrator(agent model.AgentID, capability string) (string, error) {
+	return renderOrchestrator(agent, capability, false)
 }
 
 // renderOrchestrator is the single render path. annotate keeps the shared
 // module fragment markers for the internal core/module construction; the
 // public render always strips those exact marker lines.
-func renderOrchestrator(agent model.AgentID, source ReviewContractSource, capability string, annotate bool) (string, error) {
+func renderOrchestrator(agent model.AgentID, capability string, annotate bool) (string, error) {
 	if agent == model.AgentPi {
 		return "", fmt.Errorf("render orchestrator for %q: the Pi prompt is owned by Gentle Shell", agent)
 	}
@@ -212,8 +163,7 @@ func renderOrchestrator(agent model.AgentID, source ReviewContractSource, capabi
 		}
 	}
 
-	rdd := model.SupportsReceiptDrivenDevelopment(agent)
-	content, err = expandSharedOrchestratorSections(content, rdd, annotate)
+	content, err = expandSharedOrchestratorSections(content, annotate)
 	if err != nil {
 		return "", fmt.Errorf("render orchestrator for %q: %w", agent, err)
 	}
@@ -223,23 +173,13 @@ func renderOrchestrator(agent model.AgentID, source ReviewContractSource, capabi
 		return "", fmt.Errorf("render orchestrator for %q: %w", agent, err)
 	}
 
-	// v3.7.0 removed the section for runtimes that do not advertise the
-	// review transport instead of handing them a lifecycle they cannot run.
-	contract, reviews, err := reviewExecutionContract(agent, source)
+	// The review execution section belonged to receipt-driven development.
+	// Teicos ships ODD only, so the section is always removed.
+	content = removeSection(content, reviewExecutionHeading, reviewExecutionNextHeading)
+
+	content, err = stripReceiptDrivenDevelopment(content)
 	if err != nil {
 		return "", fmt.Errorf("render orchestrator for %q: %w", agent, err)
-	}
-	if reviews {
-		content = replaceSectionBody(content, reviewExecutionHeading, reviewExecutionNextHeading, contract)
-	} else {
-		content = removeSection(content, reviewExecutionHeading, reviewExecutionNextHeading)
-	}
-
-	if !rdd {
-		content, err = stripReceiptDrivenDevelopment(content)
-		if err != nil {
-			return "", fmt.Errorf("render orchestrator for %q: %w", agent, err)
-		}
 	}
 
 	content = strings.ReplaceAll(content, runtimeAgentIDPlaceholder, string(agent))
@@ -282,7 +222,7 @@ func stripReceiptDrivenDevelopment(content string) (string, error) {
 // with a literal template token in it. Without receipt-driven development, a
 // section's "(ODD only)" variant replaces its canonical body when one exists.
 // annotate keeps the module fragment markers inside the canonical bodies.
-func expandSharedOrchestratorSections(content string, rdd, annotate bool) (string, error) {
+func expandSharedOrchestratorSections(content string, annotate bool) (string, error) {
 	shared, err := assets.Read(sharedOrchestratorSectionsAsset)
 	if err != nil {
 		return "", err
@@ -294,10 +234,7 @@ func expandSharedOrchestratorSections(content string, rdd, annotate bool) (strin
 		if annotate {
 			section = annotatedSharedOrchestratorSection
 		}
-		body := ""
-		if !rdd {
-			body = section(shared, name+oddOnlySectionSuffix)
-		}
+		body := section(shared, name+oddOnlySectionSuffix)
 		if body == "" {
 			body = section(shared, name)
 		}
@@ -415,11 +352,11 @@ func removeSection(content, heading, nextHeading string) string {
 
 const openCodeNativeQuestionSourceRoute = "- Native route: The classified native question UI is `question`. Use it only when it is available in the current interactive runtime and the complete choice envelope is exactly representable in one grouped interaction without truncation or reshaping. When the closed domain of a single-select envelope is representable as the classified native question UI, use it; otherwise fall through to the Fallback clause below."
 
-const openCodeConsentV3QuestionRoute = "- Native route: For `gentle-ai.review-integration.consent/v3`: Display labels and provider-owned answer tokens may differ; that difference alone never makes an otherwise complete closed single-select domain unrepresentable. Before invocation, inspect the active classified `question` schema. Set `multiple: false` when exposed. Set `custom: false` only when exposed; otherwise omit `custom`. Missing `custom` alone is not a compatibility block: a text-capable UI does not expand the allowed-answer domain. Never invent unsupported parameters. Preserve the complete envelope, including headline, reason, value, risk evidence, option order, labels, descriptions, effects, and off-path note in one native question. Invoke `question` once per presentation, then STOP and wait. Before any provider invocation, require exactly one question answer containing exactly one value. Trim whitespace and compare case-insensitively against the offered labels; accept only the unambiguous ordinal aliases explicitly permitted by Answer validation below. A typed value is valid only if it resolves to exactly one offered option; it is not a new choice. Empty, multiple, unknown, arbitrary prose, or ambiguous answers authorize no provider invocation: re-present the complete native question and STOP to wait again. Never use chat text as consent, auto-select, or synthesize a continuation. Map the uniquely validated option to its provider-owned answer token once; retain the exact captured target binding and invoke only its exact provider-owned choice invocation once. If `question` is unavailable or the complete envelope cannot be represented, report that compatibility limitation and STOP without invoking any provider continuation; no chat-token fallback. For envelopes other than `gentle-ai.review-integration.consent/v3`, the classified native question UI is `question`. Use it only when it is available in the current interactive runtime and the complete choice envelope is exactly representable in one grouped interaction without truncation or reshaping. When the closed domain of a single-select envelope is representable as the classified native question UI, use it; otherwise fall through to the Fallback clause below."
+const openCodeConsentV3QuestionRoute = "- Native route: Display labels and provider-owned answer tokens may differ; that difference alone never makes an otherwise complete closed single-select domain unrepresentable. Before invocation, inspect the active classified `question` schema. Set `multiple: false` when exposed. Set `custom: false` only when exposed; otherwise omit `custom`. Missing `custom` alone is not a compatibility block: a text-capable UI does not expand the allowed-answer domain. Never invent unsupported parameters. Preserve the complete envelope, including headline, reason, value, risk evidence, option order, labels, descriptions, effects, and off-path note in one native question. Invoke `question` once per presentation, then STOP and wait. Before any provider invocation, require exactly one question answer containing exactly one value. Trim whitespace and compare case-insensitively against the offered labels; accept only the unambiguous ordinal aliases explicitly permitted by Answer validation below. A typed value is valid only if it resolves to exactly one offered option; it is not a new choice. Empty, multiple, unknown, arbitrary prose, or ambiguous answers authorize no provider invocation: re-present the complete native question and STOP to wait again. Never use chat text as consent, auto-select, or synthesize a continuation. Map the uniquely validated option to its provider-owned answer token once; retain the exact captured target binding and invoke only its exact provider-owned choice invocation once. If `question` is unavailable or the complete envelope cannot be represented, report that compatibility limitation and STOP without invoking any provider continuation; no chat-token fallback. For every other envelope, the classified native question UI is `question`. Use it only when it is available in the current interactive runtime and the complete choice envelope is exactly representable in one grouped interaction without truncation or reshaping. When the closed domain of a single-select envelope is representable as the classified native question UI, use it; otherwise fall through to the Fallback clause below."
 
 const openCodeFallbackSourceClause = "- Fallback: If a native UI is unavailable, denied, the runtime is noninteractive, or the complete envelope is oversized or otherwise unrepresentable because of question-count, option-count, or text-length limits, emit the COMPLETE choice envelope as a plain chat or terminal response. Include the required answer syntax and why the input blocks progress. Then STOP. Do not choose, default, infer, launch dependent work, or continue. Native-tool-only wording elsewhere never disables this fallback."
 
-const openCodeConsentV3FallbackClause = "- Fallback: For envelopes other than `gentle-ai.review-integration.consent/v3`, if a native UI is unavailable, denied, the runtime is noninteractive, or the complete envelope is oversized or otherwise unrepresentable because of question-count, option-count, or text-length limits, emit the COMPLETE choice envelope as a plain chat or terminal response. Include the required answer syntax and why the input blocks progress. Then STOP. Do not choose, default, infer, launch dependent work, or continue. Native-tool-only wording elsewhere never disables this fallback."
+const openCodeConsentV3FallbackClause = "- Fallback: For every other envelope, if a native UI is unavailable, denied, the runtime is noninteractive, or the complete envelope is oversized or otherwise unrepresentable because of question-count, option-count, or text-length limits, emit the COMPLETE choice envelope as a plain chat or terminal response. Include the required answer syntax and why the input blocks progress. Then STOP. Do not choose, default, infer, launch dependent work, or continue. Native-tool-only wording elsewhere never disables this fallback."
 
 // replaceOpenCodeConsentV3QuestionRoute adds the OpenCode-only consent-v3
 // native question route (as v3.7.0 rendered it, minus the retired SDD consent

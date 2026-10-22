@@ -10,7 +10,6 @@ import (
 	"github.com/Santiago1809/teicos/internal/catalog"
 	"github.com/Santiago1809/teicos/internal/components/agentguidance"
 	"github.com/Santiago1809/teicos/internal/components/opencodedefault"
-	"github.com/Santiago1809/teicos/internal/components/reviewassets"
 	"github.com/Santiago1809/teicos/internal/model"
 )
 
@@ -128,7 +127,7 @@ func TestInstallAndSyncDeliverOrchestratorOnceForEveryRuntime(t *testing.T) {
 			path, prompt := installedGuidance(t, home, agent)
 			installed := readTextFile(t, path)
 
-			rendered, err := agentguidance.RenderOrchestratorWithSource(agent, reviewassets.ReviewExecutionContractFor, "")
+			rendered, err := agentguidance.RenderOrchestrator(agent, "")
 			if err != nil {
 				t.Fatalf("RenderOrchestrator(%q) error = %v", agent, err)
 			}
@@ -151,7 +150,7 @@ func TestInstallAndSyncDeliverOrchestratorOnceForEveryRuntime(t *testing.T) {
 				t.Fatal("installed prompt lost the ODD assumption challenge")
 			}
 			// Receipt-driven development reaches only its runtimes.
-			rdd := model.SupportsReceiptDrivenDevelopment(agent)
+			rdd := false
 			for _, marker := range []string{
 				"Native Compact Review Orchestration",
 				"Gentle AI Provider Defect Handoff",

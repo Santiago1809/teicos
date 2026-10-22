@@ -65,8 +65,8 @@ func TestRunSyncWithSelectionRefreshesCompatibilityAndOpenCodeAssetsOnWindows(t 
 	}
 	// Managed plugins are replaced only when their bytes match a released
 	// Gentle AI version, so the stale plugin is a real older release.
-	pluginPath := filepath.Join(home, ".config", "opencode", "plugins", "opencode-review-transport.ts")
-	stalePlugin := releasedOpenCodePlugin(t, "v3.7.0/plugins/opencode-review-transport.ts")
+	pluginPath := filepath.Join(home, ".config", "opencode", "plugins", "telemetry-runtime.ts")
+	stalePlugin := releasedOpenCodePlugin(t, "v3.7.0/plugins/telemetry-runtime.ts")
 	mustWriteFile(t, pluginPath, stalePlugin)
 
 	if _, err := RunSyncWithSelection(home, windowsCompatibilitySelection()); err != nil {

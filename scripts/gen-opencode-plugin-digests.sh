@@ -18,7 +18,7 @@
 set -euo pipefail
 
 root=$(git rev-parse --show-toplevel)
-names='background-agents.ts model-variants.ts opencode-review-transport.ts review-result-artifacts.ts sdd-task-result-artifacts.ts skill-registry.ts'
+names='background-agents.ts model-variants.ts review-result-artifacts.ts sdd-task-result-artifacts.ts skill-registry.ts'
 anchors='v1.7.19 v4.0.0'
 registry_path=internal/components/opencoderuntimeplugins/released_digests.go
 dirs='internal/assets/opencode/plugins internal/assets/opencode/plugins-v2'

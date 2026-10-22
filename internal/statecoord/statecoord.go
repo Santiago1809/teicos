@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"github.com/Santiago1809/teicos/internal/reviewtransaction"
+	"github.com/Santiago1809/teicos/internal/filecoord"
 	"github.com/Santiago1809/teicos/internal/state"
 )
 
@@ -29,7 +29,7 @@ func WithLock(homeDir string, operation func() error) (err error) {
 	if err != nil {
 		return fmt.Errorf("acquire install state lock: %w", err)
 	}
-	lock, err := reviewtransaction.AcquireAuthorityFileLock(lockPath)
+	lock, err := filecoord.AcquireAuthorityFileLock(lockPath)
 	if err != nil {
 		return fmt.Errorf("acquire install state lock: %w", err)
 	}

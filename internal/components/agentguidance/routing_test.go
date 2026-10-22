@@ -72,7 +72,7 @@ func TestRenderRoutingCommitsWorkUnitsInReviewableSlices(t *testing.T) {
 			t.Fatal(err)
 		}
 		want := oddRule
-		if model.SupportsReceiptDrivenDevelopment(agent.ID) {
+		if false {
 			want = rule
 		}
 		if !strings.Contains(rendered, want) {
@@ -374,7 +374,7 @@ func TestRenderRoutingOrganicTaskContinuity(t *testing.T) {
 				t.Fatal("ODD must follow the mutation-authorization guard")
 			}
 			applicable := tests
-			if model.SupportsReceiptDrivenDevelopment(agent.ID) {
+			if false {
 				applicable = append(append(applicable[:0:0], tests...), rddTests...)
 			}
 			for _, tt := range applicable {
@@ -494,7 +494,7 @@ func TestRenderRoutingClosesEachTaskWithAWorkUnitCommitAndReviewsIt(t *testing.T
 				t.Fatal(err)
 			}
 			applicable := append(tests[:0:0], tests...)
-			if model.SupportsReceiptDrivenDevelopment(agent.ID) {
+			if false {
 				applicable = append(applicable, rddTests...)
 			} else {
 				applicable = append(applicable, oddTests...)
@@ -552,70 +552,6 @@ func TestRenderRoutingAuthorizesOutcomesBeforeSelectingTopology(t *testing.T) {
 // only real for the user if every RDD runtime can name it, so the exact command
 // surface must be projected into its routing block. A runtime without
 // receipt-driven development has no switch to name and receives none.
-func TestRenderRoutingMakesTheReviewKillSwitchDiscoverable(t *testing.T) {
-	t.Parallel()
-
-	all := catalog.AllAgents()
-	if len(all) != supportedAgentCount {
-		t.Fatalf("catalog.AllAgents() returned %d agents, want %d", len(all), supportedAgentCount)
-	}
-
-	for _, agent := range all {
-		t.Run(string(agent.ID), func(t *testing.T) {
-			t.Parallel()
-
-			rendered, err := RenderRouting(agent.ID)
-			if err != nil {
-				t.Fatalf("RenderRouting(%q) error = %v", agent.ID, err)
-			}
-			if !model.SupportsReceiptDrivenDevelopment(agent.ID) {
-				if strings.Contains(rendered, "gentle-ai review mode") {
-					t.Fatalf("RenderRouting(%q) names the RDD switch on a runtime without RDD:\n%s", agent.ID, rendered)
-				}
-				return
-			}
-
-			for _, want := range []string{
-				"gentle-ai review mode enable|disable|status",
-				"`status` is read-only",
-				"deciding source and the effective mode",
-			} {
-				if !strings.Contains(rendered, want) {
-					t.Fatalf("RenderRouting(%q) hides the kill switch, missing %q:\n%s", agent.ID, want, rendered)
-				}
-			}
-		})
-	}
-}
-
-// TestRenderRoutingObeysTheUserOnReviewMode asserts the specific instructional
-// phrases, not merely the topic, so that prose drift which softens "run disable"
-// into a negotiation, or which lets an agent switch review back on unbidden,
-// fails here instead of shipping to every configured agent.
-func TestRenderRoutingObeysTheUserOnReviewMode(t *testing.T) {
-	t.Parallel()
-
-	rendered, err := RenderRouting(model.AgentClaudeCode)
-	if err != nil {
-		t.Fatalf("RenderRouting error = %v", err)
-	}
-
-	for _, want := range []string{
-		"It is **on by default and opt-out**.",
-		"A `default` deciding source means nobody has chosen, so the effective mode is on.",
-		"Never toggle the mode automatically",
-		"When the user asks to stop using receipt-driven development, run `disable`.",
-		"Do not argue, do not work around it, and do not propose alternatives first.",
-		"Never enable receipt-driven development on the user's behalf unless the user explicitly asks for it.",
-		"do not start reviews, do not retry, do not reactivate it, and do not fall back to any retired path",
-		"reports `disabled/unmanaged`",
-		"never a fabricated approval",
-	} {
-		if !strings.Contains(rendered, want) {
-			t.Fatalf("rendered routing is missing the exact instruction %q:\n%s", want, rendered)
-		}
-	}
-}
 
 func routingVocabularyForGuard(block, forbidden string) string {
 	if forbidden == "token" {
@@ -671,7 +607,7 @@ func TestRenderRoutingIsSemanticallyEqualAcrossAgents(t *testing.T) {
 			t.Fatalf("RenderRouting(%q) carries no routing semantics", agent.ID)
 		}
 
-		group := routingGroup{rdd: model.SupportsReceiptDrivenDevelopment(agent.ID), pi: agent.ID == model.AgentPi}
+		group := routingGroup{rdd: false, pi: agent.ID == model.AgentPi}
 		reference := references[group]
 		if reference == nil {
 			referenceAgent[group] = agent.ID
@@ -929,7 +865,7 @@ func TestRenderRoutingSizesTasksByUnderstandingRiskAndResumability(t *testing.T)
 					t.Fatalf("RenderRouting(%q) keeps retired count-based sizing %q", agent.ID, retired)
 				}
 			}
-			if model.SupportsReceiptDrivenDevelopment(agent.ID) {
+			if false {
 				for _, want := range []string{
 					"--escalate-item <1-6> --escalate-reason",
 					"never lower it",
@@ -1093,7 +1029,6 @@ func TestRenderRoutingGivesPiItsOwnODDSteps(t *testing.T) {
 		"Route each task through the orchestrator's Mechanisms",
 		"update the file, mirror, and visible `todo` projection after every task transition and material plan change",
 		"Never end with a tracked task pending unless you quote the user's explicit stop.",
-		"native review runs only under the user-owned RDD switch.",
 		"Phase reporting: the Gentle Shell prompt label is inferred automatically",
 		"Detail for steps 3–7: `orchestrator-delegation.md` and `orchestrator-memory.md`.",
 	}

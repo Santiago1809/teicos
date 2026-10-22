@@ -111,7 +111,7 @@ func runTelemetryRuntimeInput(args []string, stdout io.Writer, input io.Reader) 
 	if args[0] == "codex" {
 		return nil
 	}
-	return encodeReviewJSON(stdout, struct {
+	return encodeJSON(stdout, struct {
 		Schema   string `json:"schema"`
 		Decision string `json:"decision"`
 	}{"gentle-ai.telemetry-runtime-send/v1", decision})

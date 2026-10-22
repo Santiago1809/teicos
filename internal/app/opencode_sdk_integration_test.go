@@ -17,7 +17,6 @@ import (
 	"github.com/Santiago1809/teicos/internal/model"
 	"github.com/Santiago1809/teicos/internal/opencode"
 	"github.com/Santiago1809/teicos/internal/pipeline"
-	"github.com/Santiago1809/teicos/internal/reviewtransaction"
 	"github.com/Santiago1809/teicos/internal/state"
 	"github.com/Santiago1809/teicos/internal/system"
 	"github.com/Santiago1809/teicos/internal/tui"
@@ -212,18 +211,9 @@ func runSDKFullApplyIntegration(t *testing.T, home, config, log string, realSDK 
 	m.DependencyPlan.Agents = m.Selection.Agents
 	m.BackgroundIntent = model.OpenCodeBackgroundOff
 	m.PiBackgroundIntent = model.PiBackgroundOff
-	m.InstallReviewModeChoiceSet = false
 	m.ExecuteSDKFn = tuiExecuteWithSDK
 	// Fail closed if this flow unexpectedly schedules native review-mode work.
 	reviewCalls := 0
-	m.ReviewModeStatusFn = func(context.Context, string) (reviewtransaction.RDDModeStatus, error) {
-		reviewCalls++
-		return reviewtransaction.RDDModeStatus{}, fmt.Errorf("unexpected native review status call")
-	}
-	m.ReviewModeSetGlobalFn = func(context.Context, string, bool) (reviewtransaction.RDDModeStatus, error) {
-		reviewCalls++
-		return reviewtransaction.RDDModeStatus{}, fmt.Errorf("unexpected native review mode mutation")
-	}
 	m.Screen, m.Cursor = tui.ScreenReview, 0
 	updated, cmd := m.Update(tea.KeyMsg{Type: tea.KeyEnter})
 	m = updated.(tui.Model)
@@ -293,7 +283,7 @@ func runSDKFullApplyIntegration(t *testing.T, home, config, log string, realSDK 
 	if got := string(read(filepath.Join(config, "node_modules", "@opencode", "plugin", "package.json"))); !realSDK && got != "{\"version\":\"2.0.4\"}\n" {
 		t.Fatalf("unexpected fake SDK manifest: %s", got)
 	}
-	for _, name := range []string{"model-variants.ts", "skill-registry.ts", "opencode-review-transport.ts", "telemetry-runtime.ts"} {
+	for _, name := range []string{"model-variants.ts", "skill-registry.ts", "telemetry-runtime.ts"} {
 		if got := string(read(filepath.Join(config, "plugins", name))); got != assets.MustRead("opencode/plugins-v2/"+name) {
 			t.Errorf("managed asset %s differs from embedded V2 bytes", name)
 		}
@@ -321,7 +311,7 @@ func runSDKFullApplyIntegration(t *testing.T, home, config, log string, realSDK 
 	if strings.Join(persisted.InstalledAgents, ",") != "opencode" || !persisted.SelectionConfigured || !persisted.CommunityToolsConfigured || len(persisted.Components) != 0 || len(persisted.CommunityTools) != 0 || len(persisted.Skills) != 0 || persisted.Preset != m.Selection.Preset {
 		t.Fatalf("installed selection was not persisted: %+v", persisted)
 	}
-	if reviewCalls != 0 || persisted.RDDMode != "" || persisted.RDDModeRecordedAt != nil || m.InstallReviewModePersisting || m.InstallReviewModePersistErr != nil {
+	if reviewCalls != 0 {
 		t.Fatalf("unexpected native review-mode work: calls=%d state=%+v", reviewCalls, persisted)
 	}
 	if !strings.Contains(strings.Join(m.Progress.Logs, "\n"), "pipeline completed successfully") {

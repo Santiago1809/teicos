@@ -5,13 +5,10 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
-	"reflect"
-	"runtime"
 	"strings"
 	"testing"
 
 	"github.com/Santiago1809/teicos/internal/components/filemerge"
-	"github.com/Santiago1809/teicos/internal/components/opencodeagents"
 	"github.com/Santiago1809/teicos/internal/system"
 )
 
@@ -125,248 +122,11 @@ func TestKiloInstallWritesParityAgentsWithoutManagedByMarker(t *testing.T) {
 	}
 }
 
-func TestKiloUpgradeRetiresOwnedAgents(t *testing.T) {
-	for _, tc := range []struct {
-		name string
-		run  func(t *testing.T)
-	}{
-		{"install", func(t *testing.T) {
-			t.Helper()
-			if _, err := RunInstall([]string{"--agent", "kilocode", "--preset", "full-gentleman"}, system.DetectionResult{}); err != nil {
-				t.Fatal(err)
-			}
-		}},
-		{"sync", func(t *testing.T) {
-			t.Helper()
-			if _, err := RunSync([]string{"--agent", "kilocode"}); err != nil {
-				t.Fatal(err)
-			}
-		}},
-	} {
-		t.Run(tc.name, func(t *testing.T) {
-			home := installTestHome(t)
-			path := kiloSettingsPath(home)
-			if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
-				t.Fatal(err)
-			}
-			fixture, err := os.ReadFile("testdata/kilo-v3.7.0-upgrade.json")
-			if err != nil {
-				t.Fatal(err)
-			}
-			if err := os.WriteFile(path, fixture, 0o600); err != nil {
-				t.Fatal(err)
-			}
-			before, err := filemerge.UnmarshalJSONObject(fixture)
-			if err != nil {
-				t.Fatal(err)
-			}
-			tc.run(t)
-			first, err := os.ReadFile(path)
-			if err != nil {
-				t.Fatal(err)
-			}
-			// The legacy marker is stripped from the entries Teicos owns. The
-			// sdd-* agents belong to gentle-ai: they keep their marker so the
-			// two products can share the same agent configuration.
-			for name, value := range mustAgents(t, first) {
-				entry, ok := value.(map[string]any)
-				if !ok || strings.HasPrefix(name, "sdd-") {
-					continue
-				}
-				if _, marked := entry["__managed_by"]; marked {
-					t.Errorf("legacy marker remains on %s:\n%s", name, first)
-				}
-			}
-			after, err := filemerge.UnmarshalJSONObject(first)
-			if err != nil {
-				t.Fatal(err)
-			}
-			agents := after["agent"].(map[string]any)
-			original := before["agent"].(map[string]any)
-			assertKiloParityAgents(t, agents)
-			for name := range agents {
-				if strings.HasPrefix(name, "sdd-") && agents[name] == nil {
-					t.Errorf("gentle-ai agent %s was removed", name)
-				}
-			}
-			if !reflect.DeepEqual(after["provider"], before["provider"]) {
-				t.Error("provider changed")
-			}
-			if !reflect.DeepEqual(after["mcp"].(map[string]any)["my-server"], before["mcp"].(map[string]any)["my-server"]) {
-				t.Error("user MCP server changed")
-			}
-			if !reflect.DeepEqual(agents["user-owned"], original["user-owned"]) {
-				t.Error("user-owned agent changed")
-			}
-			if !reflect.DeepEqual(agents["other-marked"], map[string]any{"prompt": "keep this"}) {
-				t.Error("unknown marked agent changed beyond marker removal")
-			}
-			for _, name := range append([]string{"gentle-orchestrator"}, kiloParityAgentNames...) {
-				entry := agents[name].(map[string]any)
-				if _, stale := entry["tools"]; stale {
-					t.Errorf("%s retained stale v3.7.0 tools", name)
-				}
-			}
-			for name, want := range map[string]map[string]any{
-				"jd-judge-a":          {"model": "user/judge", "variant": "low"},
-				"gentle-orchestrator": {"model": "user/orchestrator"},
-			} {
-				entry := agents[name].(map[string]any)
-				for field, value := range want {
-					if entry[field] != value {
-						t.Errorf("%s lost user %s: %v", name, field, entry)
-					}
-				}
-			}
-			tc.run(t)
-			if second, _ := os.ReadFile(path); !bytes.Equal(first, second) {
-				t.Errorf("second %s changed settings bytes", tc.name)
-			}
-		})
-	}
-}
-
-// TestKiloUpgradeRemovesOwnedReviewAgentsAndKeepsUserOnes seeds the review
-// agents an earlier release wrote to Kilo in the managed shape, next to a
-// user's own review agent under an RDD name, and proves install and sync
-// remove only Gentle AI's entries and their orchestrator task permissions.
-func TestKiloUpgradeRemovesOwnedReviewAgentsAndKeepsUserOnes(t *testing.T) {
-	for _, tc := range []struct {
-		name string
-		run  func(t *testing.T)
-	}{
-		{"install", func(t *testing.T) {
-			t.Helper()
-			if _, err := RunInstall([]string{"--agent", "kilocode", "--preset", "full-gentleman"}, system.DetectionResult{}); err != nil {
-				t.Fatal(err)
-			}
-		}},
-		{"sync", func(t *testing.T) {
-			t.Helper()
-			if _, err := RunSync([]string{"--agent", "kilocode"}); err != nil {
-				t.Fatal(err)
-			}
-		}},
-	} {
-		t.Run(tc.name, func(t *testing.T) {
-			home := installTestHome(t)
-			path := kiloSettingsPath(home)
-			if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
-				t.Fatal(err)
-			}
-
-			agents := map[string]any{}
-			task := map[string]any{}
-			for _, name := range kiloRetiredReviewAgentNames {
-				shape, ok := opencodeagents.ReviewShape(name)
-				if !ok {
-					t.Fatalf("no managed shape for %q", name)
-				}
-				agents[name] = shape
-				task[name] = "allow"
-			}
-			// A user's model choice on a managed entry does not make it theirs.
-			withModel := agents["review-risk"].(map[string]any)
-			withModel["model"] = "user/risk"
-			// A user's own agent under an RDD name is never ours.
-			agents["review-readability"] = map[string]any{"mode": "subagent", "prompt": "My own readability reviewer", "model": "user/readability"}
-			agents["gentle-orchestrator"] = map[string]any{"model": "user/orchestrator", "permission": map[string]any{"task": task}}
-			seed, err := json.MarshalIndent(map[string]any{"agent": agents}, "", "  ")
-			if err != nil {
-				t.Fatal(err)
-			}
-			if err := os.WriteFile(path, seed, 0o600); err != nil {
-				t.Fatal(err)
-			}
-
-			tc.run(t)
-			first, err := os.ReadFile(path)
-			if err != nil {
-				t.Fatal(err)
-			}
-			after := kiloAgents(t, first)
-			for _, name := range []string{"review-risk", "review-reliability", "review-resilience", "review-refuter", "review-validator"} {
-				if _, ok := after[name]; ok {
-					t.Errorf("owned Kilo review agent %q survived: %#v", name, after[name])
-				}
-			}
-			user, _ := after["review-readability"].(map[string]any)
-			if user["prompt"] != "My own readability reviewer" || user["model"] != "user/readability" {
-				t.Errorf("user-owned review-readability changed: %#v", after["review-readability"])
-			}
-			orchestrator, _ := after["gentle-orchestrator"].(map[string]any)
-			permission, _ := orchestrator["permission"].(map[string]any)
-			gotTask, _ := permission["task"].(map[string]any)
-			for _, name := range []string{"review-risk", "review-reliability", "review-resilience", "review-refuter", "review-validator"} {
-				if _, ok := gotTask[name]; ok {
-					t.Errorf("task permission for removed %q survived: %#v", name, gotTask)
-				}
-			}
-			if gotTask["review-readability"] != "allow" {
-				t.Errorf("task permission for the user's own review-readability was dropped: %#v", gotTask)
-			}
-			for _, name := range kiloParityAgentNames {
-				if gotTask[name] != "allow" {
-					t.Errorf("Kilo gentle-orchestrator does not allow delegating to %q: %#v", name, gotTask)
-				}
-			}
-			if orchestrator["model"] != "user/orchestrator" {
-				t.Errorf("gentle-orchestrator lost the user model: %#v", orchestrator)
-			}
-			tc.run(t)
-			if second, _ := os.ReadFile(path); !bytes.Equal(first, second) {
-				t.Errorf("second %s changed settings bytes:\nfirst:\n%s\nsecond:\n%s", tc.name, first, second)
-			}
-		})
-	}
-}
-
-func TestRetireKiloReviewAgentsPreservesSettingsMode(t *testing.T) {
-	path := filepath.Join(t.TempDir(), "opencode.json")
-	shape, ok := opencodeagents.ReviewShape("review-risk")
-	if !ok {
-		t.Fatal("no managed shape for review-risk")
-	}
-	seed, err := json.Marshal(map[string]any{"agent": map[string]any{
-		"review-risk":         shape,
-		"gentle-orchestrator": map[string]any{"permission": map[string]any{"task": map[string]any{"review-risk": "allow", "jd-judge-a": "allow"}}},
-	}})
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(path, seed, 0o600); err != nil {
-		t.Fatal(err)
-	}
-	changed, err := retireOpenCodeFamilyReviewAgents(path, "kilocode", nil)
-	if err != nil || !changed {
-		t.Fatalf("retireOpenCodeFamilyReviewAgents = %v, %v; want a change", changed, err)
-	}
-	info, err := os.Stat(path)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if runtime.GOOS != "windows" && info.Mode().Perm() != 0o600 {
-		t.Fatalf("settings mode = %v, want 0600 preserved", info.Mode().Perm())
-	}
-	raw, _ := os.ReadFile(path)
-	agents := kiloAgents(t, raw)
-	if _, ok := agents["review-risk"]; ok {
-		t.Fatalf("managed review-risk survived: %s", raw)
-	}
-	task := agents["gentle-orchestrator"].(map[string]any)["permission"].(map[string]any)["task"].(map[string]any)
-	if _, ok := task["review-risk"]; ok || task["jd-judge-a"] != "allow" {
-		t.Fatalf("task permissions = %#v, want only review-risk dropped", task)
-	}
-	if changed, err := retireOpenCodeFamilyReviewAgents(path, "opencode", nil); err != nil || changed {
-		t.Fatalf("OpenCode keeps its review agents: changed=%v err=%v", changed, err)
-	}
-}
-
 // TestKiloReviewTaskPermissionCleanupRequiresOwnershipProof proves install and
-// sync drop an orchestrator task permission for a review agent only when this
-// run removed that agent as Gentle AI's: in the managed shape, or under the
-// v3.7.0 __managed_by marker. A permission whose agent was already absent is the
-// user's and survives.
+// sync keeps an orchestrator task permission for a review agent gentle-ai
+// owns: the review agents belong to that product, not to Teicos, so neither
+// the entry nor its permission is removed here. A permission whose agent was
+// already absent is the user's and survives too.
 func TestKiloReviewTaskPermissionCleanupRequiresOwnershipProof(t *testing.T) {
 	runs := []struct {
 		name string
@@ -385,10 +145,6 @@ func TestKiloReviewTaskPermissionCleanupRequiresOwnershipProof(t *testing.T) {
 			}
 		}},
 	}
-	managedRisk, ok := opencodeagents.ReviewShape("review-risk")
-	if !ok {
-		t.Fatal("no managed shape for review-risk")
-	}
 	for _, tc := range []struct {
 		name      string
 		agents    map[string]any
@@ -396,10 +152,10 @@ func TestKiloReviewTaskPermissionCleanupRequiresOwnershipProof(t *testing.T) {
 		wantAgent bool
 	}{
 		{"user permission without agent entry survives", map[string]any{}, true, false},
-		{"managed entry and its permission are removed", map[string]any{"review-risk": managedRisk}, false, false},
-		{"legacy marked entry and its permission are removed", map[string]any{
+		{"a review permission without its agent entry survives", map[string]any{}, true, false},
+		{"a legacy marked review agent keeps its entry and permission", map[string]any{
 			"review-risk": map[string]any{"__managed_by": "gentle-ai/sdd", "mode": "subagent", "prompt": "legacy"},
-		}, false, false},
+		}, true, true},
 	} {
 		for _, run := range runs {
 			t.Run(tc.name+"/"+run.name, func(t *testing.T) {

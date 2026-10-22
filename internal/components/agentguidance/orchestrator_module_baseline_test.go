@@ -19,7 +19,6 @@ import (
 	"github.com/Santiago1809/teicos/internal/catalog"
 	"github.com/Santiago1809/teicos/internal/components/agentguidance"
 	"github.com/Santiago1809/teicos/internal/components/opencodedefault"
-	"github.com/Santiago1809/teicos/internal/components/reviewassets"
 	"github.com/Santiago1809/teicos/internal/model"
 	"github.com/Santiago1809/teicos/internal/opencode"
 )
@@ -129,7 +128,6 @@ func installedFiles(t *testing.T, input moduleVariantInput) []installedGuidance 
 	}
 	result, err := agentguidance.InjectRoutingWithOptions(root, input.agent, agentguidance.RoutingOptions{
 		OrchestratorCapability: input.capability,
-		ReviewContract:         reviewassets.ReviewExecutionContractFor,
 	})
 	if err != nil {
 		t.Fatalf("InjectRoutingWithOptions(%s) error = %v", input.id, err)
@@ -174,41 +172,19 @@ func TestOrchestratorModuleBaseline(t *testing.T) {
 	for _, input := range moduleVariantInputs {
 		t.Run(input.id, func(t *testing.T) {
 			fakeOpenCodeVersion(t, input.openCodeVersion)
-			rendered, err := agentguidance.RenderOrchestratorWithSource(input.agent, reviewassets.ReviewExecutionContractFor, input.capability)
+			rendered, err := agentguidance.RenderOrchestrator(input.agent, input.capability)
 			if err != nil {
-				t.Fatalf("RenderOrchestratorWithSource(%s) error = %v", input.id, err)
+				t.Fatalf("RenderOrchestrator(%s) error = %v", input.id, err)
 			}
 			raw, err := assets.Read(input.asset)
 			if err != nil {
 				t.Fatal(err)
 			}
 			variant := moduleVariant{
-				ID: input.id, Asset: input.asset, RDD: model.SupportsReceiptDrivenDevelopment(input.agent),
+				ID: input.id, Asset: input.asset,
 				RawBytes: len(raw), RawSHA256: sha256Hex(raw),
 				RenderedBytes: len(rendered), RenderedSHA256: sha256Hex(rendered),
 				Installed: installedFiles(t, input),
-			}
-			if variant.RDD {
-				// The native review authority stays always loaded: the exact
-				// current contract is embedded once, with its defect handoff.
-				contract, err := reviewassets.ReviewExecutionContractFor(input.agent)
-				if err != nil {
-					t.Fatal(err)
-				}
-				contract = strings.TrimSpace(contract)
-				if got := strings.Count(rendered, contract); got != 1 {
-					t.Fatalf("rendered %s carries its review contract %d times, want 1", input.id, got)
-				}
-				if !strings.Contains(rendered, "#### Gentle AI Provider Defect Handoff (MANDATORY)") {
-					t.Fatalf("rendered %s lost the provider defect handoff", input.id)
-				}
-				variant.ContractBytes, variant.ContractSHA256 = len(contract), sha256Hex(contract)
-			} else {
-				for _, leak := range []string{"Native Compact Review Orchestration", "Review Execution Contract", "Provider Defect Handoff", "receipt"} {
-					if strings.Contains(rendered, leak) {
-						t.Errorf("rendered %s without receipt-driven development carries %q", input.id, leak)
-					}
-				}
 			}
 			encoded, err := json.Marshal(variant)
 			if err != nil {
@@ -249,9 +225,6 @@ func TestOrchestratorModuleBaseline(t *testing.T) {
 	// Variant relationships the module split must keep observable.
 	if renders["opencode/unknown"] != renders["opencode/v1"] {
 		t.Error("an unknown OpenCode version no longer renders the v1 contract")
-	}
-	if renders["opencode/v2"] == renders["opencode/v1"] || !strings.Contains(renders["opencode/v2"], "`subagent`") {
-		t.Error("OpenCode v2 no longer binds the review contract to its own tool names")
 	}
 	for _, agent := range []string{"vscode-copilot", "openclaw", "trae-ide"} {
 		capable, small := renders[agent+"/capable"], renders[agent+"/small"]

@@ -138,23 +138,6 @@ func TestWindowsReleaseBlockerCannotSkipOwnerRebinding(t *testing.T) {
 			"Windows release-blocker workflow still tests the retired deliveryadmission package",
 		)
 	}
-
-	testSource, err := os.ReadFile(filepath.Join(
-		"..",
-		"reviewtransaction",
-		"rar_path_safety_windows_test.go",
-	))
-	if err != nil {
-		t.Fatal(err)
-	}
-	if !strings.Contains(
-		string(testSource),
-		`os.Getenv("GENTLE_AI_REQUIRE_DISTINCT_WINDOWS_TOKEN_OWNER") == "1"`,
-	) {
-		t.Fatal(
-			"native Windows owner-rebinding test can skip the release precondition",
-		)
-	}
 }
 
 type formatterCandidate struct {

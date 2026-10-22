@@ -17,7 +17,6 @@ import (
 	"github.com/Santiago1809/teicos/internal/backup"
 	"github.com/Santiago1809/teicos/internal/components/agentguidance"
 	"github.com/Santiago1809/teicos/internal/components/opencoderuntimeplugins"
-	"github.com/Santiago1809/teicos/internal/components/reviewassets"
 	"github.com/Santiago1809/teicos/internal/model"
 	"github.com/Santiago1809/teicos/internal/state"
 	"github.com/Santiago1809/teicos/internal/system"
@@ -1544,7 +1543,7 @@ func TestClaudePilotSnapshotRestoreRemovesModulePilot(t *testing.T) {
 	if err := state.Write(home, state.InstallState{InstalledAgents: []string{string(model.AgentClaudeCode)}}); err != nil {
 		t.Fatalf("state.Write: %v", err)
 	}
-	options := agentguidance.RoutingOptions{ReviewContract: reviewassets.ReviewExecutionContractFor}
+	options := agentguidance.RoutingOptions{}
 	if _, err := agentguidance.InjectRoutingWithOptions(home, model.AgentClaudeCode, options); err != nil {
 		t.Fatalf("install monolithic core: %v", err)
 	}

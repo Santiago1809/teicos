@@ -34,7 +34,6 @@ import (
 	"time"
 
 	"github.com/Santiago1809/teicos/internal/assets"
-	"github.com/Santiago1809/teicos/internal/reviewerprovider"
 	"github.com/Santiago1809/teicos/internal/versions"
 )
 
@@ -255,70 +254,6 @@ func TestOrganicDirectoryIdentityAcceptsCanonicalAliases(t *testing.T) {
 	}
 	if sameOrganicDirectory(canonical, file) {
 		t.Fatal("a regular file was accepted as the repository directory")
-	}
-}
-
-func TestClaudeProviderAdapterUsesPinnedNetworkNoneRuntime(t *testing.T) {
-	if testing.Short() || os.Getenv("GENTLE_AI_CLAUDE_RUNTIME_E2E") != "1" {
-		t.Skip("claude_network_none_skipped: requires the pinned Docker proof image")
-	}
-	binary := os.Getenv("GENTLE_AI_CLAUDE_RUNTIME_BINARY")
-	if binary == "" {
-		t.Fatal("claude_network_none_unavailable: pinned binary path is empty")
-	}
-	adapter := reviewerprovider.NewClaudeAdapter()
-	originalLookPath := adapter.LookPath
-	adapter.LookPath = func(string) (string, error) { return binary, nil }
-	t.Cleanup(func() { adapter.LookPath = originalLookPath })
-	response := []byte(`{"subject_hash":"local-subject","inspection":{"status":"completed","paths":["internal/provider/candidate.go"]},"lens":"reliability","findings":[],"evidence":["loopback inspected the frozen candidate"]}`)
-	var requests int
-	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-		if request.Method == http.MethodHead && request.URL.Path == "/api/hello" {
-			writer.WriteHeader(http.StatusOK)
-			return
-		}
-		requests++
-		if request.Method != http.MethodPost || request.URL.Path != "/v1/messages" {
-			t.Errorf("Claude request = %s %s, want POST /v1/messages", request.Method, request.URL.Path)
-			writer.WriteHeader(http.StatusNotFound)
-			return
-		}
-		payload, err := io.ReadAll(request.Body)
-		if err != nil {
-			t.Errorf("read Claude request: %v", err)
-			writer.WriteHeader(http.StatusBadRequest)
-			return
-		}
-		if !bytes.Contains(payload, []byte("provider transport")) {
-			t.Error("Claude Messages request omitted the provider prompt")
-			writer.WriteHeader(http.StatusBadRequest)
-			return
-		}
-		writer.Header().Set("Content-Type", "text/event-stream")
-		_, _ = fmt.Fprint(writer, "event: message_start\ndata: {\"type\":\"message_start\",\"message\":{\"id\":\"msg_local\",\"type\":\"message\",\"role\":\"assistant\",\"model\":\"claude-sonnet-4-20250514\",\"content\":[],\"stop_reason\":null,\"stop_sequence\":null,\"usage\":{\"input_tokens\":1,\"output_tokens\":1}}}\n\n")
-		_, _ = fmt.Fprint(writer, "event: content_block_start\ndata: {\"type\":\"content_block_start\",\"index\":0,\"content_block\":{\"type\":\"text\",\"text\":\"\"}}\n\n")
-		encoded, _ := json.Marshal(map[string]any{"type": "content_block_delta", "index": 0, "delta": map[string]string{"type": "text_delta", "text": string(response)}})
-		_, _ = fmt.Fprintf(writer, "event: content_block_delta\ndata: %s\n\n", encoded)
-		_, _ = fmt.Fprint(writer, "event: content_block_stop\ndata: {\"type\":\"content_block_stop\",\"index\":0}\n\n")
-		_, _ = fmt.Fprint(writer, "event: message_delta\ndata: {\"type\":\"message_delta\",\"delta\":{\"stop_reason\":\"end_turn\",\"stop_sequence\":null},\"usage\":{\"output_tokens\":1}}\n\n")
-		_, _ = fmt.Fprint(writer, "event: message_stop\ndata: {\"type\":\"message_stop\"}\n\n")
-	}))
-	defer server.Close()
-	t.Setenv("ANTHROPIC_BASE_URL", server.URL)
-	t.Setenv("ANTHROPIC_API_KEY", "local-loopback-key")
-	raw, err := adapter.Review(t.Context(), reviewerprovider.NewInvocation([]byte("provider transport")))
-	if err != nil {
-		t.Fatalf("pinned Claude adapter loopback: %v", err)
-	}
-	if want := append(response, '\n'); !bytes.Equal(raw, want) || requests == 0 {
-		t.Fatalf("pinned Claude loopback = %q with %d Messages requests, want %q with at least one request", raw, requests, want)
-	}
-	completedRequests := requests
-	ctx, cancel := context.WithTimeout(t.Context(), time.Nanosecond)
-	defer cancel()
-	<-ctx.Done()
-	if raw, err := adapter.Review(ctx, reviewerprovider.NewInvocation([]byte(`{"review":"provider transport"}`))); err == nil || len(raw) != 0 || requests != completedRequests {
-		t.Fatalf("pinned Claude adapter failure = %q, %v; want no bytes and a transport error", raw, err)
 	}
 }
 
